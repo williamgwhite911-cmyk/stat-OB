@@ -9,38 +9,38 @@
       <stop offset="1" stop-color="#22d3ee"/>
     </linearGradient>
     <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#be185d" stop-opacity=".0"/>
+      <stop offset="0" stop-color="#be185d" stop-opacity="0"/>
       <stop offset=".4" stop-color="#f472b6" stop-opacity=".55"/>
       <stop offset=".6" stop-color="#22d3ee" stop-opacity=".55"/>
-      <stop offset="1" stop-color="#0e7490" stop-opacity=".0"/>
+      <stop offset="1" stop-color="#0e7490" stop-opacity="0"/>
     </linearGradient>
   </defs>
 
-  <!-- Black background -->
+  <!-- Black rounded square -->
   <rect width="512" height="512" rx="96" fill="#000000"/>
 
-  <!-- "OB" — top half, rose/pink gradient -->
-  <text x="256" y="220"
-        font-family="Helvetica Neue, Arial Black, sans-serif"
-        font-size="180" font-weight="900"
+  <!-- "OB" — top, rose/pink gradient — sized to match PNG (~42% of canvas) -->
+  <text x="256" y="200"
+        font-family="Lato, Helvetica Neue, Arial Black, sans-serif"
+        font-size="215" font-weight="900"
         fill="url(#obGrad)" text-anchor="middle"
         letter-spacing="-4">OB</text>
 
   <!-- Center divider — soft gradient line -->
-  <line x1="100" y1="256" x2="412" y2="256"
+  <line x1="103" y1="256" x2="409" y2="256"
         stroke="url(#lineGrad)" stroke-width="3" stroke-linecap="round"/>
 
-  <!-- "PEDS" — bottom half, teal/cyan gradient -->
-  <text x="256" y="390"
-        font-family="Helvetica Neue, Arial Black, sans-serif"
-        font-size="130" font-weight="900"
+  <!-- "PEDS" — bottom, teal/cyan gradient (~22% of canvas) -->
+  <text x="256" y="400"
+        font-family="Lato, Helvetica Neue, Arial Black, sans-serif"
+        font-size="113" font-weight="900"
         fill="url(#pedsGrad)" text-anchor="middle"
         letter-spacing="-2">PEDS</text>
 
-  <!-- Tiny subtle "SF" mark in corner (optional brand) -->
-  <text x="58" y="468"
-        font-family="Helvetica Neue, Arial, sans-serif"
-        font-size="22" font-weight="800"
-        fill="#ffffff" opacity=".25"
+  <!-- "SF" watermark, bottom-left corner -->
+  <text x="32" y="475"
+        font-family="Lato, Helvetica Neue, Arial, sans-serif"
+        font-size="26" font-weight="800"
+        fill="#ffffff" opacity=".27"
         letter-spacing="2">SF</text>
 </svg>
