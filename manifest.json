@@ -1,0 +1,44 @@
+{
+  "name": "StatFlight Critical Care",
+  "short_name": "StatFlight",
+  "description": "Maternal and pediatric critical care transport reference for PHI Health flight teams",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#030710",
+  "theme_color": "#030710",
+  "orientation": "any",
+  "categories": ["medical", "health"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "OB",
+      "short_name": "OB",
+      "url": "./ob.html"
+    },
+    {
+      "name": "Peds",
+      "short_name": "Peds",
+      "url": "./peds.html"
+    }
+  ]
+}

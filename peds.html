@@ -1,0 +1,2290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#030710">
+<meta name="apple-mobile-web-app-title" content="StatFlight Peds">
+<title>StatFlight Peds — Pediatric Critical Care Transport</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#030710;--bg1:#070e1e;--bg2:#0b1428;
+  --s0:#0f1d34;--s1:#142340;--s2:#192c4e;
+  --bd0:#1a2d48;--bd1:#223858;--bd2:#2c4870;
+  --tx0:#dce9fc;--tx1:#8aafd6;--tx2:#4d6e96;--tx3:#3b557a;
+  --cyan:#00d4f5;--teal:#00e8b0;--amber:#fbbf24;
+  --red:#ff5f6d;--purple:#b57bff;--rose:#fb7185;
+  --orange:#f97316;--sky:#38bdf8;--lime:#84cc16;--pink:#f472b6;
+  --mono:"IBM Plex Mono",monospace;--body:"Outfit",sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+@media(max-width:600px){html{font-size:17px}}
+body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:100vh;overflow-x:hidden}
+
+.topbar{position:sticky;top:0;z-index:500;background:rgba(3,7,16,.97);border-bottom:1px solid var(--bd0);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;gap:12px}
+.tb-left{display:flex;align-items:center;gap:12px;min-width:0}
+.tb-icon{width:36px;height:36px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,#0e7490,#22d3ee);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;letter-spacing:.02em}
+.tb-info{min-width:0}
+.tb-title{font-size:.94rem;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.tb-sub{font-family:var(--mono);font-size:.57rem;color:var(--tx1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-pill{font-family:var(--mono);font-size:.58rem;font-weight:700;padding:4px 10px;border-radius:6px;letter-spacing:.06em;background:rgba(0,212,245,.08);border:1px solid rgba(0,212,245,.2);color:var(--cyan)}
+
+.nav-tabs{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--bd0);padding:0 20px;background:var(--bg1);overflow-x:auto;flex-shrink:0}
+.nav-tab{padding:11px 16px;font-size:.8rem;font-weight:600;color:var(--tx1);cursor:pointer;border:none;background:transparent;font-family:var(--body);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.nav-tab:hover{color:var(--tx0)}
+.nav-tab.on{color:var(--cyan);border-bottom-color:var(--cyan)}
+.nav-tab-pt{color:var(--cyan)}
+.nav-tab-pt.on{color:var(--cyan);border-bottom-color:var(--cyan)}
+.nav-tab-dx{color:var(--purple)}
+.nav-tab-dx.on{color:var(--purple);border-bottom-color:var(--purple)}
+.nav-tab-tube{color:var(--red)}
+.nav-tab-tube.on{color:var(--red);border-bottom-color:var(--red)}
+.nav-tab-vent{color:var(--amber)}
+.nav-tab-vent.on{color:var(--amber);border-bottom-color:var(--amber)}
+.nav-tab-meds{color:var(--teal)}
+.nav-tab-meds.on{color:var(--teal);border-bottom-color:var(--teal)}
+
+.pg{display:none}.pg.on{display:block}
+.page{max-width:1180px;margin:0 auto;padding:18px 14px 60px}
+
+.slbl{font-family:var(--mono);font-size:.58rem;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--tx2);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.slbl::after{content:"";flex:1;height:1px;background:var(--bd0)}
+.card{background:var(--s0);border:1px solid var(--bd0);border-radius:14px;padding:18px 20px;margin-bottom:14px;position:relative;overflow:hidden}
+.card.tl::after{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#0e7490,#22d3ee,#a78bfa,#fb7185)}
+.flbl{font-family:var(--mono);font-size:.58rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--tx2);margin-bottom:6px;display:block}
+select,input[type=number],input[type=text]{width:100%;background:var(--bg1);border:1px solid var(--bd1);border-radius:9px;color:var(--tx0);padding:9px 12px;font-size:.85rem;font-family:var(--body);appearance:none;transition:border-color .15s,box-shadow .15s}
+select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,245,.1)}
+.sw{position:relative}.sw::after{content:"▾";position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--tx2);pointer-events:none;font-size:.7rem}
+
+.input-row{display:flex;gap:6px}
+.input-row input{flex:1}
+.input-row select{flex:0 0 80px}
+
+.pt-sections{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+@media(max-width:640px){.pt-sections{grid-template-columns:1fr}}
+.sec{background:var(--bg2);border:1px solid var(--bd0);border-radius:11px;padding:13px 14px;position:relative}
+.sec.sec-wt{border-color:rgba(0,212,245,.32);box-shadow:inset 0 0 0 1px rgba(0,212,245,.06)}
+.sec.sec-age{border-color:rgba(167,139,250,.32);box-shadow:inset 0 0 0 1px rgba(167,139,250,.06)}
+.sec-title{font-family:var(--mono);font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.sec-wt .sec-title{color:var(--cyan)}
+.sec-age .sec-title{color:var(--purple)}
+.sec-title::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.85}
+.sec-help{font-size:.66rem;color:var(--tx2);margin-top:8px;font-style:italic;line-height:1.45}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{background:var(--s1);border:1px solid var(--bd0);border-radius:10px;padding:9px 13px;min-width:108px}
+.cl{font-family:var(--mono);font-size:.54rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tx2)}
+.cv{font-family:var(--mono);font-size:1.05rem;font-weight:700;margin-top:2px}
+.cs{font-size:.61rem;color:var(--tx1);margin-top:1px}
+.c-cyan .cv{color:var(--cyan)}.c-teal .cv{color:var(--teal)}.c-amber .cv{color:var(--amber)}
+.c-purple .cv{color:var(--purple)}.c-rose .cv{color:var(--rose)}.c-pink .cv{color:var(--pink)}
+
+.cs-toggle-row{display:flex;gap:8px;align-items:center;margin:14px 0;flex-wrap:wrap}
+.cs-toggle-lbl{font-family:var(--mono);font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tx2);margin-right:4px}
+.cs-btn{padding:6px 12px;border-radius:8px;border:1px solid var(--bd1);background:var(--s0);color:var(--tx2);font-size:.72rem;font-weight:700;cursor:pointer;font-family:var(--body);transition:all .15s}
+.cs-btn:hover{border-color:var(--bd2);color:var(--tx0)}
+.cs-btn-active{background:rgba(167,139,250,.15);border-color:var(--purple);color:var(--purple)}
+
+.color-strip{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0 16px;padding:8px;background:var(--bg2);border:1px solid var(--bd0);border-radius:9px}
+.color-cell{flex:1;min-width:64px;padding:6px 4px;border-radius:5px;text-align:center;font-family:var(--mono);font-size:.56rem;font-weight:800;cursor:pointer;border:2px solid transparent;transition:all .15s;letter-spacing:.04em}
+.color-cell:hover{transform:translateY(-1px)}
+.color-cell.active{border-color:#fff;box-shadow:0 0 12px rgba(0,212,245,.4)}
+.color-cell .cc-wt{display:block;font-size:.78rem;margin-bottom:2px}
+.color-cell .cc-age{display:block;font-size:.48rem;opacity:.85}
+
+.tabs{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 14px}
+.tab{padding:5px 12px;border-radius:100px;font-size:.72rem;font-weight:600;border:1px solid var(--bd1);background:transparent;color:var(--tx1);cursor:pointer;font-family:var(--body);transition:all .13s}
+.tab:hover{border-color:var(--cyan);color:var(--tx0)}
+.tab.on{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:700}
+
+.rg{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;margin-bottom:14px}
+.rc{position:relative;overflow:hidden;background:var(--s0);border:1px solid var(--bd0);border-radius:12px;padding:15px 15px 15px 20px}
+.rc.form-premix{background:linear-gradient(180deg,rgba(0,232,176,.05),var(--s0) 60%);border-color:rgba(0,232,176,.28)}
+.rc.form-vial{background:linear-gradient(180deg,rgba(251,191,36,.05),var(--s0) 60%);border-color:rgba(251,191,36,.28)}
+.rc.form-vialmix{background:linear-gradient(180deg,rgba(244,114,182,.05),var(--s0) 60%);border-color:rgba(244,114,182,.28)}
+.rc.form-syringe{background:linear-gradient(180deg,rgba(0,212,245,.05),var(--s0) 60%);border-color:rgba(0,212,245,.32)}
+.rc.form-po{background:linear-gradient(180deg,rgba(167,139,250,.05),var(--s0) 60%);border-color:rgba(167,139,250,.28)}
+.rc-bar{position:absolute;left:0;top:0;bottom:0;width:3px}
+.rc-cat{font-family:var(--mono);font-size:.54rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tx1);margin-bottom:3px}
+.rc-name{font-size:1rem;font-weight:800;letter-spacing:-.015em;margin-bottom:2px}
+.rc-names{font-size:.69rem;margin-bottom:10px;line-height:1.6;color:var(--tx2)}
+.rc-ind{font-size:.7rem;color:var(--tx1);font-style:italic;margin-bottom:8px;line-height:1.45}
+.rr{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--bd0);font-size:.79rem;gap:8px}
+.rr:last-child{border-bottom:none}
+.rk{color:var(--tx1);flex-shrink:0;font-size:.72rem}
+.rv{font-family:var(--mono);font-weight:700;text-align:right;word-break:break-word;max-width:65%;font-size:.82rem}
+.rv.dose{color:var(--teal)}
+.rv.calc{color:var(--cyan);font-size:.95rem}
+.rv.warn{color:var(--amber)}
+.rv .max,.rv .mx{color:#ff5f6d !important;font-weight:900;background:rgba(255,95,109,.12);padding:1px 6px;border-radius:5px;margin:0 1px;border:1px solid rgba(255,95,109,.3);text-shadow:0 0 6px rgba(255,95,109,.35)}
+.rv.calc .max,.rv.calc .mx{color:#ff7e87 !important}
+.rc-note{margin-top:8px;padding:7px 10px;background:rgba(0,212,245,.05);border:1px solid rgba(0,212,245,.18);border-radius:7px;font-size:.68rem;color:var(--tx1);line-height:1.5}
+.rc-warn{margin-top:8px;padding:7px 10px;background:rgba(255,95,109,.07);border:1px solid rgba(255,95,109,.28);border-radius:7px;font-size:.68rem;color:var(--rose);line-height:1.5;font-weight:600}
+.fb{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.13em;padding:4px 9px;border-radius:5px;margin-bottom:10px}
+.fb-premix{background:rgba(0,232,176,.12);color:var(--teal);border:1px solid rgba(0,232,176,.4)}
+.fb-vial{background:rgba(251,191,36,.12);color:var(--amber);border:1px solid rgba(251,191,36,.4)}
+.fb-vialmix{background:rgba(244,114,182,.12);color:var(--pink);border:1px solid rgba(244,114,182,.4)}
+.fb-syringe{background:rgba(0,212,245,.12);color:var(--cyan);border:1px solid rgba(0,212,245,.4)}
+.fb-po{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.4)}
+.fb::before{content:"";width:8px;height:8px;border-radius:2px;background:currentColor}
+.form-section-hdr{font-family:var(--mono);font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.18em;margin:14px 0 8px;display:flex;align-items:center;gap:10px}
+.form-section-hdr::after{content:"";flex:1;height:1px;opacity:.3;background:currentColor}
+.form-section-hdr.h-premix{color:var(--teal)}
+.form-section-hdr.h-vial{color:var(--amber)}
+.form-section-hdr.h-vialmix{color:var(--pink)}
+.form-section-hdr.h-syringe{color:var(--cyan)}
+.form-section-hdr.h-po{color:var(--purple)}
+
+.dx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:8px}
+.dx-card{background:var(--bg2);border:1px solid var(--bd1);border-radius:9px;padding:10px 12px;cursor:pointer;transition:all .13s}
+.dx-card:hover{border-color:var(--bd2);transform:translateY(-1px)}
+.dx-card.on{background:rgba(167,139,250,.08);border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
+.dx-name{font-size:.82rem;font-weight:700;color:var(--tx0)}
+.dx-sub{font-size:.62rem;color:var(--tx2);margin-top:2px}
+
+.vent-wrap{overflow-x:auto;margin-top:12px}
+.vt{width:100%;border-collapse:collapse;font-size:.78rem}
+.vt th{background:var(--s2);color:var(--tx1);font-family:var(--mono);font-size:.58rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--bd1);white-space:nowrap}
+.vt td{padding:8px 12px;border-bottom:1px solid var(--bd0);vertical-align:middle}
+.vt tr:last-child td{border-bottom:none}
+.vt tr:hover td{background:var(--s1)}
+.ht-c{font-family:var(--mono);font-weight:700}
+.ibw-c{font-family:var(--mono);color:var(--cyan)}
+.tv-c{font-family:var(--mono);color:var(--teal)}
+.et-c{font-family:var(--mono);color:var(--purple)}
+.ig-c{font-family:var(--mono);color:var(--rose)}
+
+.callout{padding:10px 14px;border-radius:8px;margin:10px 0;font-size:.78rem;line-height:1.55}
+.callout-warn{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.28);color:var(--amber)}
+.callout-danger{background:rgba(255,95,109,.07);border:1px solid rgba(255,95,109,.32);color:var(--rose)}
+.callout-info{background:rgba(0,212,245,.05);border:1px solid rgba(0,212,245,.22);color:var(--cyan)}
+.callout strong{display:inline-block;font-weight:800;margin-right:4px;letter-spacing:.04em}
+
+.empty{text-align:center;padding:36px 20px;color:var(--tx2)}
+.empty .ei{font-size:2.4rem;opacity:.25;margin-bottom:8px}
+.empty .et{font-size:.85rem}
+
+.safer-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:6px}
+.safer-row{background:var(--bg2);border:1px solid var(--bd1);border-radius:10px;padding:11px 13px;display:flex;gap:11px;align-items:flex-start;cursor:pointer;transition:all .15s}
+.safer-row:hover{border-color:var(--bd2);background:var(--s0)}
+.safer-row.checked{background:rgba(0,232,176,.06);border-color:rgba(0,232,176,.4)}
+.safer-row.checked .safer-letter{background:var(--teal);color:#000}
+.safer-row.checked .safer-title{text-decoration:line-through;text-decoration-color:rgba(0,232,176,.5);text-decoration-thickness:1.5px}
+.safer-letter{flex-shrink:0;width:32px;height:32px;border-radius:8px;background:rgba(255,95,109,.15);color:var(--red);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:1rem;font-weight:900;border:1px solid rgba(255,95,109,.4);transition:all .15s}
+.safer-body{flex:1;min-width:0}
+.safer-title{font-size:.88rem;font-weight:700;color:var(--tx0);margin-bottom:2px}
+.safer-items{font-size:.74rem;color:var(--tx1);line-height:1.5}
+.safer-items ul{margin:4px 0 0 16px;padding:0}
+.safer-items li{margin-bottom:2px}
+.safer-actions{display:flex;gap:6px;margin-top:10px}
+.safer-btn{padding:5px 10px;font-size:.72rem;border-radius:6px;border:1px solid var(--bd1);background:transparent;color:var(--tx1);cursor:pointer;font-family:var(--body);font-weight:600;transition:all .15s}
+.safer-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* BURN MAPPING */
+.burn-region{background:var(--bg2);border:1px solid var(--bd1);border-radius:10px;padding:12px;margin-bottom:8px}
+.burn-region-title{font-family:var(--mono);font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--tx1);margin-bottom:9px}
+.burn-zones{display:flex;flex-wrap:wrap;gap:6px}
+.burn-zone-btn{padding:8px 11px;border-radius:8px;border:1px solid var(--bd1);background:var(--s0);color:var(--tx1);font-size:.74rem;font-family:var(--body);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .12s;min-width:84px;text-align:center}
+.burn-zone-btn:hover{border-color:var(--bd2);color:var(--tx0);transform:translateY(-1px)}
+.burn-zone-btn.on.depth-PT{background:rgba(251,191,36,.14);border-color:var(--amber);color:var(--amber);font-weight:700}
+.burn-zone-btn.on.depth-FT{background:rgba(255,95,109,.14);border-color:var(--red);color:var(--red);font-weight:700}
+.burn-zone-pct{font-family:var(--mono);font-size:.62rem;font-weight:800;opacity:.85}
+.burn-summary{background:linear-gradient(180deg,rgba(255,95,109,.06),var(--s1) 70%);border:1px solid rgba(255,95,109,.32);border-radius:11px;padding:14px 16px;margin-bottom:14px}
+.burn-summary-row{display:flex;justify-content:space-between;align-items:baseline;margin:5px 0;font-size:.85rem;gap:10px}
+.burn-summary-row .lbl{color:var(--tx1);font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.1em}
+.burn-summary-row .val{font-family:var(--mono);font-weight:800;color:var(--cyan)}
+.burn-controls{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.burn-selected{background:var(--bg2);border:1px solid var(--cyan);border-radius:10px;padding:12px;margin-bottom:14px}
+.burn-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd0);gap:10px;flex-wrap:wrap}
+.burn-row:last-child{border-bottom:none}
+.dpt-toggle{display:flex;gap:4px;align-items:center}
+.dpt-btn{padding:4px 9px;border-radius:6px;border:1px solid var(--bd1);background:transparent;color:var(--tx2);font-size:.7rem;font-family:var(--body);cursor:pointer;font-weight:700}
+.dpt-btn.on{background:rgba(251,191,36,.18);border-color:var(--amber);color:var(--amber)}
+.dpt-btn.on.ft{background:rgba(255,95,109,.18);border-color:var(--red);color:var(--red)}
+.circ-chk{font-size:.7rem;color:var(--tx2);margin-left:8px;cursor:pointer;display:flex;align-items:center;gap:4px}
+.circ-chk input{width:auto !important;margin:0}
+
+@media(max-width:600px){.topbar{padding:0 12px}.tb-sub{display:none}.page{padding:14px 10px 50px}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-left">
+    <div class="tb-icon">PED</div>
+    <div class="tb-info">
+      <div class="tb-title">StatFlight Peds</div>
+      <div class="tb-sub">PHI Pediatric &middot; Critical Care Transport</div>
+    </div>
+  </div>
+  <div class="status-pill" id="ptStatus">NO PT</div>
+</div>
+
+<div class="nav-tabs">
+  <button class="nav-tab nav-tab-pt on" data-pg="patient">Patient</button>
+  <button class="nav-tab nav-tab-dx" data-pg="dx">Diagnosis</button>
+  <button class="nav-tab nav-tab-tube" data-pg="tube">Intubation</button>
+  <button class="nav-tab nav-tab-vent" data-pg="vent">Vent / Airway</button>
+  <button class="nav-tab nav-tab-meds" data-pg="meds">All Meds</button>
+</div>
+
+<!-- ─────────────── PATIENT ─────────────── -->
+<div class="pg on" id="pgPatient">
+<div class="page">
+
+<div class="card tl">
+  <div class="slbl">Pediatric Patient</div>
+
+  <div class="cs-toggle-row">
+    <span class="cs-toggle-lbl">Color System</span>
+    <button class="cs-btn cs-btn-active" id="csBros" onclick="setColorSys('broselow')">Broselow (A)</button>
+    <button class="cs-btn" id="csHt" onclick="setColorSys('handtevy')">Handtevy (B)</button>
+  </div>
+
+  <div class="color-strip" id="colorStrip"></div>
+
+  <div class="pt-sections">
+    <div class="sec sec-wt">
+      <div class="sec-title">Actual Body Weight (ABW)</div>
+      <div class="input-row">
+        <input type="number" id="pWeight" step="0.1" min="0" placeholder="Enter weight">
+        <select id="pWeightUnit"><option value="lbs">lbs</option><option value="kg" selected>kg</option></select>
+      </div>
+      <div class="sec-help">If known, ABW overrides the color tier weight for all dosing.</div>
+    </div>
+    <div class="sec sec-age">
+      <div class="sec-title">Age</div>
+      <div class="input-row">
+        <input type="number" id="pAge" step="1" min="0" placeholder="Age">
+        <select id="pAgeUnit"><option value="yr" selected>yr</option><option value="mo">mo</option><option value="d">d</option></select>
+      </div>
+      <div class="sec-help">Used for ETT formula, vent rate, dose ceilings (max child vs adolescent).</div>
+    </div>
+  </div>
+
+  <div class="chips">
+    <div class="chip c-cyan"><div class="cl">Color Tier</div><div class="cv" id="cTier">--</div><div class="cs" id="cTierAge">tap a tier above</div></div>
+    <div class="chip c-purple"><div class="cl">Dosing Wt</div><div class="cv" id="cDoseWt">--</div><div class="cs" id="cDoseSrc">ABW &rarr; tier wt</div></div>
+    <div class="chip c-rose"><div class="cl">Age</div><div class="cv" id="cAge">--</div></div>
+  </div>
+
+  <div class="slbl" style="margin-top:14px">Quick Airway Reference (auto)</div>
+  <div class="chips">
+    <div class="chip c-amber"><div class="cl">ETT</div><div class="cv" id="cETT">--</div><div class="cs">Cuffed (age/4 + 3.5)</div></div>
+    <div class="chip c-amber"><div class="cl">ETT Depth</div><div class="cv" id="cETTDepth">--</div><div class="cs">3 × ETT size, at lip</div></div>
+    <div class="chip c-pink"><div class="cl">i-gel</div><div class="cv" id="cIgel">--</div><div class="cs">By weight</div></div>
+    <div class="chip c-teal"><div class="cl">NG / OG</div><div class="cv" id="cNGOG">--</div><div class="cs">By age</div></div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ─────────────── DIAGNOSIS ─────────────── -->
+<div class="pg" id="pgDx">
+<div class="page">
+
+<div class="card">
+  <div class="slbl">Diagnosis / Complaint</div>
+  <div class="dx-grid" id="dxGrid"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Clinical Picture &amp; Plan of Action (PHI Pediatric)</div>
+  <div id="planOutput"></div>
+</div>
+
+<!-- Burn mapping — only rendered when dx === 'burn' -->
+<div class="card" id="burnCard" style="display:none">
+  <div class="slbl" style="color:var(--rose)">🔥 Burn Mapping (Lund-Browder, age-adjusted)</div>
+  <div id="burnContent"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Recommended Medications (auto-calc)</div>
+  <div id="dxDrugs" class="rg">
+    <div class="empty"><div class="ei">○</div><div class="et">Select a diagnosis above</div></div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ─────────────── INTUBATION ─────────────── -->
+<div class="pg" id="pgTube">
+<div class="page">
+
+<div class="card tl">
+  <div class="callout callout-danger" style="margin:0;font-size:.86rem;line-height:1.55">
+    <strong style="font-size:.95rem">⚠ Pediatric airway considerations</strong><br>
+    Anticipate: large occiput in infants (shoulder roll), narrow subglottis (cricoid is narrowest in &lt;8 yr), short trachea (mainstem easily), high O2 consumption (rapid desat — 2-3× faster than adult), small functional reserve.<br>
+    <strong>Mitigations:</strong> shoulder roll for infant/toddler, aggressive pre-O2 with NRB + apneic NC at 5-15 L/min, age-appropriate ETT (cuffed: age/4 + 3.5), rescue BIAD ready, weight-based dosing.
+  </div>
+</div>
+
+<div class="card" style="border:1.5px solid rgba(255,95,109,.6);box-shadow:0 0 0 1px rgba(255,95,109,.1) inset">
+  <div class="slbl" style="color:var(--red)">⚡ Peds Max-Dose RSI Strategy (Recommended)</div>
+  <div id="rsiMaxDose"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">PHI Formulary Note</div>
+  <div class="callout callout-info" style="font-size:.8rem;line-height:1.55">
+    <strong>What PHI carries and orders for peds RSI:</strong><br>
+    <span style="color:var(--teal);font-weight:700">✓ Ketamine</span> — preferred peds RSI agent (1-2 mg/kg IV / 4-5 mg/kg IM). Drip per PHI practice up to 4 mg/kg/hr (PICU literature typically caps routine sedation at 2 mg/kg/hr).<br>
+    <span style="color:var(--teal);font-weight:700">✓ Rocuronium</span> — PHI standing order, 1-1.2 mg/kg IV.<br>
+    <span style="color:var(--amber);font-weight:700">△ Succinylcholine</span> — 1-2 mg/kg IV / 4 mg/kg IM. Caution under age 5 (occult myopathy, hyperkalemic arrest risk).<br>
+    <span style="color:var(--tx2);font-weight:700">✗ Etomidate</span> — NOT on PHI Health formulary.
+  </div>
+</div>
+
+<div class="card">
+  <div class="slbl">SAFER Pre-Intubation Checklist (PHI Chapter 2)</div>
+  <div class="safer-grid" id="saferGrid"></div>
+  <div class="safer-actions">
+    <button class="safer-btn" onclick="resetSafer()">Reset checklist</button>
+    <span style="font-size:.7rem;color:var(--tx2);align-self:center;margin-left:6px">Tap rows to mark complete. Persists across sessions.</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="slbl">Induction Medications (auto-calc by ABW)</div>
+  <div id="tubeInduction" class="rg"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Paralytics</div>
+  <div id="tubeParalytics" class="rg"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Post-Intubation Sedation Drips</div>
+  <div id="tubeSedation" class="rg"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Equipment Sizes (auto from age &amp; weight)</div>
+  <div id="tubeEquipment"></div>
+</div>
+
+</div>
+</div>
+
+<!-- ─────────────── VENT / AIRWAY ─────────────── -->
+<div class="pg" id="pgVent">
+<div class="page">
+
+<div class="card tl">
+  <div class="slbl">Patient Parameters (auto)</div>
+  <div class="chips" style="margin-top:6px">
+    <div class="chip c-cyan"><div class="cl">Weight</div><div class="cv" id="vWt">--</div></div>
+    <div class="chip c-rose"><div class="cl">Age</div><div class="cv" id="vAge">--</div></div>
+    <div class="chip c-purple"><div class="cl">Tier</div><div class="cv" id="vTier">--</div></div>
+    <div class="chip c-amber"><div class="cl">Diagnosis</div><div class="cv" id="vDx" style="font-size:.78rem">--</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="slbl">Pediatric Vent Settings</div>
+  <div id="ventOutput"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Pediatric Airway Reference</div>
+  <div id="airwayOutput"></div>
+</div>
+
+</div>
+</div>
+
+<!-- ─────────────── ALL MEDS ─────────────── -->
+<div class="pg" id="pgMeds">
+<div class="page">
+
+<div class="card">
+  <div class="slbl">Browse Pediatric Medications</div>
+  <div class="tabs" id="medTabs">
+    <button class="tab on" data-cat="all">All</button>
+    <button class="tab" data-cat="arrest">Arrest</button>
+    <button class="tab" data-cat="dysrhythmia">Dysrhythmia</button>
+    <button class="tab" data-cat="seizure">Seizure</button>
+    <button class="tab" data-cat="anaphylaxis">Anaphylaxis</button>
+    <button class="tab" data-cat="resp">Respiratory</button>
+    <button class="tab" data-cat="shock">Shock / Sepsis</button>
+    <button class="tab" data-cat="endo">Endocrine</button>
+    <button class="tab" data-cat="icp">ICP / Neuro</button>
+    <button class="tab" data-cat="pain">Pain / Sedation</button>
+    <button class="tab" data-cat="rsi">RSI</button>
+    <button class="tab" data-cat="tox">Toxicology</button>
+    <button class="tab" data-cat="trauma">Trauma</button>
+    <button class="tab" data-cat="nv">Nausea</button>
+  </div>
+  <div id="allDrugs"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// COLOR SYSTEMS — Broselow / Handtevy
+// ════════════════════════════════════════════════════════════════
+// ageYrLo / ageYrHi = matching age range in decimal years for two-way age↔tier sync
+var BROSELOW_COLORS = {
+  '3 kg':  {name:'Pink',  hex:'#f472b6',text:'#fff',age:'Newborn',  wt:3.5,ageYrLo:0,    ageYrHi:0.08, ageYrPick:0.04},
+  '6 kg':  {name:'Red',   hex:'#ef4444',text:'#fff',age:'4-5 mo',   wt:6,  ageYrLo:0.25, ageYrHi:0.5,  ageYrPick:0.33},
+  '8 kg':  {name:'Purple',hex:'#a855f7',text:'#fff',age:'6-9 mo',   wt:8,  ageYrLo:0.5,  ageYrHi:0.83, ageYrPick:0.66},
+  '10 kg': {name:'Yellow',hex:'#fbbf24',text:'#111',age:'1 yr',     wt:10, ageYrLo:0.83, ageYrHi:1.49, ageYrPick:1},
+  '12 kg': {name:'White', hex:'#e2e8f0',text:'#111',age:'2 yr',     wt:12, ageYrLo:1.5,  ageYrHi:2.99, ageYrPick:2},
+  '15 kg': {name:'Blue',  hex:'#3b82f6',text:'#fff',age:'3-4 yr',   wt:15, ageYrLo:3,    ageYrHi:4.99, ageYrPick:4},
+  '20 kg': {name:'Orange',hex:'#f97316',text:'#fff',age:'5-6 yr',   wt:20, ageYrLo:5,    ageYrHi:6.99, ageYrPick:6},
+  '30 kg': {name:'Green', hex:'#22c55e',text:'#fff',age:'7-9 yr',   wt:30, ageYrLo:7,    ageYrHi:9.99, ageYrPick:8},
+  '40 kg': {name:'Black', hex:'#1f2937',text:'#fff',age:'10-12 yr', wt:40, ageYrLo:10,   ageYrHi:14,   ageYrPick:11}
+};
+var HANDTEVY_COLORS = {
+  '5 kg':  {name:'Gray',  hex:'#9ca3af',text:'#fff',age:'2 mo', wt:5,  ageYrLo:0.08, ageYrHi:0.25, ageYrPick:0.16},
+  '6 kg':  {name:'Pink',  hex:'#f472b6',text:'#fff',age:'4 mo', wt:6,  ageYrLo:0.25, ageYrHi:0.5,  ageYrPick:0.33},
+  '8 kg':  {name:'Red',   hex:'#ef4444',text:'#fff',age:'6 mo', wt:8,  ageYrLo:0.5,  ageYrHi:0.83, ageYrPick:0.66},
+  '10 kg': {name:'Purple',hex:'#a855f7',text:'#fff',age:'1 yr', wt:10, ageYrLo:0.83, ageYrHi:1.49, ageYrPick:1},
+  '12 kg': {name:'Yellow',hex:'#fbbf24',text:'#111',age:'2 yr', wt:12, ageYrLo:1.5,  ageYrHi:2.49, ageYrPick:2},
+  '15 kg': {name:'White', hex:'#e2e8f0',text:'#111',age:'3 yr', wt:15, ageYrLo:2.5,  ageYrHi:3.99, ageYrPick:3},
+  '20 kg': {name:'Blue',  hex:'#3b82f6',text:'#fff',age:'5 yr', wt:20, ageYrLo:4,    ageYrHi:5.99, ageYrPick:5},
+  '25 kg': {name:'Orange',hex:'#f97316',text:'#fff',age:'7 yr', wt:25, ageYrLo:6,    ageYrHi:7.99, ageYrPick:7},
+  '30 kg': {name:'Green', hex:'#22c55e',text:'#fff',age:'9 yr', wt:30, ageYrLo:8,    ageYrHi:10.49, ageYrPick:9},
+  '40 kg': {name:'Black', hex:'#1f2937',text:'#fff',age:'12 yr',wt:40, ageYrLo:10.5, ageYrHi:14,   ageYrPick:12}
+};
+
+// Find the color tier whose age range contains the given age in years
+function findTierForAge(ageYr){
+  if(ageYr == null || !isFinite(ageYr)) return null;
+  var map = getColorMap();
+  var keys = Object.keys(map);
+  for(var i = 0; i < keys.length; i++){
+    var c = map[keys[i]];
+    if(ageYr >= c.ageYrLo && ageYr <= c.ageYrHi) return keys[i];
+  }
+  // Fall back to closest by ageYrPick
+  var best = keys[0], bestDiff = Math.abs(map[keys[0]].ageYrPick - ageYr);
+  keys.forEach(function(k){
+    var d = Math.abs(map[k].ageYrPick - ageYr);
+    if(d < bestDiff){ best = k; bestDiff = d; }
+  });
+  return best;
+}
+
+window.colorSystem = (function(){
+  try{ return localStorage.getItem('peds_color_sys') || 'broselow'; }catch(e){ return 'broselow'; }
+})();
+function getColorMap(){ return window.colorSystem === 'handtevy' ? HANDTEVY_COLORS : BROSELOW_COLORS; }
+function setColorSys(sys){
+  window.colorSystem = sys;
+  try{ localStorage.setItem('peds_color_sys', sys); }catch(e){}
+  document.getElementById('csBros').classList.toggle('cs-btn-active', sys==='broselow');
+  document.getElementById('csHt').classList.toggle('cs-btn-active', sys==='handtevy');
+  // Clear stale tier selection — recompute will re-pick from current age (if any)
+  state.tier = null;
+  state.tierWt = null;
+  state.tierAge = '';
+  renderColorStrip();
+  recompute();
+}
+function renderColorStrip(){
+  var map = getColorMap();
+  var strip = document.getElementById('colorStrip');
+  strip.innerHTML = '';
+  Object.keys(map).forEach(function(k){
+    var c = map[k];
+    var div = document.createElement('div');
+    div.className = 'color-cell' + (state.tier === k ? ' active' : '');
+    div.style.background = c.hex;
+    div.style.color = c.text;
+    div.dataset.tier = k;
+    div.innerHTML = '<span class="cc-wt">' + c.wt + ' kg</span><span class="cc-age">' + c.age + '</span>';
+    div.onclick = function(){
+      state.tier = k;
+      state.tierWt = c.wt;
+      state.tierAge = c.age;
+      // Push the tier's age into the age input (year-based with appropriate unit)
+      var ageInput = document.getElementById('pAge');
+      var ageUnit = document.getElementById('pAgeUnit');
+      var ageYr = c.ageYrPick;
+      if(ageInput && ageUnit){
+        if(ageYr < 1){
+          ageUnit.value = 'mo';
+          ageInput.value = Math.round(ageYr * 12);
+        } else {
+          ageUnit.value = 'yr';
+          ageInput.value = Math.round(ageYr);
+        }
+      }
+      renderColorStrip();
+      recompute();
+    };
+    strip.appendChild(div);
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// CONVERSIONS, STATE, HELPERS
+// ════════════════════════════════════════════════════════════════
+var round = function(v, d){ d = d||1; if(!isFinite(v)) return null; var m = Math.pow(10,d); return Math.round(v*m)/m; };
+var lbToKg = function(lb){ return lb * 0.45359237; };
+var kgToLb = function(kg){ return kg / 0.45359237; };
+
+var state = {
+  weightKg:null, tier:null, tierWt:null, tierAge:'',
+  ageVal:null, ageUnit:'yr', ageYr:null,
+  doseWt:null, dx:'',
+  burns:{}    // zoneId → {depth:'PT'|'FT', circ:bool}
+};
+
+// dosing weight precedence: ABW → tier wt
+function dosingWt(){ return state.weightKg || state.tierWt || null; }
+// age in years (decimal)
+function ageInYr(){
+  if(!isFinite(state.ageVal)) return null;
+  if(state.ageUnit === 'yr') return state.ageVal;
+  if(state.ageUnit === 'mo') return state.ageVal/12;
+  if(state.ageUnit === 'd') return state.ageVal/365;
+  return null;
+}
+// ETT cuffed = (age/4) + 3.5; uncuffed = (age/4)+4
+function ettCuffed(ageYr){
+  if(ageYr == null) return null;
+  if(ageYr < 1) return ageYr < 0.08 ? 3.0 : 3.5;  // <1 mo: 3.0; 1-12 mo: 3.5
+  return round(ageYr/4 + 3.5, 1);
+}
+function ettUncuffed(ageYr){
+  if(ageYr == null) return null;
+  if(ageYr < 1) return ageYr < 0.08 ? 3.0 : 3.5;
+  return round(ageYr/4 + 4, 1);
+}
+function ettDepth(ageYr){
+  var s = ettCuffed(ageYr);
+  return s ? round(s*3, 1) : null;
+}
+// i-gel sizing by weight
+function igelSize(wKg){
+  if(wKg == null) return null;
+  if(wKg < 5)  return '1';
+  if(wKg < 12) return '1.5';
+  if(wKg < 25) return '2';
+  if(wKg < 35) return '2.5';
+  if(wKg < 60) return '3';
+  if(wKg < 90) return '4';
+  return '5';
+}
+// NG / OG tube sizing — Fr by age
+function ngogSize(ageYr, wKg){
+  // Rule of thumb: NG Fr ≈ 2× ETT size
+  var ett = ettCuffed(ageYr);
+  if(ett == null && wKg == null) return null;
+  if(ageYr != null){
+    if(ageYr < 0.08) return '5-6 Fr';   // neonate
+    if(ageYr < 1)    return '6-8 Fr';   // infant
+    if(ageYr < 3)    return '8-10 Fr';  // toddler
+    if(ageYr < 7)    return '10-12 Fr';
+    if(ageYr < 12)   return '12-14 Fr';
+    return '14-16 Fr';
+  }
+  if(wKg != null){
+    if(wKg < 4)  return '5-6 Fr';
+    if(wKg < 10) return '8 Fr';
+    if(wKg < 20) return '10 Fr';
+    if(wKg < 30) return '12 Fr';
+    if(wKg < 50) return '14 Fr';
+    return '16 Fr';
+  }
+  return null;
+}
+// Vent rate by age
+function rateByAge(ageYr){
+  if(ageYr == null) return '20-25';
+  if(ageYr < 0.08) return '40-60';     // neonate
+  if(ageYr < 1) return '30-40';        // infant
+  if(ageYr < 3) return '25-30';        // toddler
+  if(ageYr < 6) return '20-25';        // preschool
+  if(ageYr < 12) return '18-22';       // school
+  return '12-16';                      // adolescent
+}
+// Min HR for symptomatic brady (age-dependent)
+function bradyHR(ageYr){
+  if(ageYr == null) return 60;
+  if(ageYr < 0.08) return 100;
+  if(ageYr < 1) return 80;
+  return 60;
+}
+// Format MAX-highlight span
+function mx(v){ return '<span class="mx">' + v + '</span>'; }
+
+// ════════════════════════════════════════════════════════════════
+// RECOMPUTE
+// ════════════════════════════════════════════════════════════════
+function recompute(){
+  var w = parseFloat(document.getElementById('pWeight').value);
+  var wU = document.getElementById('pWeightUnit').value;
+  state.weightKg = isFinite(w) ? (wU === 'lbs' ? lbToKg(w) : w) : null;
+
+  state.ageVal = parseFloat(document.getElementById('pAge').value);
+  state.ageUnit = document.getElementById('pAgeUnit').value;
+  state.ageYr = ageInYr();
+
+  // Auto-select matching color tier when age is entered (and weight not overriding)
+  if(state.ageYr != null){
+    var matchedKey = findTierForAge(state.ageYr);
+    if(matchedKey && state.tier !== matchedKey){
+      var map = getColorMap();
+      state.tier = matchedKey;
+      state.tierWt = map[matchedKey].wt;
+      state.tierAge = map[matchedKey].age;
+      renderColorStrip();  // re-highlight the matched tier
+    }
+  }
+
+  state.doseWt = dosingWt();
+
+  // Render chips
+  var map = getColorMap();
+  var c = state.tier ? map[state.tier] : null;
+  document.getElementById('cTier').textContent = c ? c.name + ' / ' + c.wt + ' kg' : '--';
+  document.getElementById('cTierAge').textContent = c ? c.age : 'tap a tier above';
+  document.getElementById('cDoseWt').textContent = state.doseWt ? round(state.doseWt,2) + ' kg' : '--';
+  document.getElementById('cDoseSrc').textContent = state.weightKg ? 'ABW (entered)' : (state.tierWt ? 'tier weight' : 'no input');
+  document.getElementById('cAge').textContent = (state.ageVal != null && isFinite(state.ageVal)) ? state.ageVal + ' ' + state.ageUnit : '--';
+  var ett = ettCuffed(state.ageYr);
+  var depth = ettDepth(state.ageYr);
+  var ig = igelSize(state.doseWt);
+  var ng = ngogSize(state.ageYr, state.doseWt);
+  document.getElementById('cETT').textContent = ett ? ett + ' mm' : '--';
+  var depthEl = document.getElementById('cETTDepth'); if(depthEl) depthEl.textContent = depth ? depth + ' cm' : '--';
+  var igEl = document.getElementById('cIgel'); if(igEl) igEl.textContent = ig ? 'Size ' + ig : '--';
+  var ngEl = document.getElementById('cNGOG'); if(ngEl) ngEl.textContent = ng || '--';
+
+  document.getElementById('ptStatus').textContent = state.doseWt ? 'PT ' + round(state.doseWt,1) + 'kg' : 'NO PT';
+
+  renderDxDrugs();
+  renderPlan();
+  renderVent();
+  renderAirway();
+  renderAllDrugs();
+  renderIntubation();
+  renderBurnMap();
+}
+
+// ════════════════════════════════════════════════════════════════
+// DIAGNOSES + PLAN
+// ════════════════════════════════════════════════════════════════
+var DIAGNOSES = [
+  {id:'arrest',     name:'Cardiac Arrest',         sub:'PALS — VF/VT/PEA/asystole'},
+  {id:'brady',      name:'Symptomatic Brady',      sub:'HR low for age + poor perfusion'},
+  {id:'svt',        name:'SVT',                    sub:'Narrow tachy — stable / unstable'},
+  {id:'vt',         name:'VT (with pulse)',        sub:'Wide complex tachy'},
+  {id:'seizure',    name:'Status Epilepticus',     sub:'>5 min seizure or 2+ without recovery'},
+  {id:'anaphylaxis',name:'Anaphylaxis',            sub:'Multisystem allergic'},
+  {id:'asthma',     name:'Status Asthmaticus',     sub:'Severe bronchospasm'},
+  {id:'croup',      name:'Severe Croup',           sub:'Stridor at rest, retractions'},
+  {id:'bronchio',   name:'Severe Bronchiolitis',   sub:'<2 yr, RSV-like'},
+  {id:'sepsis',     name:'Sepsis / Septic Shock',  sub:'Fever + altered perfusion'},
+  {id:'dka',        name:'DKA',                    sub:'Hyperglycemia + acidosis'},
+  {id:'hypo',       name:'Hypoglycemia',           sub:'Glucose < 60 (or <45 neonate)'},
+  {id:'icp',        name:'Increased ICP / TBI',    sub:'Cushing triad / herniation signs'},
+  {id:'tox',        name:'Toxic Ingestion',        sub:'Suspected overdose / exposure'},
+  {id:'trauma',     name:'Hemorrhagic Trauma',     sub:'Class III/IV shock'},
+  {id:'burn',       name:'Severe Burn',            sub:'>10% TBSA / airway involvement'},
+  {id:'hyperK',     name:'Hyperkalemia',           sub:'Peaked T waves, wide QRS'}
+];
+
+function renderDxGrid(){
+  var grid = document.getElementById('dxGrid');
+  grid.innerHTML = DIAGNOSES.map(function(d){
+    return '<div class="dx-card' + (state.dx===d.id?' on':'') + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
+  }).join('');
+  grid.querySelectorAll('.dx-card').forEach(function(el){
+    el.onclick = function(){
+      state.dx = el.dataset.id === state.dx ? '' : el.dataset.id;
+      renderDxGrid();
+      renderDxDrugs();
+      renderPlan();
+      renderBurnMap();
+    };
+  });
+}
+
+var DX_PLAN = {
+  arrest: {
+    picture:'Pediatric cardiac arrest. Most common cause is respiratory (hypoxia → bradycardia → arrest). Reverse the H/T causes.',
+    plan:[
+      'Start CPR — 100-120/min, depth 1/3 AP diameter',
+      'BVM with high-flow O2 — 15:2 (one rescuer) or 30:2 (without advanced airway)',
+      'Advanced airway: ETT or BIAD — 1 breath q 2-3 sec when in place',
+      'Epinephrine 0.01 mg/kg IV/IO q 3-5 min (1:10,000)',
+      'Defibrillate if VF/pVT — 2 J/kg first, 4 J/kg subsequent',
+      'Amiodarone 5 mg/kg IV/IO during shockable rhythm',
+      'Search for and treat reversible causes (Hs/Ts)'
+    ]
+  },
+  brady: {
+    picture:'Symptomatic bradycardia — HR below age-appropriate threshold with poor perfusion. Almost always due to hypoxia in peds.',
+    plan:[
+      'OXYGENATE AND VENTILATE FIRST — most common cause',
+      'BVM with 100% O2 if respiratory failure',
+      'CPR if HR < 60 with poor perfusion despite ventilation',
+      'Epinephrine 0.01 mg/kg IV/IO q 3-5 min if no improvement',
+      'Atropine 0.02 mg/kg (min 0.1 mg) for vagally-mediated brady',
+      'Pacing if no response — transcutaneous',
+      'Treat underlying cause (hypoxia, hypothermia, toxin, hyperkalemia)'
+    ]
+  },
+  svt: {
+    picture:'Narrow-complex tachycardia. Infant SVT typically >220, child >180. Stable = vagal first; unstable = electricity.',
+    plan:[
+      'Assess perfusion: stable vs unstable',
+      'STABLE: Vagal maneuvers (ice to face for infant; valsalva older)',
+      'STABLE: Adenosine 0.1 mg/kg rapid IV push (max 6 mg) → 0.2 mg/kg if no response (max 12 mg)',
+      'UNSTABLE: Synchronized cardioversion 0.5-1 J/kg → 2 J/kg',
+      '12-lead ECG before and after for documentation',
+      'Continuous monitoring; large-bore proximal IV for adenosine'
+    ]
+  },
+  vt: {
+    picture:'Wide-complex tachycardia with a pulse. Treat as VT until proven otherwise.',
+    plan:[
+      'Assess perfusion: stable vs unstable',
+      'STABLE: Amiodarone 5 mg/kg IV/IO over 20-60 min',
+      'UNSTABLE: Synchronized cardioversion 0.5-1 J/kg → 2 J/kg',
+      'Pulseless VT → standard cardiac arrest algorithm',
+      'Look for reversible causes: electrolytes, drugs, hypoxia, ischemia'
+    ]
+  },
+  seizure: {
+    picture:'Status epilepticus: seizure > 5 min OR 2+ seizures without full recovery. ABCs first; antiepileptic ladder second.',
+    plan:[
+      'Position lateral, suction, NRB at 15 L/min',
+      'Check glucose — treat hypoglycemia immediately',
+      'Midazolam 0.1-0.2 mg/kg IV/IO/IM/IN (max 10 mg) — preferred first line',
+      'OR Lorazepam 0.05-0.1 mg/kg IV (max 4 mg) if IV access',
+      'If still seizing at 5-10 min: 2nd benzo dose',
+      'If still seizing at 15-20 min: Levetiracetam 60 mg/kg IV (max 4500 mg) over 5 min',
+      'OR Fosphenytoin 20 mg/kg PE IV (max 1500 mg PE)',
+      'Refractory: prepare for intubation + continuous infusion'
+    ]
+  },
+  anaphylaxis: {
+    picture:'Multisystem allergic reaction — typically 2+ systems (skin, resp, GI, CV). Epi IM is the only proven life-saver.',
+    plan:[
+      'Epinephrine 0.01 mg/kg of 1:1000 IM into anterolateral thigh (max 0.3 mg child, 0.5 mg adolescent)',
+      'Repeat IM q 5-15 min PRN until response',
+      'NS bolus 20 mL/kg if hypotensive',
+      'Diphenhydramine 1 mg/kg IV/IM (max 50 mg)',
+      'Famotidine 0.5 mg/kg IV (max 20 mg) — H2 adjunct',
+      'Methylprednisolone 2 mg/kg IV (max 125 mg)',
+      'Albuterol neb if bronchospasm',
+      'Refractory: Epi infusion 0.05-0.5 mcg/kg/min'
+    ]
+  },
+  asthma: {
+    picture:'Severe bronchospasm — silent chest, retractions, fatigue are pre-arrest signs. Inhaled β-agonist + steroid + magnesium escalation.',
+    plan:[
+      'Albuterol 2.5-5 mg neb continuous OR every 20 min × 3',
+      'Ipratropium 0.5 mg neb (added to albuterol × 3)',
+      'Methylprednisolone 2 mg/kg IV (max 125 mg)',
+      'Magnesium sulfate 25-50 mg/kg IV (max 2 g) over 20 min',
+      'Epinephrine IM 0.01 mg/kg of 1:1000 if severe / silent chest',
+      'Avoid intubating if possible — high mortality. If forced: ketamine induction.'
+    ]
+  },
+  croup: {
+    picture:'Viral laryngotracheitis with stridor at rest. Severe: stridor at rest, retractions, ± agitation/AMS.',
+    plan:[
+      'Keep child calm — agitation worsens stridor; let parent hold',
+      'Dexamethasone 0.6 mg/kg PO/IM/IV (max 16 mg)',
+      'Nebulized racemic epinephrine 2.25% — 0.05 mL/kg (max 0.5 mL) in 3 mL NS',
+      'OR L-epinephrine 5 mL of 1 mg/mL (1:1000) neb',
+      'Observe 2-4 hr after racemic — rebound stridor possible',
+      'Severe with impending failure: prepare for awake intubation by experienced provider — ETT 0.5-1 size SMALLER than predicted for age'
+    ]
+  },
+  bronchio: {
+    picture:'Viral lower respiratory infection in <2 yr (RSV most common). Wheezing + retractions + apnea risk in young infants.',
+    plan:[
+      'Suction nares (saline drops + bulb) — significant relief',
+      'Supplemental O2 to keep SpO2 > 90% (some local protocols >92%)',
+      'High-flow nasal cannula 1-2 L/kg/min if available',
+      'Trial albuterol — STOP if no response (most do not respond)',
+      'IV fluid 10-20 mL/kg if dehydrated',
+      'Apnea monitoring critical in <3 mo, ex-prem, or with apnea history',
+      'Avoid steroids and abx unless co-existing condition'
+    ]
+  },
+  sepsis: {
+    picture:'Septic shock — fever or hypothermia + altered perfusion (cold/warm). Aggressive fluid + early empiric pressor.',
+    plan:[
+      'IV/IO access × 2 — large bore proximal',
+      'NS or LR 20 mL/kg bolus over 5-20 min — reassess',
+      'Repeat 20 mL/kg up to 40-60 mL/kg unless cardiogenic features',
+      'Empiric antibiotics within 1 hour per receiving facility',
+      'Refractory shock: Epinephrine infusion 0.05-1 mcg/kg/min (cold shock)',
+      'OR Norepinephrine 0.05-2 mcg/kg/min (warm shock)',
+      'Hydrocortisone 2 mg/kg IV if catecholamine-resistant',
+      'Treat hypoglycemia, hypocalcemia, electrolyte derangement'
+    ]
+  },
+  dka: {
+    picture:'DKA: hyperglycemia + acidosis (pH <7.3 / HCO3 <15) + ketones. Cerebral edema is the lethal complication — treat slowly.',
+    plan:[
+      'NS 10 mL/kg over 30-60 min (gentle — avoid 20 mL/kg unless overt shock)',
+      'NO INSULIN BOLUS — start infusion 0.05-0.1 unit/kg/hr at receiving facility',
+      'Replace deficit over 24-48 hr (not faster)',
+      'Add dextrose to fluid when glucose <300 mg/dL',
+      'Watch for cerebral edema: HA, vomiting, AMS, bradycardia',
+      'If cerebral edema: Mannitol 0.5-1 g/kg OR 3% NaCl 3-5 mL/kg, head up 30°, intubate'
+    ]
+  },
+  hypo: {
+    picture:'Hypoglycemia — glucose <60 mg/dL (or <45 in neonate). AMS, seizures, focal deficits. Must treat fast.',
+    plan:[
+      'Confirm with glucometer',
+      'D10W 5-10 mL/kg IV over 10-20 min (= 0.5-1 g/kg)',
+      'OR D25W 2-4 mL/kg if older child (peripheral irritation)',
+      'AVOID D50 in peds — vesicant',
+      'No IV: Glucagon 0.03 mg/kg IM (max 1 mg)',
+      'Recheck glucose q 15-30 min',
+      'Maintenance D5 or D10 fluid until oral intake'
+    ]
+  },
+  icp: {
+    picture:'Increased ICP / TBI — Cushing (HTN + brady + irreg resp), unilateral pupil, posturing. Herniation is imminent.',
+    plan:[
+      'Head of bed 30°, midline neutral, loose C-collar',
+      'Avoid hypoxia and hypotension — both are devastating to TBI outcome',
+      '3% NaCl 3-5 mL/kg IV over 10-20 min (preferred over mannitol if hypovolemic)',
+      'OR Mannitol 0.5-1 g/kg IV over 10-20 min (avoid if hypovolemic)',
+      'Maintain SBP at 50th percentile for age',
+      'Brief hyperventilation ONLY if signs of active herniation (EtCO2 30-35)',
+      'Treat seizures aggressively',
+      'Anticipate intubation — RSI with cerebroprotective approach'
+    ]
+  },
+  tox: {
+    picture:'Toxic ingestion / overdose — supportive care + specific antidote when known. AEIOU TIPS for AMS differential.',
+    plan:[
+      'ABCs, glucose, EKG, monitor',
+      'Naloxone 0.1 mg/kg IV/IM/IN (max 2 mg) if opioid suspected',
+      'Sodium bicarb 1 mEq/kg if TCA / salicylate / wide QRS',
+      'Calcium chloride 20 mg/kg IV (max 1 g) for CCB / hyperkalemia',
+      'Glucagon 0.05-0.1 mg/kg for β-blocker / CCB OD',
+      'Activated charcoal 1 g/kg PO/NG within 1 hr (intact airway only)',
+      'Contact poison control 1-800-222-1222',
+      'Specific antidotes per agent ingested'
+    ]
+  },
+  trauma: {
+    picture:'Hemorrhagic shock from trauma — Class III/IV (HR up, narrow pulse pressure, AMS). Permissive hypotension does NOT apply to peds.',
+    plan:[
+      'Two large-bore IVs (or IO if delayed)',
+      'NS or LR 20 mL/kg bolus — reassess perfusion',
+      'Repeat once if needed to maximum 40-60 mL/kg crystalloid',
+      'Blood products at 10-20 mL/kg if available (1:1:1)',
+      'TXA 15 mg/kg IV over 10 min (max 1 g) within 3 hr of injury',
+      'Maintain target SBP at 50th percentile for age',
+      'Address bleeding source (TQ, pelvic binder, splinting)',
+      'Avoid hypothermia — warm fluids, blankets'
+    ]
+  },
+  burn: {
+    picture:'Severe burn — >10% TBSA OR airway involvement OR circumferential. Parkland formula + airway vigilance + analgesia.',
+    plan:[
+      'Airway: low threshold to intubate if face/neck burns, soot in airway, hoarseness, stridor — early before edema closes airway',
+      'Cool wound with NS-soaked gauze (NOT cold water — hypothermia)',
+      'Parkland: LR 4 mL/kg/% TBSA over 24 hr — half in first 8 hr',
+      'Add 5% dextrose maintenance for <30 kg children',
+      'Pain: Fentanyl 1-2 mcg/kg IV q 1-2 hr',
+      'Wrap clean dry sheet — no creams/ointments pre-hospital',
+      'Watch for compartment syndrome of circumferential burns'
+    ]
+  },
+  hyperK: {
+    picture:'Hyperkalemia with EKG changes (peaked T, wide QRS, sine wave). Cardioprotect → shift → eliminate.',
+    plan:[
+      'Calcium chloride 20 mg/kg IV (max 1 g) — cardioprotection FIRST',
+      'OR Calcium gluconate 60 mg/kg IV (max 2 g) — peripheral-friendly',
+      'Sodium bicarb 1 mEq/kg IV if acidotic',
+      'Albuterol nebulized — shifts K intracellularly',
+      'Insulin + dextrose at receiving facility',
+      'Furosemide 1 mg/kg if euvolemic and renal function intact'
+    ]
+  }
+};
+
+// ════════════════════════════════════════════════════════════════
+// BURN MAPPING — Lund-Browder age-adjusted
+// ════════════════════════════════════════════════════════════════
+// Simple entire / half model — Lund-Browder age-adjusted for head and legs
+var BURN_ZONES = [
+  {region:'Head / Face', zones:[
+    {id:'fullHead',  name:'Entire head',                adultPct:9,   type:'head'},
+    {id:'halfHead',  name:'Half head (face or scalp)',  adultPct:4.5, type:'head'}
+  ]},
+  {region:'Neck', zones:[
+    {id:'neck',      name:'Neck',                       adultPct:1}
+  ]},
+  {region:'Anterior Trunk (chest + abdomen)', zones:[
+    {id:'fullAnt',   name:'Entire anterior trunk',      adultPct:18},
+    {id:'halfAnt',   name:'Half (chest only OR abd only)', adultPct:9}
+  ]},
+  {region:'Posterior Trunk (back)', zones:[
+    {id:'fullPost',  name:'Entire back',                adultPct:18},
+    {id:'halfPost',  name:'Half back (upper or lower)', adultPct:9}
+  ]},
+  {region:'Right Arm', zones:[
+    {id:'rArmFull',  name:'Entire R arm',               adultPct:9},
+    {id:'rArmHalf',  name:'Half R arm',                 adultPct:4.5}
+  ]},
+  {region:'Left Arm', zones:[
+    {id:'lArmFull',  name:'Entire L arm',               adultPct:9},
+    {id:'lArmHalf',  name:'Half L arm',                 adultPct:4.5}
+  ]},
+  {region:'Right Leg', zones:[
+    {id:'rLegFull',  name:'Entire R leg',               adultPct:18, type:'leg'},
+    {id:'rLegHalf',  name:'Half R leg',                 adultPct:9,  type:'leg'}
+  ]},
+  {region:'Left Leg', zones:[
+    {id:'lLegFull',  name:'Entire L leg',               adultPct:18, type:'leg'},
+    {id:'lLegHalf',  name:'Half L leg',                 adultPct:9,  type:'leg'}
+  ]},
+  {region:'Perineum', zones:[
+    {id:'perin',     name:'Perineum',                   adultPct:1}
+  ]}
+];
+
+function ageAdjustPct(zone){
+  var adult = zone.adultPct;
+  var ageYr = state.ageYr;
+  if(ageYr == null) return adult;
+  if(zone.type === 'head'){
+    if(ageYr < 1)  return round(adult * (19/9), 2);
+    if(ageYr < 5)  return round(adult * (17/9), 2);
+    if(ageYr < 10) return round(adult * (13/9), 2);
+    if(ageYr < 15) return round(adult * (11/9), 2);
+    return adult;
+  }
+  if(zone.type === 'leg'){
+    if(ageYr < 1)  return round(adult * (13.5/18), 2);
+    if(ageYr < 5)  return round(adult * (14/18),   2);
+    if(ageYr < 10) return round(adult * (16/18),   2);
+    if(ageYr < 15) return round(adult * (17/18),   2);
+    return adult;
+  }
+  return adult;
+}
+
+function findBurnZone(id){
+  for(var i = 0; i < BURN_ZONES.length; i++){
+    var found = BURN_ZONES[i].zones.filter(function(z){ return z.id === id; })[0];
+    if(found) return found;
+  }
+  return null;
+}
+
+function toggleBurnZone(id){
+  if(state.burns[id]) delete state.burns[id];
+  else state.burns[id] = {depth:'FT', circ:false};
+  renderBurnMap();
+}
+function setBurnDepth(id, depth){
+  if(state.burns[id]) state.burns[id].depth = depth;
+  renderBurnMap();
+}
+function toggleBurnCirc(id){
+  if(state.burns[id]) state.burns[id].circ = !state.burns[id].circ;
+  renderBurnMap();
+}
+function clearBurns(){
+  state.burns = {};
+  renderBurnMap();
+  renderDxDrugs();
+}
+
+function renderBurnMap(){
+  var card = document.getElementById('burnCard');
+  if(!card) return;
+  card.style.display = state.dx === 'burn' ? 'block' : 'none';
+  if(state.dx !== 'burn') return;
+
+  var content = document.getElementById('burnContent');
+  if(!content) return;
+
+  // Calculate totals
+  var totalTBSA = 0;
+  var ptPct = 0, ftPct = 0;
+  var anyCirc = false;
+  Object.keys(state.burns).forEach(function(id){
+    var b = state.burns[id];
+    var z = findBurnZone(id);
+    if(!z) return;
+    var p = ageAdjustPct(z);
+    totalTBSA += p;
+    if(b.depth === 'PT') ptPct += p; else ftPct += p;
+    if(b.circ) anyCirc = true;
+  });
+  totalTBSA = round(totalTBSA, 1);
+  ptPct = round(ptPct, 1);
+  ftPct = round(ftPct, 1);
+
+  // Parkland calc
+  var w = state.doseWt;
+  var parklandTotal = w ? round(4 * w * totalTBSA, 0) : null;
+  var parkland8hr   = parklandTotal ? round(parklandTotal/2, 0) : null;
+  var rate8hr       = parkland8hr ? round(parkland8hr/8, 0) : null;
+  var rate16hr      = parkland8hr ? round(parkland8hr/16, 0) : null;
+
+  // Maintenance fluid for peds (4-2-1 rule)
+  var maintMlHr = null;
+  if(w){
+    if(w <= 10) maintMlHr = round(w * 4, 0);
+    else if(w <= 20) maintMlHr = round(40 + (w-10)*2, 0);
+    else maintMlHr = round(60 + (w-20)*1, 0);
+  }
+  var totalRate8hr = rate8hr != null && maintMlHr != null ? rate8hr + maintMlHr : null;
+
+  var ageYr = state.ageYr;
+  var lbBracket = ageYr == null ? 'adult Rule of 9s' :
+                  ageYr < 1  ? '<1 yr (head 19%, each leg 13.5%)' :
+                  ageYr < 5  ? '1-4 yr (head 17%, each leg 14%)'  :
+                  ageYr < 10 ? '5-9 yr (head 13%, each leg 16%)'  :
+                  ageYr < 15 ? '10-14 yr (head 11%, each leg 17%)':
+                              'adult Rule of 9s (head 9%, each leg 18%)';
+
+  // PHI burn fluid plan summary
+  var w30 = w != null && w < 30;
+  var summary = '<div class="burn-summary">' +
+    '<div class="burn-summary-row"><span class="lbl">Lund-Browder bracket</span><span class="val" style="color:var(--purple);font-size:.78rem">' + lbBracket + '</span></div>' +
+    '<div class="burn-summary-row" style="margin-top:8px"><span class="lbl">Total %TBSA</span><span class="val" style="font-size:1.6rem;color:' + (totalTBSA >= 20 ? 'var(--red)' : totalTBSA >= 10 ? 'var(--amber)' : 'var(--cyan)') + '">' + totalTBSA + '%</span></div>' +
+    '<div class="burn-summary-row"><span class="lbl">Partial-thickness</span><span class="val" style="color:var(--amber)">' + ptPct + '%</span></div>' +
+    '<div class="burn-summary-row"><span class="lbl">Full-thickness</span><span class="val" style="color:var(--red)">' + ftPct + '%</span></div>' +
+    (anyCirc ? '<div class="burn-summary-row"><span class="lbl">⚠ Circumferential</span><span class="val" style="color:var(--rose)">YES — escharotomy / compartment risk</span></div>' : '') +
+    '<div class="burn-summary-row" style="border-top:1px solid var(--bd0);padding-top:12px;margin-top:12px"><span class="lbl" style="color:var(--teal);font-weight:700">PHI Parkland (LR)</span><span class="val" style="color:var(--teal);font-size:.85rem">4 mL/kg/%TBSA over 24 hr</span></div>' +
+    '<div class="burn-summary-row"><span class="lbl">Parkland total (24 hr)</span><span class="val">' + (parklandTotal != null ? parklandTotal + ' mL' : 'enter weight') + '</span></div>' +
+    '<div class="burn-summary-row"><span class="lbl">First 8 hr (½ total)</span><span class="val">' + (parkland8hr != null ? parkland8hr + ' mL' : '--') + '</span></div>' +
+    '<div class="burn-summary-row"><span class="lbl">Pump rate first 8 hr</span><span class="val" style="color:var(--cyan);font-size:1.15rem;font-weight:900">' + (rate8hr != null ? rate8hr + ' mL/hr' : '--') + '</span></div>' +
+    '<div class="burn-summary-row"><span class="lbl">Pump rate next 16 hr</span><span class="val" style="color:var(--cyan)">' + (rate16hr != null ? rate16hr + ' mL/hr' : '--') + '</span></div>' +
+    '<div class="burn-summary-row" style="border-top:1px dashed var(--bd0);padding-top:10px;margin-top:10px"><span class="lbl" style="color:var(--purple);font-weight:700">+ Maintenance (4-2-1)</span><span class="val" style="color:var(--purple);font-size:.78rem">' + (w30 ? 'D5LR (&lt;30 kg per PHI)' : 'LR') + '</span></div>' +
+    (maintMlHr != null ? '<div class="burn-summary-row"><span class="lbl">Maintenance rate</span><span class="val">' + maintMlHr + ' mL/hr</span></div>' : '') +
+    (totalRate8hr != null ? '<div class="burn-summary-row" style="border-top:1px solid var(--cyan);padding-top:10px;margin-top:10px;background:rgba(0,212,245,.06);padding:10px 12px;border-radius:8px"><span class="lbl" style="color:var(--cyan);font-weight:800">COMBINED RATE first 8 hr</span><span class="val" style="color:var(--cyan);font-size:1.25rem;font-weight:900">' + totalRate8hr + ' mL/hr</span></div>' : '') +
+    '<div class="burn-controls"><button class="cs-btn" onclick="clearBurns()">Clear all</button><span style="font-size:.72rem;color:var(--tx2);align-self:center">Tap a body zone below to add. Default = FT.</span></div>' +
+    '</div>';
+
+  // SELECTED AREAS controls
+  var selectedIds = Object.keys(state.burns);
+  var selectedHtml = '';
+  if(selectedIds.length){
+    var rows = selectedIds.map(function(id){
+      var z = findBurnZone(id);
+      var b = state.burns[id];
+      if(!z || !b) return '';
+      return '<div class="burn-row">' +
+        '<div style="font-size:.82rem;flex:1;min-width:160px">' + z.name + ' <span style="color:var(--tx2);font-family:var(--mono);font-size:.7rem">[' + ageAdjustPct(z) + '%]</span></div>' +
+        '<div class="dpt-toggle">' +
+          '<button class="dpt-btn ' + (b.depth==='PT'?'on':'') + '" onclick="setBurnDepth(\'' + id + '\', \'PT\')">PT</button>' +
+          '<button class="dpt-btn ' + (b.depth==='FT'?'on ft':'') + '" onclick="setBurnDepth(\'' + id + '\', \'FT\')">FT</button>' +
+          '<label class="circ-chk"><input type="checkbox" ' + (b.circ?'checked':'') + ' onchange="toggleBurnCirc(\'' + id + '\')"> Circ</label>' +
+          '<button class="cs-btn" style="margin-left:8px;padding:4px 8px;font-size:.65rem" onclick="toggleBurnZone(\'' + id + '\')">✕</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    selectedHtml = '<div class="burn-selected"><div class="burn-region-title" style="color:var(--cyan)">Selected Areas — Set Depth &amp; Circumferential</div>' + rows + '</div>';
+  }
+
+  // REGION buttons
+  var regionsHtml = BURN_ZONES.map(function(reg){
+    var zonesHtml = reg.zones.map(function(z){
+      var pct = ageAdjustPct(z);
+      var b = state.burns[z.id];
+      var on = !!b;
+      var cls = 'burn-zone-btn' + (on ? ' on depth-' + b.depth : '');
+      var stateLabel = on ? '<div style="font-size:.6rem;margin-top:2px;font-weight:800">' + b.depth + (b.circ ? ' • CIRC' : '') + '</div>' : '';
+      return '<div class="' + cls + '" onclick="toggleBurnZone(\'' + z.id + '\')">' +
+        '<div>' + z.name + '</div>' +
+        '<div class="burn-zone-pct">' + pct + '%</div>' +
+        stateLabel +
+        '</div>';
+    }).join('');
+    return '<div class="burn-region"><div class="burn-region-title">' + reg.region + '</div><div class="burn-zones">' + zonesHtml + '</div></div>';
+  }).join('');
+
+  content.innerHTML = summary + selectedHtml + regionsHtml;
+}
+
+function renderPlan(){
+  var out = document.getElementById('planOutput');
+  if(!out) return;
+  var dx = state.dx;
+
+  // Vent-tab parameter chips
+  var w = state.weightKg, age = state.ageVal;
+  if(document.getElementById('vWt')){
+    document.getElementById('vWt').textContent = w ? round(w,1) + ' kg' : (state.tierWt ? round(state.tierWt,1) + ' kg (tier)' : 'Not entered');
+    document.getElementById('vAge').textContent = (age != null && isFinite(age)) ? age + ' ' + state.ageUnit : 'Not entered';
+    var map = getColorMap(); var c = state.tier ? map[state.tier] : null;
+    document.getElementById('vTier').textContent = c ? c.name : '--';
+    var dxObj = DIAGNOSES.filter(function(d){ return d.id === dx; })[0];
+    document.getElementById('vDx').textContent = dxObj ? dxObj.name : 'Not selected';
+  }
+
+  if(!dx || !DX_PLAN[dx]){
+    out.innerHTML = '<div class="empty"><div class="ei">○</div><div class="et">Select a diagnosis to see the protocol summary.</div></div>';
+    return;
+  }
+  var p = DX_PLAN[dx];
+  var planLis = p.plan.map(function(s){ return '<li style="margin-bottom:5px">' + s + '</li>'; }).join('');
+  out.innerHTML =
+    '<div style="font-size:.86rem;line-height:1.55;color:var(--tx0);margin-bottom:12px"><strong style="color:var(--purple)">Picture: </strong>' + p.picture + '</div>' +
+    '<div class="slbl" style="margin-top:10px">Plan of Action</div>' +
+    '<ol style="padding-left:18px;font-size:.83rem;line-height:1.55;color:var(--tx0)">' + planLis + '</ol>';
+}
+
+// ════════════════════════════════════════════════════════════════
+// DRUG LIBRARY — PHI Pediatric
+// ════════════════════════════════════════════════════════════════
+function rcCard(opts){
+  var rows = (opts.rows||[]).map(function(r){
+    return '<div class="rr"><span class="rk">' + r.k + '</span><span class="rv ' + (r.cls||'dose') + '">' + r.v + '</span></div>';
+  }).join('');
+  var note = opts.note ? '<div class="rc-note">' + opts.note + '</div>' : '';
+  var warn = opts.warn ? '<div class="rc-warn">' + opts.warn + '</div>' : '';
+  var ind = opts.indication ? '<div class="rc-ind">' + opts.indication + '</div>' : '';
+  var sub = opts.generic ? '<div class="rc-names">' + opts.generic + '</div>' : '';
+  var FORM_LABELS = {premix:'Premix Bag — Ready to Hang',vial:'Vial — Draw Up',vialmix:'Vial → Mix to Bag',syringe:'Pre-filled Syringe — Ready to Push',po:'PO — Tablet / Liquid'};
+  var formCls = opts.form ? ' form-' + opts.form : '';
+  var badge = opts.form ? '<div class="fb fb-' + opts.form + '">' + (FORM_LABELS[opts.form] || opts.form) + '</div>' : '';
+  return '<div class="rc' + formCls + '"><div class="rc-bar" style="background:' + (opts.color || 'var(--cyan)') + '"></div>' +
+    '<div class="rc-cat">' + (opts.cat || '') + '</div>' +
+    '<div class="rc-name">' + opts.name + '</div>' +
+    sub + badge + ind + rows + note + warn + '</div>';
+}
+function noWt(){ return '<span class="rv warn">Enter weight first</span>'; }
+
+// ──── Helper: maxes for age-based dose ceilings ────
+// Most peds doses cap at adult ceiling. For the "max" here we cap at age-based limits per PHI.
+function capMax(calcMg, maxMg){ return Math.min(calcMg, maxMg); }
+
+var DRUGS = {
+  // ──── ARREST ────
+  epiArrest: function(){
+    var w = dosingWt();
+    var mg = w ? round(0.01*w, 3) : null;
+    var ml = w ? round(0.1*w, 2) : null;
+    return rcCard({
+      name:'Epinephrine — Arrest', generic:'1:10,000 (0.1 mg/mL) — pre-filled syringe', cat:'ARREST',
+      form:'syringe',
+      indication:'Pediatric cardiac arrest', color:'var(--rose)',
+      rows:[
+        {k:'Dose', v:'0.01 mg/kg IV/IO q 3-5 min'},
+        {k:'Wt', v:w ? round(w,2) + ' kg' : '--', cls:'calc'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Calc volume', v:ml ? ml + ' mL of 0.1 mg/mL' : '--', cls:'calc'},
+        {k:'ETT route', v:'0.1 mg/kg of 1:1000 (preferred IV/IO)'}
+      ],
+      note:'Push, then 5-10 mL flush. Continue CPR. 1:10,000 only for IV/IO. ETT is 1:1000 (10× the IV dose).'
+    });
+  },
+  amiodaroneArrest: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(5*w, 0), 300) : null;
+    return rcCard({
+      name:'Amiodarone — Arrest', generic:'Stock 50 mg/mL vial', cat:'ARREST',
+      form:'vial',
+      indication:'Refractory VF / pulseless VT (after defib + epi)', color:'var(--rose)',
+      rows:[
+        {k:'Dose', v:'5 mg/kg IV/IO bolus'},
+        {k:'Calc dose', v:mg ? mg + ' mg' + (mg === 300 ? ' (max)' : '') : '--', cls:'calc'},
+        {k:'Calc volume', v:mg ? round(mg/50, 2) + ' mL' : '--', cls:'calc'},
+        {k:'Max single', v:mx('300 mg'), cls:'warn'},
+        {k:'Repeat', v:'May repeat 5 mg/kg × 2 (max 15 mg/kg total / 24 hr)'}
+      ]
+    });
+  },
+  defib: function(){
+    var w = dosingWt();
+    var lo = w ? round(2*w, 0) : null;
+    var hi = w ? round(4*w, 0) : null;
+    return rcCard({
+      name:'Defibrillation', generic:'Asynchronous shock', cat:'ARREST',
+      indication:'VF / pulseless VT', color:'var(--red)',
+      rows:[
+        {k:'1st shock', v:'2 J/kg'},
+        {k:'Calc 1st', v:lo ? lo + ' J' : '--', cls:'calc'},
+        {k:'2nd+ shock', v:'4 J/kg'},
+        {k:'Calc 2nd+', v:hi ? mx(hi + ' J') : '--', cls:'calc'},
+        {k:'Max', v:mx('Adult dose ceiling') + ' (10 J/kg or adult max)', cls:'warn'}
+      ]
+    });
+  },
+  cardiovert: function(){
+    var w = dosingWt();
+    var lo = w ? round(0.5*w, 0) : null;
+    var hi = w ? round(2*w, 0) : null;
+    return rcCard({
+      name:'Synchronized Cardioversion', generic:'Sync shock', cat:'DYSRHYTHMIA',
+      indication:'Unstable SVT / VT with pulse', color:'var(--red)',
+      rows:[
+        {k:'1st shock', v:'0.5-1 J/kg'},
+        {k:'Calc', v:lo ? lo + ' J' : '--', cls:'calc'},
+        {k:'2nd+ shock', v:'2 J/kg'},
+        {k:'Calc 2nd+', v:hi ? mx(hi + ' J') : '--', cls:'calc'}
+      ],
+      note:'Synchronize before each shock. Sedate if patient is awake.'
+    });
+  },
+  // ──── DYSRHYTHMIA ────
+  adenosine: function(){
+    var w = dosingWt();
+    var mg1 = w ? Math.min(round(0.1*w, 2), 6) : null;
+    var mg2 = w ? Math.min(round(0.2*w, 2), 12) : null;
+    return rcCard({
+      name:'Adenosine', generic:'Stock 3 mg/mL vial', cat:'DYSRHYTHMIA',
+      form:'vial',
+      indication:'Stable narrow-complex SVT', color:'var(--cyan)',
+      rows:[
+        {k:'1st dose', v:'0.1 mg/kg rapid IV push'},
+        {k:'Calc 1st', v:mg1 ? mg1 + ' mg = ' + round(mg1/3, 2) + ' mL' : '--', cls:'calc'},
+        {k:'Max 1st', v:mx('6 mg'), cls:'warn'},
+        {k:'2nd dose', v:'0.2 mg/kg rapid IV push'},
+        {k:'Calc 2nd', v:mg2 ? mx(mg2 + ' mg = ' + round(mg2/3, 2) + ' mL') : '--', cls:'calc'},
+        {k:'Max 2nd', v:mx('12 mg'), cls:'warn'}
+      ],
+      note:'PROXIMAL large-bore IV. Push as fast as possible, follow with 10 mL NS flush. Continuous EKG strip.'
+    });
+  },
+  atropine: function(){
+    var w = dosingWt();
+    var mg = w ? Math.max(0.1, Math.min(round(0.02*w, 2), 0.5)) : null;
+    return rcCard({
+      name:'Atropine', generic:'Stock 0.1 mg/mL pre-filled syringe', cat:'DYSRHYTHMIA',
+      form:'syringe',
+      indication:'Vagal-mediated bradycardia, organophosphate toxicity', color:'var(--amber)',
+      rows:[
+        {k:'Dose', v:'0.02 mg/kg IV/IO/IM'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Calc volume', v:mg ? round(mg/0.1, 1) + ' mL' : '--', cls:'calc'},
+        {k:'Min', v:'0.1 mg (lower causes paradoxical brady)', cls:'warn'},
+        {k:'Max child', v:mx('0.5 mg'), cls:'warn'},
+        {k:'Max adolescent', v:mx('1 mg'), cls:'warn'}
+      ]
+    });
+  },
+  // ──── SEIZURE ────
+  midazolamSeizure: function(){
+    var w = dosingWt();
+    var lo = w ? round(0.1*w, 2) : null;
+    var hi = w ? Math.min(round(0.2*w, 2), 10) : null;
+    return rcCard({
+      name:'Midazolam — Seizure', generic:'Stock 5 mg/mL vial', cat:'SEIZURE',
+      form:'vial',
+      indication:'Status epilepticus first line', color:'var(--rose)',
+      rows:[
+        {k:'Dose', v:'0.1 to ' + mx('0.2') + ' mg/kg IV/IO/IM/IN'},
+        {k:'Calc dose', v:lo ? lo + ' to ' + mx(hi + ' mg') : '--', cls:'calc'},
+        {k:'Calc volume', v:lo ? round(lo/5, 2) + ' to ' + mx(round(hi/5, 2) + ' mL') : '--', cls:'calc'},
+        {k:'Max single', v:mx('10 mg'), cls:'warn'},
+        {k:'IN', v:'Use atomizer; split between nares'}
+      ]
+    });
+  },
+  lorazepamSeizure: function(){
+    var w = dosingWt();
+    var lo = w ? round(0.05*w, 2) : null;
+    var hi = w ? Math.min(round(0.1*w, 2), 4) : null;
+    return rcCard({
+      name:'Lorazepam — Seizure', generic:'Stock 2 mg/mL vial', cat:'SEIZURE',
+      form:'vial',
+      indication:'Status epilepticus first line if IV access', color:'var(--rose)',
+      rows:[
+        {k:'Dose', v:'0.05 to ' + mx('0.1') + ' mg/kg IV/IO'},
+        {k:'Calc dose', v:lo ? lo + ' to ' + mx(hi + ' mg') : '--', cls:'calc'},
+        {k:'Calc volume', v:lo ? round(lo/2, 2) + ' to ' + mx(round(hi/2, 2) + ' mL') : '--', cls:'calc'},
+        {k:'Max single', v:mx('4 mg'), cls:'warn'}
+      ]
+    });
+  },
+  levetiracetam: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(60*w, 0), 4500) : null;
+    return rcCard({
+      name:'Levetiracetam (Keppra)', generic:'Stock 100 mg/mL vial', cat:'SEIZURE',
+      form:'vialmix',
+      indication:'Refractory status epilepticus (after benzo)', color:'var(--purple)',
+      rows:[
+        {k:'Dose', v:'60 mg/kg IV over 5 min'},
+        {k:'Calc dose', v:mg ? mg + ' mg' + (mg === 4500 ? ' (max)' : '') : '--', cls:'calc'},
+        {k:'Calc volume', v:mg ? round(mg/100, 1) + ' mL' : '--', cls:'calc'},
+        {k:'Max', v:mx('4500 mg'), cls:'warn'},
+        {k:'Mix', v:'Dilute in 100 mL NS, infuse over 5-15 min'}
+      ]
+    });
+  },
+  fosphenytoin: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(20*w, 0), 1500) : null;
+    return rcCard({
+      name:'Fosphenytoin', generic:'Stock 50 mg PE/mL vial', cat:'SEIZURE',
+      form:'vialmix',
+      indication:'Refractory status epilepticus (alternative to Keppra)', color:'var(--purple)',
+      rows:[
+        {k:'Dose', v:'20 mg PE/kg IV/IM (max 3 mg PE/kg/min)'},
+        {k:'Calc dose', v:mg ? mg + ' mg PE' + (mg === 1500 ? ' (max)' : '') : '--', cls:'calc'},
+        {k:'Calc volume', v:mg ? round(mg/50, 1) + ' mL' : '--', cls:'calc'},
+        {k:'Max', v:mx('1500 mg PE'), cls:'warn'},
+        {k:'Infuse', v:'Max rate 3 mg PE/kg/min — slow infusion'}
+      ],
+      warn:'Watch for hypotension and arrhythmias on infusion. Continuous EKG.'
+    });
+  },
+  // ──── ANAPHYLAXIS ────
+  epiAnaphylaxis: function(){
+    var w = dosingWt();
+    var ageYr = state.ageYr;
+    var maxMg = ageYr != null && ageYr >= 12 ? 0.5 : 0.3;
+    var mg = w ? Math.min(round(0.01*w, 3), maxMg) : null;
+    return rcCard({
+      name:'Epinephrine IM — Anaphylaxis', generic:'Stock 1 mg/mL (1:1000) vial', cat:'ANAPHYLAXIS',
+      form:'vial',
+      indication:'Anaphylaxis — first line, only proven life-saver', color:'var(--rose)',
+      rows:[
+        {k:'Dose', v:'0.01 mg/kg IM into anterolateral thigh'},
+        {k:'Calc dose', v:mg ? mg + ' mg' + (mg === maxMg ? ' (max)' : '') : '--', cls:'calc'},
+        {k:'Calc volume', v:mg ? round(mg/1, 2) + ' mL of 1 mg/mL' : '--', cls:'calc'},
+        {k:'Max child (<12 yr)', v:mx('0.3 mg'), cls:'warn'},
+        {k:'Max adolescent (>12 yr)', v:mx('0.5 mg'), cls:'warn'},
+        {k:'Repeat', v:'q 5-15 min PRN until response'}
+      ],
+      note:'IM > IV/SQ. Use 1:1000 NOT 1:10,000. Repeat as often as needed for refractory anaphylaxis.'
+    });
+  },
+  diphenhydramine: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(1*w, 0), 50) : null;
+    return rcCard({
+      name:'Diphenhydramine', generic:'Stock 50 mg/mL vial', cat:'ANAPHYLAXIS',
+      form:'vial',
+      indication:'Allergic reaction / anaphylaxis (H1 blocker — adjunct)', color:'var(--purple)',
+      rows:[
+        {k:'Dose', v:'1 mg/kg IV/IM/PO'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Calc volume', v:mg ? round(mg/50, 2) + ' mL' : '--', cls:'calc'},
+        {k:'Max', v:mx('50 mg'), cls:'warn'}
+      ],
+      note:'Adjunct only — NOT a substitute for epinephrine in anaphylaxis.'
+    });
+  },
+  famotidine: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(0.5*w, 1), 20) : null;
+    return rcCard({
+      name:'Famotidine', generic:'Stock 10 mg/mL vial', cat:'ANAPHYLAXIS',
+      form:'vial',
+      indication:'Anaphylaxis (H2 blocker — adjunct)', color:'var(--purple)',
+      rows:[
+        {k:'Dose', v:'0.5 mg/kg IV'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Max', v:mx('20 mg'), cls:'warn'}
+      ]
+    });
+  },
+  methylpred: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(2*w, 0), 125) : null;
+    return rcCard({
+      name:'Methylprednisolone', generic:'Solu-Medrol — Stock 125 mg vial reconstituted', cat:'ANAPHYLAXIS',
+      form:'vialmix',
+      indication:'Anaphylaxis, asthma, severe allergic reaction', color:'var(--lime)',
+      rows:[
+        {k:'Dose', v:'2 mg/kg IV/IM'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Max', v:mx('125 mg'), cls:'warn'}
+      ]
+    });
+  },
+  // ──── RESPIRATORY ────
+  albuterol: function(){
+    return rcCard({
+      name:'Albuterol', generic:'Stock 2.5 mg / 3 mL nebule', cat:'RESPIRATORY',
+      form:'premix',
+      indication:'Bronchospasm (asthma, anaphylaxis adjunct, hyperK adjunct)', color:'var(--teal)',
+      rows:[
+        {k:'<20 kg', v:'2.5 mg neb'},
+        {k:'≥20 kg', v:mx('5 mg') + ' neb'},
+        {k:'Continuous', v:mx('10-20 mg/hr') + ' (severe asthma)'},
+        {k:'Repeat', v:'q 20 min × 3, then q 1-4 hr'}
+      ]
+    });
+  },
+  ipratropium: function(){
+    return rcCard({
+      name:'Ipratropium', generic:'Stock 0.5 mg / 2.5 mL nebule', cat:'RESPIRATORY',
+      form:'premix',
+      indication:'Severe asthma — added to first 3 albuterol nebs', color:'var(--teal)',
+      rows:[
+        {k:'<20 kg', v:'0.25 mg neb'},
+        {k:'≥20 kg', v:mx('0.5 mg') + ' neb'},
+        {k:'Repeat', v:'with first 3 albuterol nebs only'}
+      ]
+    });
+  },
+  magAsthma: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(50*w, 0), 2000) : null;
+    return rcCard({
+      name:'Magnesium Sulfate — Asthma', generic:'Stock 5 g / 10 mL vial (50%)', cat:'RESPIRATORY',
+      form:'vialmix',
+      indication:'Severe asthma refractory to nebs', color:'var(--purple)',
+      rows:[
+        {k:'Dose', v:'25 to ' + mx('50') + ' mg/kg IV over 20 min'},
+        {k:'Calc dose', v:w ? round(25*w, 0) + ' to ' + mx(mg + ' mg') : '--', cls:'calc'},
+        {k:'Calc volume', v:w ? round(25*w/500, 2) + ' to ' + mx(round(mg/500, 2) + ' mL of 50%') : '--', cls:'calc'},
+        {k:'Max', v:mx('2 g'), cls:'warn'},
+        {k:'Mix', v:'Dilute in 50-100 mL NS, infuse over 20 min'}
+      ],
+      warn:'Hypotension if pushed too fast.'
+    });
+  },
+  dexamethasone: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(0.6*w, 1), 16) : null;
+    return rcCard({
+      name:'Dexamethasone', generic:'Stock 4 mg/mL or 10 mg/mL vial', cat:'RESPIRATORY',
+      form:'vial',
+      indication:'Croup, asthma adjunct', color:'var(--lime)',
+      rows:[
+        {k:'Dose', v:'0.6 mg/kg PO/IM/IV'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Max', v:mx('16 mg'), cls:'warn'}
+      ]
+    });
+  },
+  racEpiCroup: function(){
+    var w = dosingWt();
+    var ml = w ? Math.min(round(0.05*w, 2), 0.5) : null;
+    return rcCard({
+      name:'Racemic Epinephrine — Croup', generic:'2.25% nebule', cat:'RESPIRATORY',
+      form:'premix',
+      indication:'Severe croup with stridor at rest', color:'var(--orange)',
+      rows:[
+        {k:'Dose', v:'0.05 mL/kg of 2.25% in 3 mL NS neb'},
+        {k:'Calc volume', v:ml ? ml + ' mL' : '--', cls:'calc'},
+        {k:'Max', v:mx('0.5 mL'), cls:'warn'},
+        {k:'Alt: L-epi', v:'5 mL of 1 mg/mL (1:1000) neb'}
+      ],
+      note:'Observe 2-4 hr post — rebound stridor possible.'
+    });
+  },
+  // ──── SHOCK / SEPSIS ────
+  fluidBolus: function(){
+    var w = dosingWt();
+    var ml20 = w ? round(20*w, 0) : null;
+    var ml60 = w ? round(60*w, 0) : null;
+    return rcCard({
+      name:'Crystalloid Bolus', generic:'NS or LR (1000 mL bag)', cat:'SHOCK',
+      form:'premix',
+      indication:'Shock, sepsis, hypovolemia, trauma (ALL except DKA — use 10 mL/kg)', color:'var(--teal)',
+      rows:[
+        {k:'Standard', v:'20 mL/kg over 5-20 min'},
+        {k:'Calc', v:ml20 ? ml20 + ' mL' : '--', cls:'calc'},
+        {k:'Max total', v:mx('60 mL/kg = ' + (ml60 ? ml60 + ' mL' : '--') + ' before pressors'), cls:'warn'},
+        {k:'DKA', v:mx('10 mL/kg') + ' over 30-60 min (not 20)'},
+        {k:'Trauma', v:'20 mL/kg, repeat once before blood'}
+      ],
+      note:'Reassess after each bolus. Cardiogenic features (rales, hepatomegaly, gallop) → STOP and consider pressors.'
+    });
+  },
+  epiInfusionShock: function(){
+    var w = dosingWt();
+    // Mix: 1 mg in 100 mL = 10 mcg/mL
+    // 0.05 mcg/kg/min = (0.05*w*60)/10 = 0.3*w mL/hr
+    // 1 mcg/kg/min = 6*w mL/hr
+    var lo = w ? round(0.05*w*60/10, 2) : null;
+    var hi = w ? round(1*w*60/10, 1) : null;
+    return rcCard({
+      name:'Epinephrine Infusion — Shock', generic:'Mix 1 mg in 100 mL NS = 10 mcg/mL', cat:'SHOCK',
+      form:'vialmix',
+      indication:'Cold shock / catecholamine-resistant sepsis', color:'var(--rose)',
+      rows:[
+        {k:'Mix prep', v:'1 mg (10 mL of 1:10,000) into 100 mL NS = 10 mcg/mL', cls:'calc'},
+        {k:'Dose', v:'0.05 to ' + mx('1') + ' mcg/kg/min'},
+        {k:'Pump rate (low)', v:lo ? lo + ' mL/hr (= 0.05 mcg/kg/min)' : '--', cls:'calc'},
+        {k:'Pump rate (max)', v:hi ? mx(hi + ' mL/hr') + ' (= 1 mcg/kg/min)' : '--', cls:'calc'},
+        {k:'Titrate', v:'q 5 min to perfusion goal'}
+      ]
+    });
+  },
+  norepiInfusion: function(){
+    var w = dosingWt();
+    // Mix: 4 mg in 250 mL = 16 mcg/mL
+    var lo = w ? round(0.05*w*60/16, 2) : null;
+    var hi = w ? round(2*w*60/16, 1) : null;
+    return rcCard({
+      name:'Norepinephrine Infusion', generic:'Mix 4 mg in 250 mL NS = 16 mcg/mL', cat:'SHOCK',
+      form:'vialmix',
+      indication:'Warm shock / vasodilated sepsis', color:'var(--rose)',
+      rows:[
+        {k:'Mix prep', v:'4 mg (4 mL of 1 mg/mL) into 250 mL NS = 16 mcg/mL', cls:'calc'},
+        {k:'Dose', v:'0.05 to ' + mx('2') + ' mcg/kg/min'},
+        {k:'Pump rate (low)', v:lo ? lo + ' mL/hr' : '--', cls:'calc'},
+        {k:'Pump rate (max)', v:hi ? mx(hi + ' mL/hr') : '--', cls:'calc'}
+      ]
+    });
+  },
+  hydrocortisone: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(2*w, 0), 100) : null;
+    return rcCard({
+      name:'Hydrocortisone', generic:'Stock 100 mg vial reconstituted', cat:'SHOCK',
+      form:'vialmix',
+      indication:'Catecholamine-resistant septic shock', color:'var(--lime)',
+      rows:[
+        {k:'Dose', v:'2 mg/kg IV'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Max', v:mx('100 mg'), cls:'warn'}
+      ]
+    });
+  },
+  // ──── ENDOCRINE ────
+  d10: function(){
+    var w = dosingWt();
+    var loML = w ? round(5*w, 0) : null;
+    var hiML = w ? round(10*w, 0) : null;
+    return rcCard({
+      name:'Dextrose 10%', generic:'D10W premix bag', cat:'ENDOCRINE',
+      form:'premix',
+      indication:'Hypoglycemia (BG < 60 mg/dL)', color:'var(--amber)',
+      rows:[
+        {k:'Dose', v:'5 to ' + mx('10') + ' mL/kg IV (= 0.5-1 g/kg)'},
+        {k:'Calc volume', v:loML ? loML + ' to ' + mx(hiML + ' mL') : '--', cls:'calc'},
+        {k:'Recheck', v:'glucose q 15-30 min'}
+      ],
+      warn:'AVOID D50 in peds (vesicant). Use D10 for infants/young children, D25 for older if D10 unavailable.'
+    });
+  },
+  d25: function(){
+    var w = dosingWt();
+    var loML = w ? round(2*w, 0) : null;
+    var hiML = w ? round(4*w, 0) : null;
+    return rcCard({
+      name:'Dextrose 25%', generic:'D25W (mix D50 1:1 with NS)', cat:'ENDOCRINE',
+      form:'vialmix',
+      indication:'Hypoglycemia (older children if D10 not available)', color:'var(--amber)',
+      rows:[
+        {k:'Dose', v:'2 to ' + mx('4') + ' mL/kg IV'},
+        {k:'Calc volume', v:loML ? loML + ' to ' + mx(hiML + ' mL') : '--', cls:'calc'},
+        {k:'Mix', v:'Dilute D50 1:1 with NS to make D25', cls:'calc'}
+      ],
+      warn:'Peripheral irritation. Avoid in neonates / infants — use D10.'
+    });
+  },
+  glucagonHypo: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(0.03*w, 2), 1) : null;
+    return rcCard({
+      name:'Glucagon — Hypoglycemia', generic:'Stock 1 mg vial reconstituted', cat:'ENDOCRINE',
+      form:'vialmix',
+      indication:'Hypoglycemia when no IV access', color:'var(--amber)',
+      rows:[
+        {k:'Dose', v:'0.03 mg/kg IM/SC/IN'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Max', v:mx('1 mg'), cls:'warn'}
+      ]
+    });
+  },
+  // ──── ICP / NEURO ────
+  hypertonic: function(){
+    var w = dosingWt();
+    var loML = w ? round(3*w, 0) : null;
+    var hiML = w ? round(5*w, 0) : null;
+    return rcCard({
+      name:'3% Sodium Chloride', generic:'Premix 250 mL bag (3% NaCl)', cat:'ICP',
+      form:'premix',
+      indication:'Increased ICP / impending herniation, severe hyponatremia w/ seizure', color:'var(--purple)',
+      rows:[
+        {k:'Dose', v:'3 to ' + mx('5') + ' mL/kg IV over 10-20 min'},
+        {k:'Calc volume', v:loML ? loML + ' to ' + mx(hiML + ' mL') : '--', cls:'calc'},
+        {k:'Repeat', v:'PRN for sustained ICP'}
+      ],
+      note:'Preferred over mannitol if hypovolemic. Watch for rapid Na correction (>10 mEq/L per 24 hr risk pontine demyelination).'
+    });
+  },
+  mannitol: function(){
+    var w = dosingWt();
+    var loG = w ? round(0.5*w, 1) : null;
+    var hiG = w ? round(1*w, 1) : null;
+    return rcCard({
+      name:'Mannitol 20%', generic:'Stock 200 mg/mL bag', cat:'ICP',
+      form:'premix',
+      indication:'Increased ICP / herniation (when euvolemic)', color:'var(--purple)',
+      rows:[
+        {k:'Dose', v:'0.5 to ' + mx('1') + ' g/kg IV over 10-20 min'},
+        {k:'Calc dose', v:loG ? loG + ' to ' + mx(hiG + ' g') : '--', cls:'calc'},
+        {k:'Calc volume', v:loG ? round(loG*5, 0) + ' to ' + mx(round(hiG*5, 0) + ' mL of 20%') : '--', cls:'calc'}
+      ],
+      warn:'AVOID if hypovolemic — can worsen perfusion. Use 3% NaCl instead. Do not give in renal failure.'
+    });
+  },
+  // ──── PAIN / SEDATION ────
+  fentanylBolus: function(){
+    var w = dosingWt();
+    var lo = w ? round(1*w, 0) : null;
+    var hi = w ? Math.min(round(2*w, 0), 50) : null;
+    return rcCard({
+      name:'Fentanyl', generic:'Stock 50 mcg/mL vial', cat:'PAIN',
+      form:'vial',
+      indication:'Pain, post-RSI analgesia', color:'var(--amber)',
+      rows:[
+        {k:'Dose', v:'1 to ' + mx('2') + ' mcg/kg IV/IM/IN'},
+        {k:'Calc dose', v:lo ? lo + ' to ' + mx(hi + ' mcg') : '--', cls:'calc'},
+        {k:'Calc volume', v:lo ? round(lo/50, 2) + ' to ' + mx(round(hi/50, 2) + ' mL') : '--', cls:'calc'},
+        {k:'Max single', v:mx('50 mcg'), cls:'warn'},
+        {k:'Repeat', v:'q 30-60 min PRN'}
+      ]
+    });
+  },
+  morphine: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(0.1*w, 1), 5) : null;
+    return rcCard({
+      name:'Morphine', generic:'Stock 1 mg/mL or 4 mg/mL vial', cat:'PAIN',
+      form:'vial',
+      indication:'Pain', color:'var(--amber)',
+      rows:[
+        {k:'Dose', v:'0.1 mg/kg IV/IM'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Max single', v:mx('5 mg'), cls:'warn'},
+        {k:'Repeat', v:'q 2-4 hr PRN'}
+      ]
+    });
+  },
+  // ──── RSI ────
+  ketamineInduction: function(){
+    var w = dosingWt();
+    var lo = w ? round(1*w, 0) : null;
+    var hi = w ? round(2*w, 0) : null;
+    return rcCard({
+      name:'Ketamine — Induction', generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — PHI preferred RSI', cat:'RSI',
+      form:'vial',
+      indication:'Peds RSI induction — preferred for asthma, hypotension, hypovolemia', color:'var(--orange)',
+      rows:[
+        {k:'PHI dose IV', v:'1 to ' + mx('2') + ' mg/kg IV push'},
+        {k:'PHI dose IM', v:'4 to ' + mx('5') + ' mg/kg IM (if no IV)'},
+        {k:'Wt', v:w ? round(w,2) + ' kg' : '--', cls:'calc'},
+        {k:'Calc IV', v:lo ? lo + ' to ' + mx(hi + ' mg') : '--', cls:'calc'},
+        {k:'Calc IV vol', v:lo ? round(lo/50, 2) + ' to ' + mx(round(hi/50, 2) + ' mL') : '--', cls:'calc'},
+        {k:'Onset IV', v:'30-60 sec'},
+        {k:'Duration', v:'10-20 min'}
+      ],
+      note:'PHI preferred peds induction. Preserves BP. Bronchodilator effect — first-line for asthma RSI.'
+    });
+  },
+  rocPeds: function(){
+    var w = dosingWt();
+    var mg = w ? round(1.2*w, 0) : null;
+    return rcCard({
+      name:'Rocuronium — RSI', generic:'Stock 100 mg / 10 mL vial (10 mg/mL) — PHI formulary', cat:'RSI',
+      form:'vial',
+      indication:'Peds RSI paralysis', color:'var(--rose)',
+      rows:[
+        {k:'PHI dose', v:'1 to ' + mx('1.2') + ' mg/kg IV push'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Calc volume', v:mg ? round(mg/10, 2) + ' mL' : '--', cls:'calc'},
+        {k:'Onset', v:'60-90 sec'},
+        {k:'Duration', v:'30-60 min'}
+      ],
+      warn:'Ensure post-RSI sedation drip running BEFORE paralytic wears off — locked-in awake patient is a critical event.'
+    });
+  },
+  succPeds: function(){
+    var w = dosingWt();
+    var mgIV = w ? round(2*w, 0) : null;
+    var mgIM = w ? round(4*w, 0) : null;
+    return rcCard({
+      name:'Succinylcholine — Caution in <5 yr', generic:'Stock 200 mg / 10 mL vial (20 mg/mL)', cat:'RSI',
+      form:'vial',
+      indication:'Peds RSI alternative to roc. Caution under age 5.', color:'var(--red)',
+      rows:[
+        {k:'IV dose', v:'1 to ' + mx('2') + ' mg/kg'},
+        {k:'IV calc', v:mgIV ? mgIV + ' mg' : '--', cls:'calc'},
+        {k:'IM dose', v:mx('4') + ' mg/kg'},
+        {k:'IM calc', v:mgIM ? mx(mgIM + ' mg') : '--', cls:'calc'},
+        {k:'Onset', v:'30-60 sec IV / 2-3 min IM'},
+        {k:'Duration', v:'5-10 min'}
+      ],
+      warn:'⚠ Caution under age 5 (occult myopathy → hyperkalemic arrest). MH risk. Pre-treat atropine 0.02 mg/kg in young children to prevent vagal brady.'
+    });
+  },
+  ketamineDripPeds: function(){
+    var w = dosingWt();
+    var loMgHr = w ? round(1*w, 1) : null;
+    var picuMgHr = w ? round(2*w, 1) : null; // PICU standard ceiling
+    var maxMgHr = w ? round(4*w, 1) : null;  // PHI practice ceiling (extrapolated from Ch 6)
+    return rcCard({
+      name:'Ketamine Drip — Sedation', generic:'Mix 500 mg in 100 mL NS = 5 mg/mL', cat:'RSI',
+      form:'vialmix',
+      indication:'Post-intubation sedation', color:'var(--orange)',
+      rows:[
+        {k:'Mix prep', v:'500 mg (10 mL of 50 mg/mL) into 100 mL NS = 5 mg/mL', cls:'calc'},
+        {k:'PHI practice', v:'1 to ' + mx('4') + ' mg/kg/hr (PHI Ch 6 max applied)'},
+        {k:'Calc dose', v:loMgHr ? loMgHr + ' to ' + mx(maxMgHr + ' mg/hr') : '--', cls:'calc'},
+        {k:'Pump rate', v:loMgHr ? round(loMgHr/5, 1) + ' to ' + mx(round(maxMgHr/5, 1) + ' mL/hr') : '--', cls:'calc'},
+        {k:'PICU typical ceiling', v:picuMgHr ? '2 mg/kg/hr = ' + picuMgHr + ' mg/hr (' + round(picuMgHr/5, 1) + ' mL/hr)' : '--', cls:'warn'},
+        {k:'Bolus PRN', v:'0.5 mg/kg IV'}
+      ],
+      note:'PHI does not state an explicit post-intubation ceiling — 4 mg/kg/hr is extrapolated from Ch 6 Dangerous Agitation infusion (Adult 4 / Pediatric 2 mg/kg/hr). Most PICU literature recommends 0.5-2 mg/kg/hr for routine sedation; 4-6 mg/kg/hr is documented in refractory cases. Contact medical control above 2 mg/kg/hr.'
+    });
+  },
+  midazolamDripPeds: function(){
+    var w = dosingWt();
+    var loMgHr = w ? round(0.05*w, 2) : null;
+    var hiMgHr = w ? round(0.2*w, 2) : null;
+    return rcCard({
+      name:'Midazolam Drip — Sedation', generic:'Mix 50 mg in 100 mL NS = 0.5 mg/mL', cat:'RSI',
+      form:'vialmix',
+      indication:'Post-intubation sedation (alternative or adjunct)', color:'var(--amber)',
+      rows:[
+        {k:'Mix prep', v:'50 mg (10 mL of 5 mg/mL) into 100 mL NS = 0.5 mg/mL', cls:'calc'},
+        {k:'Dose', v:'0.05 to ' + mx('0.2') + ' mg/kg/hr'},
+        {k:'Calc dose', v:loMgHr ? loMgHr + ' to ' + mx(hiMgHr + ' mg/hr') : '--', cls:'calc'},
+        {k:'Pump rate', v:loMgHr ? round(loMgHr/0.5, 1) + ' to ' + mx(round(hiMgHr/0.5, 1) + ' mL/hr') : '--', cls:'calc'}
+      ]
+    });
+  },
+  fentanylDripPeds: function(){
+    var w = dosingWt();
+    var loMcgHr = w ? round(0.5*w, 0) : null;
+    var hiMcgHr = w ? round(2*w, 0) : null;
+    return rcCard({
+      name:'Fentanyl Drip — Analgesia', generic:'Mix 1000 mcg in 100 mL NS = 10 mcg/mL', cat:'RSI',
+      form:'vialmix',
+      indication:'Post-intubation analgesia', color:'var(--amber)',
+      rows:[
+        {k:'Mix prep', v:'1000 mcg (20 mL of 50 mcg/mL) into 100 mL NS = 10 mcg/mL', cls:'calc'},
+        {k:'Dose', v:'0.5 to ' + mx('2') + ' mcg/kg/hr'},
+        {k:'Calc dose', v:loMcgHr ? loMcgHr + ' to ' + mx(hiMcgHr + ' mcg/hr') : '--', cls:'calc'},
+        {k:'Pump rate', v:loMcgHr ? round(loMcgHr/10, 2) + ' to ' + mx(round(hiMcgHr/10, 2) + ' mL/hr') : '--', cls:'calc'}
+      ]
+    });
+  },
+  // ──── TOX ────
+  naloxone: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(0.1*w, 2), 2) : null;
+    return rcCard({
+      name:'Naloxone', generic:'Stock 0.4 mg/mL or 1 mg/mL vial', cat:'TOX',
+      form:'vial',
+      indication:'Opioid overdose with respiratory depression', color:'var(--purple)',
+      rows:[
+        {k:'Dose', v:'0.1 mg/kg IV/IM/IN'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Max', v:mx('2 mg'), cls:'warn'},
+        {k:'Repeat', v:'q 2-3 min PRN'}
+      ]
+    });
+  },
+  bicarbTox: function(){
+    var w = dosingWt();
+    var mEq = w ? round(1*w, 0) : null;
+    return rcCard({
+      name:'Sodium Bicarbonate', generic:'Stock 1 mEq/mL pre-filled syringe', cat:'TOX',
+      form:'syringe',
+      indication:'TCA overdose, salicylate overdose, severe acidosis, hyperK with EKG changes', color:'var(--cyan)',
+      rows:[
+        {k:'Dose', v:'1 mEq/kg IV slow push'},
+        {k:'Calc dose', v:mEq ? mEq + ' mEq' : '--', cls:'calc'},
+        {k:'Calc volume', v:mEq ? mEq + ' mL' : '--', cls:'calc'}
+      ]
+    });
+  },
+  caClPeds: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(20*w, 0), 1000) : null;
+    return rcCard({
+      name:'Calcium Chloride 10%', generic:'Stock 100 mg/mL pre-filled syringe', cat:'TOX',
+      form:'syringe',
+      indication:'Hyperkalemia w/ EKG changes, CCB OD, hypocalcemia', color:'var(--rose)',
+      rows:[
+        {k:'Dose', v:'20 mg/kg IV slow push'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Calc volume', v:mg ? round(mg/100, 1) + ' mL' : '--', cls:'calc'},
+        {k:'Max', v:mx('1 g (10 mL)'), cls:'warn'}
+      ],
+      warn:'Vesicant — central line preferred. Use Ca gluconate peripherally.'
+    });
+  },
+  caGlucPeds: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(60*w, 0), 2000) : null;
+    return rcCard({
+      name:'Calcium Gluconate 10%', generic:'Stock 100 mg/mL vial', cat:'TOX',
+      form:'vial',
+      indication:'Hyperkalemia, hypocalcemia, CCB OD (peripheral-friendly)', color:'var(--rose)',
+      rows:[
+        {k:'Dose', v:'60 mg/kg IV slow'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Calc volume', v:mg ? round(mg/100, 1) + ' mL' : '--', cls:'calc'},
+        {k:'Max', v:mx('2 g (20 mL)'), cls:'warn'}
+      ]
+    });
+  },
+  glucagonCCB: function(){
+    var w = dosingWt();
+    var mg = w ? round(0.05*w, 2) : null;
+    return rcCard({
+      name:'Glucagon — CCB / β-blocker OD', generic:'Stock 1 mg vial reconstituted', cat:'TOX',
+      form:'vialmix',
+      indication:'CCB or β-blocker overdose', color:'var(--purple)',
+      rows:[
+        {k:'Dose', v:'0.05 mg/kg IV bolus'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Repeat', v:'PRN; consider infusion 0.07 mg/kg/hr'}
+      ]
+    });
+  },
+  // ──── TRAUMA ────
+  txa: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(15*w, 0), 1000) : null;
+    return rcCard({
+      name:'Tranexamic Acid (TXA)', generic:'Stock 100 mg/mL vial', cat:'TRAUMA',
+      form:'vialmix',
+      indication:'Hemorrhagic trauma within 3 hr of injury', color:'var(--teal)',
+      rows:[
+        {k:'Dose', v:'15 mg/kg IV over 10 min'},
+        {k:'Calc dose', v:mg ? mg + ' mg' + (mg === 1000 ? ' (max)' : '') : '--', cls:'calc'},
+        {k:'Calc volume', v:mg ? round(mg/100, 1) + ' mL' : '--', cls:'calc'},
+        {k:'Max', v:mx('1 g'), cls:'warn'},
+        {k:'Mix', v:'Dilute in 100 mL NS, infuse over 10 min'}
+      ]
+    });
+  },
+  // ──── N/V ────
+  ondansetronPeds: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(0.15*w, 1), 4) : null;
+    return rcCard({
+      name:'Ondansetron', generic:'Stock 2 mg/mL vial', cat:'NAUSEA',
+      form:'vial',
+      indication:'Nausea / vomiting', color:'var(--sky)',
+      rows:[
+        {k:'Dose', v:'0.1 to ' + mx('0.15') + ' mg/kg IV'},
+        {k:'Calc dose', v:w ? round(0.1*w, 1) + ' to ' + mx(mg + ' mg') : '--', cls:'calc'},
+        {k:'Max single', v:mx('4 mg'), cls:'warn'}
+      ]
+    });
+  }
+};
+
+// ════════════════════════════════════════════════════════════════
+// DX → DRUG MAPPING
+// ════════════════════════════════════════════════════════════════
+var DX_DRUGS = {
+  arrest:     ['epiArrest','amiodaroneArrest','defib','fluidBolus'],
+  brady:      ['epiArrest','atropine','fluidBolus'],
+  svt:        ['adenosine','cardiovert'],
+  vt:         ['amiodaroneArrest','cardiovert'],
+  seizure:    ['midazolamSeizure','lorazepamSeizure','levetiracetam','fosphenytoin','d10'],
+  anaphylaxis:['epiAnaphylaxis','diphenhydramine','famotidine','methylpred','albuterol','fluidBolus'],
+  asthma:     ['albuterol','ipratropium','methylpred','magAsthma','epiAnaphylaxis','ketamineInduction'],
+  croup:      ['dexamethasone','racEpiCroup'],
+  bronchio:   ['albuterol','fluidBolus'],
+  sepsis:     ['fluidBolus','epiInfusionShock','norepiInfusion','hydrocortisone'],
+  dka:        ['fluidBolus'],
+  hypo:       ['d10','d25','glucagonHypo'],
+  icp:        ['hypertonic','mannitol','midazolamSeizure','fentanylBolus'],
+  tox:        ['naloxone','bicarbTox','caClPeds','glucagonCCB'],
+  trauma:     ['fluidBolus','txa','fentanylBolus'],
+  burn:       ['fentanylBolus','fluidBolus'],
+  hyperK:     ['caClPeds','caGlucPeds','bicarbTox','albuterol']
+};
+
+function renderDxDrugs(){
+  var out = document.getElementById('dxDrugs');
+  if(!state.dx){
+    out.innerHTML = '<div class="empty"><div class="ei">○</div><div class="et">Select a diagnosis above</div></div>';
+    return;
+  }
+  var keys = DX_DRUGS[state.dx] || [];
+  if(!keys.length){
+    out.innerHTML = '<div class="empty"><div class="et">No specific drugs mapped for this diagnosis.</div></div>';
+    return;
+  }
+  out.innerHTML = keys.map(function(k){ return DRUGS[k] ? DRUGS[k]() : ''; }).join('');
+}
+
+// ════════════════════════════════════════════════════════════════
+// ALL MEDS — grouped by form within selected category
+// ════════════════════════════════════════════════════════════════
+var ALL_DRUGS = [
+  {cat:'arrest',      key:'epiArrest',         form:'syringe'},
+  {cat:'arrest',      key:'amiodaroneArrest',  form:'vial'},
+  {cat:'arrest',      key:'defib',             form:'vial'},
+  {cat:'dysrhythmia', key:'cardiovert',        form:'vial'},
+  {cat:'dysrhythmia', key:'adenosine',         form:'vial'},
+  {cat:'dysrhythmia', key:'atropine',          form:'syringe'},
+  {cat:'seizure',     key:'midazolamSeizure',  form:'vial'},
+  {cat:'seizure',     key:'lorazepamSeizure',  form:'vial'},
+  {cat:'seizure',     key:'levetiracetam',     form:'vialmix'},
+  {cat:'seizure',     key:'fosphenytoin',      form:'vialmix'},
+  {cat:'anaphylaxis', key:'epiAnaphylaxis',    form:'vial'},
+  {cat:'anaphylaxis', key:'diphenhydramine',   form:'vial'},
+  {cat:'anaphylaxis', key:'famotidine',        form:'vial'},
+  {cat:'anaphylaxis', key:'methylpred',        form:'vialmix'},
+  {cat:'resp',        key:'albuterol',         form:'premix'},
+  {cat:'resp',        key:'ipratropium',       form:'premix'},
+  {cat:'resp',        key:'magAsthma',         form:'vialmix'},
+  {cat:'resp',        key:'dexamethasone',     form:'vial'},
+  {cat:'resp',        key:'racEpiCroup',       form:'premix'},
+  {cat:'shock',       key:'fluidBolus',        form:'premix'},
+  {cat:'shock',       key:'epiInfusionShock', form:'vialmix'},
+  {cat:'shock',       key:'norepiInfusion',    form:'vialmix'},
+  {cat:'shock',       key:'hydrocortisone',    form:'vialmix'},
+  {cat:'endo',        key:'d10',               form:'premix'},
+  {cat:'endo',        key:'d25',               form:'vialmix'},
+  {cat:'endo',        key:'glucagonHypo',      form:'vialmix'},
+  {cat:'icp',         key:'hypertonic',        form:'premix'},
+  {cat:'icp',         key:'mannitol',          form:'premix'},
+  {cat:'pain',        key:'fentanylBolus',     form:'vial'},
+  {cat:'pain',        key:'morphine',          form:'vial'},
+  {cat:'rsi',         key:'ketamineInduction', form:'vial'},
+  {cat:'rsi',         key:'rocPeds',           form:'vial'},
+  {cat:'rsi',         key:'succPeds',          form:'vial'},
+  {cat:'rsi',         key:'ketamineDripPeds',  form:'vialmix'},
+  {cat:'rsi',         key:'midazolamDripPeds', form:'vialmix'},
+  {cat:'rsi',         key:'fentanylDripPeds',  form:'vialmix'},
+  {cat:'tox',         key:'naloxone',          form:'vial'},
+  {cat:'tox',         key:'bicarbTox',         form:'syringe'},
+  {cat:'tox',         key:'caClPeds',          form:'syringe'},
+  {cat:'tox',         key:'caGlucPeds',        form:'vial'},
+  {cat:'tox',         key:'glucagonCCB',       form:'vialmix'},
+  {cat:'trauma',      key:'txa',               form:'vialmix'},
+  {cat:'nv',          key:'ondansetronPeds',   form:'vial'}
+];
+
+var FORM_ORDER = [
+  {key:'premix',  label:'Premix Bags — Ready to Hang'},
+  {key:'vialmix', label:'Vial → Mix to Bag'},
+  {key:'vial',    label:'Vials — Draw Up'},
+  {key:'syringe', label:'Pre-filled Syringes — Ready to Push'},
+  {key:'po',      label:'PO — Tablets / Liquid'}
+];
+
+var activeMedsCat = 'all';
+function renderAllDrugs(cat){
+  if(cat) activeMedsCat = cat;
+  var out = document.getElementById('allDrugs');
+  if(!out) return;
+  var list = activeMedsCat === 'all' ? ALL_DRUGS : ALL_DRUGS.filter(function(d){ return d.cat === activeMedsCat; });
+  function renderGroup(key, label){
+    var items = list.filter(function(d){ return d.form === key; });
+    if(!items.length) return '';
+    var hdr = '<div class="form-section-hdr h-' + key + '">' + label + ' <span style="font-family:var(--mono);opacity:.6;font-size:.65rem">[' + items.length + ']</span></div>';
+    var cards = '<div class="rg" style="margin-bottom:6px">' + items.map(function(d){ return DRUGS[d.key] ? DRUGS[d.key]() : ''; }).join('') + '</div>';
+    return hdr + cards;
+  }
+  var w = state.doseWt;
+  var banner = '<div class="callout ' + (w?'callout-info':'callout-warn') + '" style="margin-bottom:10px"><strong>' +
+    (w ? 'Active dosing weight: ' + round(w,2) + ' kg' + (state.weightKg ? ' (ABW)' : ' (tier wt)') : 'No weight set — calcs will show "Enter weight first"') + '</strong></div>';
+  var legend = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">' +
+    '<span class="fb fb-premix">Premix Bag — Ready to Hang</span>' +
+    '<span class="fb fb-vialmix">Vial → Mix to Bag</span>' +
+    '<span class="fb fb-vial">Vial — Draw Up</span>' +
+    '<span class="fb fb-syringe">Pre-filled Syringe — Ready to Push</span>' +
+    '<span class="fb fb-po">PO</span></div>';
+  var grouped = FORM_ORDER.map(function(f){ return renderGroup(f.key, f.label); }).join('');
+  out.innerHTML = banner + legend + grouped;
+}
+
+// ════════════════════════════════════════════════════════════════
+// VENT / AIRWAY
+// ════════════════════════════════════════════════════════════════
+function renderVent(){
+  var out = document.getElementById('ventOutput');
+  if(!out) return;
+  var w = state.doseWt;
+  var ageYr = state.ageYr;
+  if(!w || ageYr == null){
+    out.innerHTML = '<div class="empty"><div class="et">Enter weight and age on Patient tab.</div></div>';
+    return;
+  }
+  var rate = rateByAge(ageYr);
+  var vtLo = round(6*w, 0);
+  var vtHi = round(8*w, 0);
+  var itime = ageYr < 1 ? '0.5 sec' : (ageYr < 6 ? '0.6-0.8 sec' : '0.8-1.0 sec');
+  function src(s){
+    var color = s.indexOf('PHI') === 0 ? 'var(--cyan)' : (s.indexOf('Physiology') === 0 ? 'var(--amber)' : 'var(--tx2)');
+    return ' <span style="font-family:var(--mono);font-size:.6rem;color:' + color + ';opacity:.85;font-weight:700;letter-spacing:.05em">[' + s + ']</span>';
+  }
+  out.innerHTML =
+    '<div class="callout callout-info" style="margin-bottom:10px;font-size:.78rem">' +
+      '<strong>Source note:</strong> PHI Chapter 3 Respiratory provides peds vent settings; Chapter 2 SAFER for IBW; pediatric physiology informs age-based rate.' +
+    '</div>' +
+    '<div class="vent-wrap"><table class="vt"><thead><tr><th>Setting</th><th>Value</th></tr></thead><tbody>' +
+    '<tr><td>Dosing weight (basis for Vt)</td><td class="ibw-c">' + round(w,2) + ' kg ' + (state.weightKg?'(ABW)':'(tier wt)') + src('PHI Ch 2') + '</td></tr>' +
+    '<tr><td><strong style="color:var(--teal)">Mode (primary)</strong></td><td><strong>(S)CMV+ / APVcmv</strong> (Hamilton T1) — fully controlled' + src('Recommended for sedated/paralyzed peds') + '</td></tr>' +
+    '<tr><td>Mode (alternative)</td><td>SIMV+ / PSIMV+ for older child with spontaneous effort or weaning' + src('Physiology — peds') + '</td></tr>' +
+    '<tr><td>Tidal Volume</td><td class="tv-c">' + vtLo + ' to ' + vtHi + ' mL (6-8 mL/kg)' + src('PHI Ch 3 Resp') + '</td></tr>' +
+    '<tr><td>ΔP control (if PCV+)</td><td>10-15 cmH2O — titrate to Vt' + src('PHI Ch 3 Resp') + '</td></tr>' +
+    '<tr><td>Rate (age-based)</td><td>' + rate + ' / min' + src('Physiology — age-based') + '</td></tr>' +
+    '<tr><td>PEEP</td><td>5 cmH2O' + src('PHI Ch 3 Resp') + '</td></tr>' +
+    '<tr><td>I-time</td><td>' + itime + src('Physiology — age-based') + '</td></tr>' +
+    '<tr><td>FiO2</td><td>100% initial, titrate to SpO2 94-98%' + src('PHI Ch 3 Resp') + '</td></tr>' +
+    '<tr><td>EtCO2 target</td><td>35-45 mmHg' + src('PHI Ch 3 Resp') + '</td></tr>' +
+    '</tbody></table></div>' +
+    '<div class="callout callout-warn" style="margin-top:8px"><strong>Peds-specific:</strong> Higher metabolic rate → higher minute ventilation. Watch for atelectasis at low Vt — may need recruitment maneuvers. Cuff pressure < 25 cmH2O if cuffed ETT.</div>';
+}
+
+function renderAirway(){
+  var out = document.getElementById('airwayOutput');
+  if(!out) return;
+  var w = state.doseWt;
+  var ageYr = state.ageYr;
+  if(!w && ageYr == null){
+    out.innerHTML = '<div class="empty"><div class="et">Enter age and weight on Patient tab.</div></div>';
+    return;
+  }
+  var ettC = ettCuffed(ageYr);
+  var ettU = ettUncuffed(ageYr);
+  var depth = ettDepth(ageYr);
+  var blade, igel, suction;
+  if(ageYr != null){
+    if(ageYr < 0.08) { blade = 'Miller 0'; suction = '6-8 Fr'; }
+    else if(ageYr < 1) { blade = 'Miller 1'; suction = '8 Fr'; }
+    else if(ageYr < 4) { blade = 'Miller 1 / Mac 2'; suction = '8-10 Fr'; }
+    else if(ageYr < 8) { blade = 'Mac 2'; suction = '10 Fr'; }
+    else { blade = 'Mac 3 / Miller 3'; suction = '12-14 Fr'; }
+  }
+  if(w){
+    if(w < 5) igel = '1';
+    else if(w < 12) igel = '1.5';
+    else if(w < 25) igel = '2';
+    else if(w < 35) igel = '2.5';
+    else if(w < 50) igel = '3';
+    else if(w < 70) igel = '4';
+    else igel = '5';
+  }
+  out.innerHTML = '<div class="vent-wrap"><table class="vt"><thead><tr><th>Item</th><th>Size</th><th>Notes</th></tr></thead><tbody>' +
+    '<tr><td>ETT (cuffed)</td><td class="et-c">' + (ettC ? ettC + ' mm' : '--') + '</td><td>(age/4) + 3.5</td></tr>' +
+    '<tr><td>ETT (uncuffed)</td><td class="et-c">' + (ettU ? ettU + ' mm' : '--') + '</td><td>Backup if cuffed unavailable</td></tr>' +
+    '<tr><td>ETT depth</td><td class="et-c">' + (depth ? depth + ' cm at lip' : '--') + '</td><td>3 × ETT size</td></tr>' +
+    '<tr><td>Blade</td><td>' + (blade || '--') + '</td><td>Straight blade for &lt; 8 yr (epiglottis lift)</td></tr>' +
+    '<tr><td>i-gel (rescue)</td><td class="ig-c">Size ' + (igel || '--') + '</td><td>Based on ' + (w ? round(w,1) + ' kg' : 'age') + '</td></tr>' +
+    '<tr><td>OPA</td><td>Mouth-corner to ear-lobe</td><td>Avoid in conscious — gag</td></tr>' +
+    '<tr><td>NPA</td><td>Naris to ear-tragus</td><td>Lubricate</td></tr>' +
+    '<tr><td>Suction</td><td>' + (suction || '--') + '</td><td>Yankauer for emesis</td></tr>' +
+    '<tr><td>NG / OG tube</td><td class="ig-c">' + (ngogSize(ageYr, w) || '--') + '</td><td>Decompression after intubation; 2× ETT Fr</td></tr>' +
+    '<tr><td>BVM</td><td>' + (ageYr != null && ageYr < 1 ? 'Infant' : ageYr != null && ageYr < 8 ? 'Pediatric' : 'Adult') + '</td><td>Mask seal critical</td></tr>' +
+    '</tbody></table></div>';
+}
+
+// ════════════════════════════════════════════════════════════════
+// INTUBATION TAB — SAFER + MAX RSI + drug rendering
+// ════════════════════════════════════════════════════════════════
+var SAFER_ITEMS = [
+  {l:'S', t:'Suction & Saturation',
+    items:['Suction on with appropriate Fr catheter for age',
+           'SpO2 ≥ 94% pre-induction (>98% if possible)',
+           'NRB at 15 L/min OR BVM with PEEP for pre-O2 × 3-5 min',
+           'NC at 5-15 L/min for apneic O2 (peds desat fast)']},
+  {l:'A', t:'Airway equipment & Assess',
+    items:['ETT × 2 sizes (cuffed primary + 0.5 smaller)',
+           'BVM size-appropriate (infant/peds/adult)',
+           'Laryngoscope (DL/VL) with right blade for age',
+           'Stylet pre-bent; bougie for difficult view',
+           'BIAD (i-gel size by weight) at bedside']},
+  {l:'F', t:'Fluids & Failed-airway plan',
+    items:['IV/IO × 1-2 (lower threshold for IO in peds)',
+           'NS bolus prepped — induction often drops BP',
+           'Failed airway plan briefed (Plan A → B → C)',
+           'Pt position: shoulder roll for &lt; 2 yr; ramped older']},
+  {l:'E', t:'EtCO2, Equipment, & End-point',
+    items:['Capnography ready',
+           'Drugs drawn up — labeled with doses calculated for THIS patient',
+           'Sedation drips prepped (start before paralytic wears off)',
+           'Pre-treatment atropine 0.02 mg/kg drawn for &lt; 5 yr if using sux']},
+  {l:'R', t:'Roles, Read-back, Resuscitate',
+    items:['Roles: laryngoscopist · drug pusher · monitor watcher',
+           'Read-back: dose, route, and timing',
+           'Plan for hypotension, vagal brady, hypoxia',
+           'Time-out / final go-around']}
+];
+
+function getSaferState(){ try{ return JSON.parse(localStorage.getItem('peds_safer_state') || '{}'); }catch(e){ return {}; } }
+function setSaferState(s){ try{ localStorage.setItem('peds_safer_state', JSON.stringify(s)); }catch(e){} }
+function toggleSafer(idx){ var s = getSaferState(); s[idx] = !s[idx]; setSaferState(s); renderSafer(); }
+function resetSafer(){ setSaferState({}); renderSafer(); }
+function renderSafer(){
+  var grid = document.getElementById('saferGrid');
+  if(!grid) return;
+  var s = getSaferState();
+  grid.innerHTML = SAFER_ITEMS.map(function(item, i){
+    var checked = !!s[i];
+    var lis = item.items.map(function(t){ return '<li>' + t + '</li>'; }).join('');
+    return '<div class="safer-row' + (checked ? ' checked' : '') + '" onclick="toggleSafer(' + i + ')">' +
+      '<div class="safer-letter">' + item.l + '</div>' +
+      '<div class="safer-body"><div class="safer-title">' + item.t + '</div>' +
+      '<div class="safer-items"><ul>' + lis + '</ul></div></div></div>';
+  }).join('');
+}
+
+function renderRsiMaxDose(){
+  var out = document.getElementById('rsiMaxDose');
+  if(!out) return;
+  var w = dosingWt();
+  var ageYr = state.ageYr;
+  if(!w){
+    out.innerHTML = '<div class="empty"><div class="et">Enter weight on Patient tab to see calculated max RSI doses.</div></div>';
+    return;
+  }
+  var ketMaxMg = round(2*w, 0);
+  var ketMaxML = round(ketMaxMg/50, 2);
+  var rocMaxMg = round(1.2*w, 0);
+  var rocMaxML = round(rocMaxMg/10, 2);
+  var ketDripMaxMgHr = round(4*w, 1);  // PHI practice — extrapolated from Ch 6
+  var ketDripMaxRate = round(ketDripMaxMgHr/5, 1);
+  var ketDripPicuMgHr = round(2*w, 1); // PICU lit ceiling
+  var ketDripPicuRate = round(ketDripPicuMgHr/5, 1);
+  var atropineMg = ageYr != null && ageYr < 5 ? Math.max(0.1, round(0.02*w, 2)) : null;
+
+  out.innerHTML =
+    '<div style="font-size:.85rem;line-height:1.55;color:var(--tx0);margin-bottom:14px">' +
+      '<strong style="color:var(--red)">For peds RSI, default to MAX doses to ensure clean intubating conditions.</strong><br>' +
+      'Pediatric desat is fast (low FRC, high O2 use), and underdosing risks awareness or laryngospasm. Push full induction + full paralytic, lock the tube in one pass, and start ketamine drip at the peds max before the paralytic wears off.' +
+    '</div>' +
+    '<div class="vent-wrap"><table class="vt" style="border:1px solid rgba(255,95,109,.4);border-radius:8px;overflow:hidden">' +
+      '<thead><tr style="background:rgba(255,95,109,.08)">' +
+        '<th style="color:var(--red)">Drug</th><th>PHI Max Dose</th><th>Calc</th><th>Volume</th>' +
+      '</tr></thead><tbody>' +
+      (atropineMg ? '<tr><td><strong style="color:var(--amber)">Atropine pre-treat (&lt; 5 yr)</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">0.1 mg/mL syringe</div></td>' +
+        '<td>0.02 mg/kg IV (min 0.1 mg)</td>' +
+        '<td class="ibw-c">' + round(w,2) + ' kg<br><strong>' + atropineMg + ' mg</strong></td>' +
+        '<td class="tv-c">' + round(atropineMg/0.1, 1) + ' mL</td></tr>' : '') +
+      '<tr><td><strong style="color:var(--orange)">Ketamine — Induction</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">500 mg / 10 mL</div></td>' +
+        '<td>2 mg/kg IV push (PHI max)</td>' +
+        '<td class="ibw-c">' + round(w,2) + ' kg<br><strong>' + ketMaxMg + ' mg</strong></td>' +
+        '<td class="tv-c">' + ketMaxML + ' mL</td></tr>' +
+      '<tr><td><strong style="color:var(--rose)">Rocuronium — RSI</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">100 mg / 10 mL</div></td>' +
+        '<td>1.2 mg/kg IV push</td>' +
+        '<td class="ibw-c">' + round(w,2) + ' kg<br><strong>' + rocMaxMg + ' mg</strong></td>' +
+        '<td class="tv-c">' + rocMaxML + ' mL</td></tr>' +
+      '<tr style="background:rgba(0,212,245,.04)"><td><strong style="color:var(--orange)">Ketamine drip — PHI practice</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">5 mg/mL premix</div></td>' +
+        '<td>4 mg/kg/hr ABW (PHI Ch 6 max)</td>' +
+        '<td class="ibw-c">' + round(w,2) + ' kg<br><strong>' + ketDripMaxMgHr + ' mg/hr</strong></td>' +
+        '<td class="tv-c">' + ketDripMaxRate + ' mL/hr</td></tr>' +
+      '<tr><td style="color:var(--amber);font-size:.78rem"><strong>PICU literature ceiling</strong><div style="font-size:.62rem;color:var(--tx2);font-family:var(--mono)">routine sedation</div></td>' +
+        '<td>2 mg/kg/hr (PICU typical max)</td>' +
+        '<td class="ibw-c">' + round(w,2) + ' kg<br>' + ketDripPicuMgHr + ' mg/hr</td>' +
+        '<td class="tv-c">' + ketDripPicuRate + ' mL/hr</td></tr>' +
+    '</tbody></table></div>' +
+    '<div class="callout callout-info" style="margin-top:10px;font-size:.78rem"><strong>Ketamine drip ceiling note:</strong> PHI does not state an explicit post-intubation cap. The 4 mg/kg/hr value is extrapolated from PHI Chapter 6 Dangerous Agitation (Adult 4 / Pediatric 2 mg/kg/hr per protocol). Most PICU literature recommends <strong>0.5-2 mg/kg/hr</strong> for routine sedation, with 4-6 mg/kg/hr documented in refractory cases. Above 2 mg/kg/hr, contact medical control.</div>' +
+    '<div class="callout callout-warn" style="margin-top:8px;font-size:.78rem"><strong>Sequence:</strong> ' +
+      '(1) Pre-O2 ' + (ageYr != null && ageYr < 2 ? 'with shoulder roll' : 'with ramped position') + ' → ' +
+      (atropineMg ? '(1a) Atropine ' + atropineMg + ' mg pre-treat (age &lt; 5 + sux) → ' : '') +
+      '(2) Push ketamine ' + ketMaxMg + ' mg → (3) Push roc ' + rocMaxMg + ' mg → ' +
+      '(4) Wait 60-90 sec → (5) Intubate (depth ' + (state.ageYr != null ? ettDepth(state.ageYr) + ' cm' : '?') + ' at lip) → (6) Confirm EtCO2 → ' +
+      '(7) Start ketamine drip — typical ' + ketDripPicuRate + ' mL/hr (2 mg/kg/hr), titrate up to ' + ketDripMaxRate + ' mL/hr (4 mg/kg/hr) PRN refractory.</div>';
+}
+
+function renderIntubation(){
+  renderRsiMaxDose();
+  var ind = document.getElementById('tubeInduction');
+  if(ind) ind.innerHTML = ['ketamineInduction'].map(function(k){ return DRUGS[k](); }).join('');
+  var par = document.getElementById('tubeParalytics');
+  if(par) par.innerHTML = ['rocPeds','succPeds'].map(function(k){ return DRUGS[k](); }).join('');
+  var sed = document.getElementById('tubeSedation');
+  if(sed) sed.innerHTML = ['ketamineDripPeds','midazolamDripPeds','fentanylDripPeds'].map(function(k){ return DRUGS[k](); }).join('');
+
+  var eq = document.getElementById('tubeEquipment');
+  if(eq){
+    var w = state.doseWt;
+    var ageYr = state.ageYr;
+    var ettC = ettCuffed(ageYr);
+    var ettU = ettUncuffed(ageYr);
+    var depth = ettDepth(ageYr);
+    var blade, igel, lma;
+    if(ageYr != null){
+      if(ageYr < 0.08) blade = 'Miller 0';
+      else if(ageYr < 1) blade = 'Miller 1';
+      else if(ageYr < 4) blade = 'Miller 1 / Mac 2';
+      else if(ageYr < 8) blade = 'Mac 2';
+      else blade = 'Mac 3 / Miller 3';
+    }
+    if(w){
+      if(w < 5){ igel = '1'; lma = '1'; }
+      else if(w < 12){ igel = '1.5'; lma = '1.5'; }
+      else if(w < 25){ igel = '2'; lma = '2'; }
+      else if(w < 35){ igel = '2.5'; lma = '2.5'; }
+      else { igel = '3'; lma = '3'; }
+    }
+    eq.innerHTML = '<div class="vent-wrap"><table class="vt"><thead><tr><th>Item</th><th>Size</th><th>Notes</th></tr></thead><tbody>' +
+      '<tr><td>Primary ETT (cuffed)</td><td class="et-c">' + (ettC ? ettC + ' mm' : '--') + '</td><td>(age/4) + 3.5</td></tr>' +
+      '<tr><td>Backup ETT (smaller)</td><td class="et-c">' + (ettC ? round(ettC - 0.5, 1) + ' mm' : '--') + '</td><td>For croup or unanticipated edema</td></tr>' +
+      '<tr><td>ETT depth</td><td class="et-c">' + (depth ? depth + ' cm at lip' : '--') + '</td><td>3 × ETT size</td></tr>' +
+      '<tr><td>Blade</td><td>' + (blade || '--') + '</td><td>Straight for &lt; 8 yr</td></tr>' +
+      '<tr><td>i-gel (rescue)</td><td class="ig-c">' + (igel || '--') + '</td><td>Based on ' + (w ? round(w,1) + ' kg' : 'wt') + '</td></tr>' +
+      '<tr><td>NG / OG tube</td><td class="ig-c">' + (ngogSize(ageYr, w) || '--') + '</td><td>Decompress after intubation; 2× ETT Fr</td></tr>' +
+      '<tr><td>BVM</td><td>' + (ageYr != null && ageYr < 1 ? 'Infant' : ageYr != null && ageYr < 8 ? 'Pediatric' : 'Adult') + '</td><td>Attach PEEP valve for pre-O2</td></tr>' +
+      '<tr><td>EtCO2</td><td>Mainstream / sidestream</td><td>4+ waveforms over 6 breaths confirms</td></tr>' +
+      '</tbody></table></div>';
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// WIRE UP + INIT
+// ════════════════════════════════════════════════════════════════
+document.querySelectorAll('.nav-tab').forEach(function(t){
+  t.onclick = function(){
+    document.querySelectorAll('.nav-tab').forEach(function(x){ x.classList.remove('on'); });
+    t.classList.add('on');
+    document.querySelectorAll('.pg').forEach(function(x){ x.classList.remove('on'); });
+    document.getElementById('pg' + t.dataset.pg.charAt(0).toUpperCase() + t.dataset.pg.slice(1)).classList.add('on');
+  };
+});
+document.querySelectorAll('#medTabs .tab').forEach(function(t){
+  t.onclick = function(){
+    document.querySelectorAll('#medTabs .tab').forEach(function(x){ x.classList.remove('on'); });
+    t.classList.add('on');
+    renderAllDrugs(t.dataset.cat);
+  };
+});
+
+['pWeight','pWeightUnit','pAge','pAgeUnit'].forEach(function(id){
+  var el = document.getElementById(id);
+  if(el) el.addEventListener('input', recompute);
+  if(el) el.addEventListener('change', recompute);
+});
+
+// Init with safe wrapper
+function safeRun(name, fn){
+  try{ fn(); }catch(e){
+    var b = document.createElement('div');
+    b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#7f1d1d;color:#fff;padding:14px 16px;font-family:monospace;font-size:.78rem;white-space:pre-wrap;border-bottom:3px solid #f87171;max-height:50vh;overflow:auto';
+    b.textContent = '⚠ App failed at: ' + name + '\n\n' + (e.message || e) + '\n\n' + (e.stack || '');
+    document.body.insertBefore(b, document.body.firstChild);
+    if(window.console) console.error('[StatFlight Peds]', name, e);
+  }
+}
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(function(e){ console.warn('SW reg failed:', e); }); }
+safeRun('renderColorStrip', renderColorStrip);
+safeRun('setColorSys', function(){ setColorSys(window.colorSystem); });
+safeRun('renderDxGrid', renderDxGrid);
+safeRun('recompute', recompute);
+safeRun('renderAllDrugs', function(){ renderAllDrugs('all'); });
+safeRun('renderSafer', renderSafer);
+safeRun('renderIntubation', renderIntubation);
+safeRun('renderBurnMap', renderBurnMap);
+</script>
+</body>
+</html>

@@ -1,0 +1,2137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#030710">
+<meta name="apple-mobile-web-app-title" content="StatFlight OB">
+<title>StatFlight OB — Maternal & Neonatal Transport</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#030710;--bg1:#070e1e;--bg2:#0b1428;
+  --s0:#0f1d34;--s1:#142340;--s2:#192c4e;
+  --bd0:#1a2d48;--bd1:#223858;--bd2:#2c4870;
+  --tx0:#dce9fc;--tx1:#8aafd6;--tx2:#4d6e96;--tx3:#3b557a;
+  --cyan:#00d4f5;--teal:#00e8b0;--amber:#fbbf24;
+  --red:#ff5f6d;--purple:#b57bff;--rose:#fb7185;
+  --orange:#f97316;--sky:#38bdf8;--lime:#84cc16;--pink:#f472b6;
+  --mono:"IBM Plex Mono",monospace;--body:"Outfit",sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+@media(max-width:600px){html{font-size:17px}}
+body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:100vh;overflow-x:hidden}
+
+.topbar{position:sticky;top:0;z-index:500;background:rgba(3,7,16,.97);border-bottom:1px solid var(--bd0);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;gap:12px}
+.tb-left{display:flex;align-items:center;gap:12px;min-width:0}
+.tb-icon{width:36px;height:36px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,#be185d,#f472b6);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff}
+.tb-info{min-width:0}
+.tb-title{font-size:.94rem;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.tb-sub{font-family:var(--mono);font-size:.57rem;color:var(--tx1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-pill{font-family:var(--mono);font-size:.58rem;font-weight:700;padding:4px 10px;border-radius:6px;letter-spacing:.06em;background:rgba(244,114,182,.08);border:1px solid rgba(244,114,182,.2);color:var(--pink)}
+
+.nav-tabs{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--bd0);padding:0 20px;background:var(--bg1);overflow-x:auto;flex-shrink:0}
+.nav-tab{padding:11px 16px;font-size:.8rem;font-weight:600;color:var(--tx1);cursor:pointer;border:none;background:transparent;font-family:var(--body);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.nav-tab:hover{color:var(--tx0)}
+.nav-tab.on{color:var(--pink);border-bottom-color:var(--pink)}
+.nav-tab-mother{color:var(--rose)}
+.nav-tab-mother:hover{color:#fda4af}
+.nav-tab-mother.on{color:var(--rose);border-bottom-color:var(--rose)}
+.nav-tab-newborn{color:#a78bfa}
+.nav-tab-newborn:hover{color:#c4b5fd}
+.nav-tab-newborn.on{color:#a78bfa;border-bottom-color:#a78bfa}
+.nav-tab-meds{color:var(--cyan)}
+.nav-tab-meds:hover{color:#7dd3fc}
+.nav-tab-meds.on{color:var(--cyan);border-bottom-color:var(--cyan)}
+.nav-tab-vent{color:var(--amber)}
+.nav-tab-vent.on{color:var(--amber);border-bottom-color:var(--amber)}
+.nav-tab-tube{color:var(--red)}
+.nav-tab-tube:hover{color:#ff8a92}
+.nav-tab-tube.on{color:var(--red);border-bottom-color:var(--red)}
+
+/* SAFER checklist */
+.safer-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:6px}
+.safer-row{background:var(--bg2);border:1px solid var(--bd1);border-radius:10px;padding:11px 13px;display:flex;gap:11px;align-items:flex-start;cursor:pointer;transition:all .15s}
+.safer-row:hover{border-color:var(--bd2);background:var(--s0)}
+.safer-row.checked{background:rgba(0,232,176,.06);border-color:rgba(0,232,176,.4)}
+.safer-row.checked .safer-letter{background:var(--teal);color:#000}
+.safer-row.checked .safer-title{text-decoration:line-through;text-decoration-color:rgba(0,232,176,.5);text-decoration-thickness:1.5px}
+.safer-letter{flex-shrink:0;width:32px;height:32px;border-radius:8px;background:rgba(255,95,109,.15);color:var(--red);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:1rem;font-weight:900;letter-spacing:0;border:1px solid rgba(255,95,109,.4);transition:all .15s}
+.safer-body{flex:1;min-width:0}
+.safer-title{font-size:.88rem;font-weight:700;color:var(--tx0);margin-bottom:2px}
+.safer-items{font-size:.74rem;color:var(--tx1);line-height:1.5}
+.safer-items ul{margin:4px 0 0 16px;padding:0}
+.safer-items li{margin-bottom:2px}
+.safer-actions{display:flex;gap:6px;margin-top:10px}
+.safer-btn{padding:5px 10px;font-size:.72rem;border-radius:6px;border:1px solid var(--bd1);background:transparent;color:var(--tx1);cursor:pointer;font-family:var(--body);font-weight:600;transition:all .15s}
+.safer-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+
+.pg{display:none}.pg.on{display:block}
+.page{max-width:1180px;margin:0 auto;padding:18px 14px 60px}
+
+.slbl{font-family:var(--mono);font-size:.58rem;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--tx2);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.slbl::after{content:"";flex:1;height:1px;background:var(--bd0)}
+.card{background:var(--s0);border:1px solid var(--bd0);border-radius:14px;padding:18px 20px;margin-bottom:14px;position:relative;overflow:hidden}
+.card.tl::after{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#be185d,#f472b6,#a78bfa,#00d4f5)}
+.flbl{font-family:var(--mono);font-size:.58rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--tx2);margin-bottom:6px;display:block}
+select,input[type=number],input[type=text]{width:100%;background:var(--bg1);border:1px solid var(--bd1);border-radius:9px;color:var(--tx0);padding:9px 12px;font-size:.85rem;font-family:var(--body);appearance:none;transition:border-color .15s,box-shadow .15s}
+select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,245,.1)}
+.sw{position:relative}.sw::after{content:"▾";position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--tx2);pointer-events:none;font-size:.7rem}
+
+.pt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;align-items:end}
+@media(max-width:520px){.pt-grid{grid-template-columns:1fr 1fr}}
+.input-row{display:flex;gap:6px}
+.input-row input{flex:1}
+.input-row select{flex:0 0 80px}
+
+/* Section sub-boxes for clearly distinguishing Weight vs Height vs GA */
+.pt-sections{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+@media(max-width:640px){.pt-sections{grid-template-columns:1fr}}
+.sec{background:var(--bg2);border:1px solid var(--bd0);border-radius:11px;padding:13px 14px;position:relative}
+.sec.sec-wt{border-color:rgba(0,212,245,.32);box-shadow:inset 0 0 0 1px rgba(0,212,245,.06)}
+.sec.sec-ht{border-color:rgba(167,139,250,.32);box-shadow:inset 0 0 0 1px rgba(167,139,250,.06)}
+.sec.sec-ga{border-color:rgba(244,114,182,.32);box-shadow:inset 0 0 0 1px rgba(244,114,182,.06)}
+.sec-title{font-family:var(--mono);font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.sec-wt .sec-title{color:var(--cyan)}
+.sec-ht .sec-title{color:var(--purple)}
+.sec-ga .sec-title{color:var(--rose)}
+.sec-title::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.85}
+.sec-help{font-size:.66rem;color:var(--tx2);margin-top:8px;font-style:italic;line-height:1.45}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{background:var(--s1);border:1px solid var(--bd0);border-radius:10px;padding:9px 13px;min-width:108px}
+.cl{font-family:var(--mono);font-size:.54rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tx2)}
+.cv{font-family:var(--mono);font-size:1.05rem;font-weight:700;margin-top:2px}
+.cs{font-size:.61rem;color:var(--tx1);margin-top:1px}
+.c-cyan .cv{color:var(--cyan)}.c-teal .cv{color:var(--teal)}.c-amber .cv{color:var(--amber)}
+.c-purple .cv{color:var(--purple)}.c-rose .cv{color:var(--rose)}.c-pink .cv{color:var(--pink)}
+
+/* Color system toggle */
+.cs-toggle-row{display:flex;gap:8px;align-items:center;margin:14px 0;flex-wrap:wrap}
+.cs-toggle-lbl{font-family:var(--mono);font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tx2);margin-right:4px}
+.cs-btn{padding:6px 12px;border-radius:8px;border:1px solid var(--bd1);background:var(--s0);color:var(--tx2);font-size:.72rem;font-weight:700;cursor:pointer;font-family:var(--body);transition:all .15s}
+.cs-btn:hover{border-color:var(--bd2);color:var(--tx0)}
+.cs-btn-active{background:rgba(167,139,250,.15);border-color:var(--purple);color:var(--purple)}
+
+/* Color strip */
+.color-strip{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0 16px;padding:8px;background:var(--bg2);border:1px solid var(--bd0);border-radius:9px}
+.color-cell{flex:1;min-width:64px;padding:6px 4px;border-radius:5px;text-align:center;font-family:var(--mono);font-size:.56rem;font-weight:800;cursor:pointer;border:2px solid transparent;transition:all .15s;letter-spacing:.04em}
+.color-cell:hover{transform:translateY(-1px)}
+.color-cell.active{border-color:#fff;box-shadow:0 0 12px rgba(0,212,245,.4)}
+.color-cell .cc-wt{display:block;font-size:.78rem;margin-bottom:2px}
+.color-cell .cc-age{display:block;font-size:.48rem;opacity:.85}
+
+.tabs{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 14px}
+.tab{padding:5px 12px;border-radius:100px;font-size:.72rem;font-weight:600;border:1px solid var(--bd1);background:transparent;color:var(--tx1);cursor:pointer;font-family:var(--body);transition:all .13s}
+.tab:hover{border-color:var(--cyan);color:var(--tx0)}
+.tab.on{background:var(--cyan);border-color:var(--cyan);color:#000;font-weight:700}
+
+.rg{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;margin-bottom:14px}
+.rc{position:relative;overflow:hidden;background:var(--s0);border:1px solid var(--bd0);border-radius:12px;padding:15px 15px 15px 20px}
+.rc.form-premix{background:linear-gradient(180deg,rgba(0,232,176,.05),var(--s0) 60%);border-color:rgba(0,232,176,.28)}
+.rc.form-vial{background:linear-gradient(180deg,rgba(251,191,36,.05),var(--s0) 60%);border-color:rgba(251,191,36,.28)}
+.rc.form-syringe{background:linear-gradient(180deg,rgba(0,212,245,.05),var(--s0) 60%);border-color:rgba(0,212,245,.32)}
+.rc.form-po{background:linear-gradient(180deg,rgba(167,139,250,.05),var(--s0) 60%);border-color:rgba(167,139,250,.28)}
+.rc-bar{position:absolute;left:0;top:0;bottom:0;width:3px}
+.rc-cat{font-family:var(--mono);font-size:.54rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tx1);margin-bottom:3px}
+.rc-name{font-size:1rem;font-weight:800;letter-spacing:-.015em;margin-bottom:2px}
+.rc-names{font-size:.69rem;margin-bottom:10px;line-height:1.6;color:var(--tx2)}
+.fb{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.13em;padding:4px 9px;border-radius:5px;margin-bottom:10px}
+.fb-premix{background:rgba(0,232,176,.12);color:var(--teal);border:1px solid rgba(0,232,176,.4)}
+.fb-vial{background:rgba(251,191,36,.12);color:var(--amber);border:1px solid rgba(251,191,36,.4)}
+.fb-vialmix{background:rgba(244,114,182,.12);color:var(--pink);border:1px solid rgba(244,114,182,.4)}
+.fb-syringe{background:rgba(0,212,245,.12);color:var(--cyan);border:1px solid rgba(0,212,245,.4)}
+.fb-po{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.4)}
+.fb::before{content:"";width:8px;height:8px;border-radius:2px;background:currentColor}
+.form-section-hdr{font-family:var(--mono);font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.18em;margin:14px 0 8px;display:flex;align-items:center;gap:10px}
+.form-section-hdr::after{content:"";flex:1;height:1px;opacity:.3;background:currentColor}
+.form-section-hdr.h-premix{color:var(--teal)}
+.form-section-hdr.h-vial{color:var(--amber)}
+.form-section-hdr.h-vialmix{color:var(--pink)}
+.form-section-hdr.h-syringe{color:var(--cyan)}
+.form-section-hdr.h-po{color:var(--purple)}
+.rc-ind{font-size:.7rem;color:var(--tx1);font-style:italic;margin-bottom:8px;line-height:1.45}
+.rr{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--bd0);font-size:.79rem;gap:8px}
+.rr:last-child{border-bottom:none}
+.rk{color:var(--tx1);flex-shrink:0;font-size:.72rem}
+.rv{font-family:var(--mono);font-weight:700;text-align:right;word-break:break-word;max-width:65%;font-size:.82rem}
+.rv.dose{color:var(--teal)}
+.rv.calc{color:var(--cyan);font-size:.95rem}
+.rv.warn{color:var(--amber)}
+/* MAX value highlight inside any range — call out the upper bound */
+.rv .max,.rv .mx{color:#ff5f6d !important;font-weight:900;background:rgba(255,95,109,.12);padding:1px 6px;border-radius:5px;margin:0 1px;border:1px solid rgba(255,95,109,.3);text-shadow:0 0 6px rgba(255,95,109,.35)}
+.rv.calc .max,.rv.calc .mx{color:#ff7e87 !important}
+.rc-note{margin-top:8px;padding:7px 10px;background:rgba(0,212,245,.05);border:1px solid rgba(0,212,245,.18);border-radius:7px;font-size:.68rem;color:var(--tx1);line-height:1.5}
+.rc-warn{margin-top:8px;padding:7px 10px;background:rgba(255,95,109,.07);border:1px solid rgba(255,95,109,.28);border-radius:7px;font-size:.68rem;color:var(--rose);line-height:1.5;font-weight:600}
+
+/* Diagnosis grid */
+.dx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:8px}
+.dx-card{background:var(--bg2);border:1px solid var(--bd1);border-radius:9px;padding:10px 12px;cursor:pointer;transition:all .13s}
+.dx-card:hover{border-color:var(--bd2);transform:translateY(-1px)}
+.dx-card.on{background:rgba(244,114,182,.08);border-color:var(--rose);box-shadow:0 0 0 1px var(--rose)}
+.dx-name{font-size:.82rem;font-weight:700;color:var(--tx0)}
+.dx-sub{font-size:.62rem;color:var(--tx2);margin-top:2px}
+
+/* Vent table */
+.vent-wrap{overflow-x:auto;margin-top:12px}
+.vt{width:100%;border-collapse:collapse;font-size:.78rem}
+.vt th{background:var(--s2);color:var(--tx1);font-family:var(--mono);font-size:.58rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--bd1);white-space:nowrap}
+.vt td{padding:8px 12px;border-bottom:1px solid var(--bd0);vertical-align:middle}
+.vt tr:last-child td{border-bottom:none}
+.vt tr:hover td{background:var(--s1)}
+.ht-c{font-family:var(--mono);font-weight:700}
+.ibw-c{font-family:var(--mono);color:var(--cyan)}
+.tv-c{font-family:var(--mono);color:var(--teal)}
+.et-c{font-family:var(--mono);color:var(--purple)}
+.ig-c{font-family:var(--mono);color:var(--rose)}
+
+.callout{padding:10px 14px;border-radius:8px;margin:10px 0;font-size:.78rem;line-height:1.55}
+.callout-warn{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.28);color:var(--amber)}
+.callout-danger{background:rgba(255,95,109,.07);border:1px solid rgba(255,95,109,.32);color:var(--rose)}
+.callout-info{background:rgba(0,212,245,.05);border:1px solid rgba(0,212,245,.22);color:var(--cyan)}
+.callout strong{display:inline-block;font-weight:800;margin-right:4px;letter-spacing:.04em}
+
+.empty{text-align:center;padding:36px 20px;color:var(--tx2)}
+.empty .ei{font-size:2.4rem;opacity:.25;margin-bottom:8px}
+.empty .et{font-size:.85rem}
+
+@media(max-width:600px){.topbar{padding:0 12px}.tb-sub{display:none}.page{padding:14px 10px 50px}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-left">
+    <div class="tb-icon">OB</div>
+    <div class="tb-info">
+      <div class="tb-title">StatFlight OB</div>
+      <div class="tb-sub">PHI Chapter 10 &middot; Maternal &amp; Neonatal Transport</div>
+    </div>
+  </div>
+  <div class="status-pill" id="ptStatus">NO PT</div>
+</div>
+
+<div class="nav-tabs">
+  <button class="nav-tab nav-tab-mother on" data-pg="mother">Mother</button>
+  <button class="nav-tab nav-tab-newborn" data-pg="newborn">Newborn</button>
+  <button class="nav-tab nav-tab-tube" data-pg="tube">Intubation</button>
+  <button class="nav-tab nav-tab-vent" data-pg="vent">Vent / Airway</button>
+  <button class="nav-tab nav-tab-meds" data-pg="meds">All Meds</button>
+</div>
+
+<!-- ─────────────── MOTHER ─────────────── -->
+<div class="pg on" id="pgMother">
+<div class="page">
+
+<div class="card tl">
+  <div class="slbl">Maternal Patient</div>
+
+  <div class="pt-sections">
+
+    <!-- ABW SECTION -->
+    <div class="sec sec-wt">
+      <div class="sec-title">Actual Body Weight (ABW)</div>
+      <div class="input-row">
+        <input type="number" id="mWeight" step="0.1" min="0" placeholder="Enter weight">
+        <select id="mWeightUnit"><option value="lbs">lbs</option><option value="kg" selected>kg</option></select>
+      </div>
+      <div class="preset-row" style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">
+        <button type="button" class="cs-btn" onclick="setWeightPreset(50)">50</button>
+        <button type="button" class="cs-btn" onclick="setWeightPreset(60)">60</button>
+        <button type="button" class="cs-btn" onclick="setWeightPreset(70)">70</button>
+        <button type="button" class="cs-btn" onclick="setWeightPreset(80)">80</button>
+        <button type="button" class="cs-btn" onclick="setWeightPreset(100)">100</button>
+      </div>
+      <div class="sec-help">Used for fluid bolus, airway sizing, and any actual-weight dosing.</div>
+    </div>
+
+    <!-- HEIGHT / IBW SECTION -->
+    <div class="sec sec-ht">
+      <div class="sec-title">Height &rarr; IBW (Devine)</div>
+      <div class="input-row">
+        <input type="number" id="mHeight" step="1" min="0" placeholder="Feet">
+        <select id="mHeightUnit"><option value="ft" selected>ft</option><option value="in">in</option><option value="cm">cm</option></select>
+      </div>
+      <div id="mFtInRow" class="input-row" style="margin-top:6px;display:flex">
+        <input type="number" id="mHeightInches" step="1" min="0" max="11" placeholder="Inches">
+      </div>
+      <div class="preset-row" style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap">
+        <button type="button" class="cs-btn" onclick="setHeightPreset(60)">5'0&quot;</button>
+        <button type="button" class="cs-btn" onclick="setHeightPreset(62)">5'2&quot;</button>
+        <button type="button" class="cs-btn" onclick="setHeightPreset(64)">5'4&quot;</button>
+        <button type="button" class="cs-btn" onclick="setHeightPreset(66)">5'6&quot;</button>
+        <button type="button" class="cs-btn" onclick="setHeightPreset(68)">5'8&quot;</button>
+      </div>
+      <div class="sec-help">Used for vent Vt, fentanyl IBW dosing.</div>
+    </div>
+
+    <!-- GA SECTION -->
+    <div class="sec sec-ga" style="grid-column:1 / -1">
+      <div class="sec-title">Gestational Age</div>
+      <div class="input-row" style="max-width:280px">
+        <input type="number" id="mGA" step="1" min="0" max="44" placeholder="weeks">
+        <select disabled style="flex:0 0 80px"><option>weeks</option></select>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PHI 50 kg fallback notice (shows only when nothing entered) -->
+  <div id="phiFallbackBanner" class="callout callout-warn" style="margin-top:10px;display:none">
+    <strong>* PHI 50 kg standard in use.</strong> No ABW or height entered. Tap a preset above or enter values for patient-specific calcs.
+  </div>
+
+  <div class="chips" id="mChips" style="margin-top:12px">
+    <div class="chip c-cyan"><div class="cl">ABW</div><div class="cv" id="cMWt">Not entered</div></div>
+    <div class="chip c-purple"><div class="cl">Height</div><div class="cv" id="cMHt">Not entered</div></div>
+    <div class="chip c-pink"><div class="cl">IBW</div><div class="cv" id="cMIBW">--</div><div class="cs" id="cMIBWNote">From height (Devine)</div></div>
+    <div class="chip c-teal"><div class="cl">Dosing Wt</div><div class="cv" id="cMDose">--</div><div class="cs" id="cMDoseNote">ABW &rarr; IBW &rarr; 50 kg</div></div>
+    <div class="chip c-amber"><div class="cl">BMI</div><div class="cv" id="cMBMI">--</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="slbl">Diagnosis / Complaint</div>
+  <div class="dx-grid" id="dxGrid"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Clinical Picture &amp; Plan of Action (PHI Chapter 10)</div>
+  <div id="mPlanOutput"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Recommended Medications</div>
+  <div id="mDrugs" class="rg">
+    <div class="empty"><div class="ei">○</div><div class="et">Select a diagnosis above</div></div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ─────────────── NEWBORN ─────────────── -->
+<div class="pg" id="pgNewborn">
+<div class="page">
+
+<div class="card tl">
+  <div class="slbl">Newborn / Neonate Patient</div>
+
+  <div class="cs-toggle-row">
+    <span class="cs-toggle-lbl">Color System</span>
+    <button class="cs-btn cs-btn-active" id="csBros" onclick="setColorSys('broselow')">Broselow (A)</button>
+    <button class="cs-btn" id="csHt" onclick="setColorSys('handtevy')">Handtevy (B)</button>
+  </div>
+
+  <div class="color-strip" id="colorStrip"></div>
+
+  <div class="pt-grid">
+    <div>
+      <span class="flbl">Actual Weight (if known)</span>
+      <div class="input-row">
+        <input type="number" id="nWeight" step="0.1" min="0" placeholder="Weight">
+        <select id="nWeightUnit"><option value="lbs">lbs</option><option value="kg" selected>kg</option></select>
+      </div>
+    </div>
+    <div>
+      <span class="flbl">APGAR (1 / 5 min)</span>
+      <div class="input-row">
+        <input type="number" id="apgar1" step="1" min="0" max="10" placeholder="1 min">
+        <input type="number" id="apgar5" step="1" min="0" max="10" placeholder="5 min">
+      </div>
+    </div>
+    <div>
+      <span class="flbl">Minutes Since Birth</span>
+      <input type="number" id="mol" step="1" min="0" max="60" placeholder="0">
+    </div>
+  </div>
+
+  <div class="chips">
+    <div class="chip c-pink"><div class="cl">Color Tier</div><div class="cv" id="cNTier">--</div><div class="cs" id="cNAge">--</div></div>
+    <div class="chip c-cyan"><div class="cl">Dose Wt</div><div class="cv" id="cNWt">--</div></div>
+    <div class="chip c-teal"><div class="cl">SpO2 Target</div><div class="cv" id="cNSpO2">--</div></div>
+    <div class="chip c-amber"><div class="cl">ETT Size</div><div class="cv" id="cNETT">--</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="slbl">NRP Quick Reference</div>
+  <div id="nrpOutput"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Newborn Medications (Weight-Based)</div>
+  <div id="nDrugs" class="rg"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">APGAR Scoring</div>
+  <div class="vent-wrap">
+    <table class="vt">
+      <thead><tr><th>Sign</th><th>0</th><th>1</th><th>2</th></tr></thead>
+      <tbody>
+        <tr><td>Appearance (Color)</td><td>Blue / Pale</td><td>Body pink, extremities blue</td><td>All pink</td></tr>
+        <tr><td>Pulse</td><td>Absent</td><td>&lt; 100</td><td>≥ 100</td></tr>
+        <tr><td>Grimace (Reflex)</td><td>None</td><td>Grimace</td><td>Cry, cough</td></tr>
+        <tr><td>Activity (Tone)</td><td>Limp</td><td>Some flexion</td><td>Active</td></tr>
+        <tr><td>Respirations</td><td>Absent</td><td>Slow / irregular</td><td>Strong cry</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ─────────────── ALL MEDS ─────────────── -->
+<div class="pg" id="pgMeds">
+<div class="page">
+
+<div class="card">
+  <div class="slbl">Browse OB Emergency Medications</div>
+  <div class="tabs" id="medTabs">
+    <button class="tab on" data-cat="all">All</button>
+    <button class="tab" data-cat="hypertension">Hypertension</button>
+    <button class="tab" data-cat="seizure">Seizure / Mag</button>
+    <button class="tab" data-cat="tocolysis">Tocolysis</button>
+    <button class="tab" data-cat="hemorrhage">Hemorrhage</button>
+    <button class="tab" data-cat="pain">Pain / Sedation</button>
+    <button class="tab" data-cat="nv">Nausea</button>
+    <button class="tab" data-cat="other">Other</button>
+    <button class="tab" data-cat="rsi">RSI / Tube</button>
+    <button class="tab" data-cat="newborn">Newborn</button>
+  </div>
+  <div id="allDrugs" class="rg"></div>
+</div>
+
+</div>
+</div>
+
+<!-- ─────────────── INTUBATION ─────────────── -->
+<div class="pg" id="pgTube">
+<div class="page">
+
+<div class="card tl">
+  <div class="callout callout-danger" style="margin:0;font-size:.86rem;line-height:1.55">
+    <strong style="font-size:.95rem">⚠ Pregnancy is a difficult airway by default.</strong><br>
+    Anticipate: airway and oropharyngeal edema · friable nasal mucosa · decreased FRC (rapid desat) · increased aspiration risk (delayed gastric emptying, decreased LES tone) · weight gain alters cricoid landmarks · fewer than 8 weeks of breath-hold reserve.<br>
+    <strong>Mitigations:</strong> ramped position with left lateral tilt 15-30°, aggressive pre-O2 (3-4 min NRB at 15 L/min, NC at 15 L/min for apneic O2), smaller ETT (6.0-7.0 cuffed), backup BIAD ready, surgical airway plan briefed.
+  </div>
+</div>
+
+<div class="card" style="border:1.5px solid rgba(255,95,109,.6);box-shadow:0 0 0 1px rgba(255,95,109,.1) inset">
+  <div class="slbl" style="color:var(--red)">⚡ OB Max-Dose RSI Strategy (Recommended)</div>
+  <div id="rsiMaxDose"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">PHI Formulary Note</div>
+  <div class="callout callout-info" style="font-size:.8rem;line-height:1.55">
+    <strong>What PHI carries and orders for RSI:</strong><br>
+    <span style="color:var(--teal);font-weight:700">✓ Ketamine</span> — preferred RSI induction agent (1.5-2 mg/kg IV, max RSI 2 mg/kg). Max infusion 4 mg/kg/hr adult.<br>
+    <span style="color:var(--teal);font-weight:700">✓ Rocuronium</span> — PHI standing order, 1.5 mg/kg IBW IV or 2 mg/kg IM.<br>
+    <span style="color:var(--amber);font-weight:700">△ Succinylcholine</span> — PHI standing order is for <strong>Dangerous Agitation only</strong> (4 mg/kg IM). Not a PHI-listed routine RSI agent. Avoid in OB whenever roc is available.<br>
+    <span style="color:var(--tx2);font-weight:700">✗ Etomidate</span> — <strong>NOT on PHI Health formulary</strong>. Listed in app for reference only.
+  </div>
+</div>
+
+<div class="card">
+  <div class="slbl">SAFER Pre-Intubation Checklist (PHI Chapter 2)</div>
+  <div class="safer-grid" id="saferGrid"></div>
+  <div class="safer-actions">
+    <button class="safer-btn" onclick="resetSafer()">Reset checklist</button>
+    <span style="font-size:.7rem;color:var(--tx2);align-self:center;margin-left:6px">Tap rows to mark complete. State persists across sessions.</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="slbl">Induction Medications (auto-calc by ABW)</div>
+  <div id="tubeInduction" class="rg"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Paralytics</div>
+  <div id="tubeParalytics" class="rg"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Post-Intubation Sedation Drips</div>
+  <div id="tubeSedation" class="rg"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Equipment Sizes (auto from weight)</div>
+  <div id="tubeEquipment"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Pre-Intubation Optimization</div>
+  <div class="callout callout-info" style="font-size:.82rem;line-height:1.6">
+    <ol style="padding-left:18px;margin:0">
+      <li><strong>Position:</strong> Ramped (ear to sternal notch), left lateral tilt 15-30° to displace gravid uterus and reduce aortocaval compression.</li>
+      <li><strong>Pre-oxygenate:</strong> NRB at 15 L/min for at least 3-4 min, OR BVM with PEEP valve. Add NC at 15 L/min for apneic oxygenation.</li>
+      <li><strong>Optimize hemodynamics:</strong> IV fluids running, push-dose epi or norepi drip prepped if hypotensive (induction will worsen BP).</li>
+      <li><strong>Aspiration risk:</strong> Cricoid pressure is operator-dependent — release if it impairs view.</li>
+      <li><strong>Backup plan briefed:</strong> Plan A (DL/VL), Plan B (BIAD i-gel), Plan C (surgical cric). Verify failed-airway gear is open and accessible.</li>
+      <li><strong>Mag interaction:</strong> Magnesium potentiates BOTH succinylcholine and rocuronium — anticipate prolonged paralysis. Avoid sux if possible in eclamptic on mag.</li>
+    </ol>
+  </div>
+</div>
+
+<div class="card">
+  <div class="slbl">Post-Intubation Confirmation &amp; Care</div>
+  <div class="callout callout-info" style="font-size:.82rem;line-height:1.6">
+    <ol style="padding-left:18px;margin:0">
+      <li><strong>EtCO2 sustained ≥ 4 waveforms</strong> over 6 breaths — gold standard.</li>
+      <li>Auscultate epigastrium first, then bilateral chest. Watch for chest rise.</li>
+      <li><strong>Secure tube</strong> — note depth at the lip (typically 21 cm female).</li>
+      <li><strong>Post-intubation labs/vitals:</strong> recheck BP within 2 min (induction commonly causes hypotension). NEW SpO2 target, EtCO2 30-35 mmHg.</li>
+      <li><strong>Transition to vent</strong> — see Vent/Airway tab. Ensure analgesia + sedation drips running before paralytic wears off.</li>
+      <li><strong>Continue fetal monitoring</strong> if pre-delivery. Maternal hypoxia and hypotension are the leading causes of fetal compromise during induction.</li>
+    </ol>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ─────────────── VENT / AIRWAY ─────────────── -->
+<div class="pg" id="pgVent">
+<div class="page">
+
+<div class="card tl">
+  <div class="slbl">Patient Parameters (auto)</div>
+  <div class="chips" style="margin-top:6px">
+    <div class="chip c-cyan"><div class="cl">Weight</div><div class="cv" id="vWt">--</div></div>
+    <div class="chip c-purple"><div class="cl">Height</div><div class="cv" id="vHt">--</div></div>
+    <div class="chip c-pink"><div class="cl">IBW</div><div class="cv" id="vIBW">--</div></div>
+    <div class="chip c-amber"><div class="cl">Diagnosis</div><div class="cv" id="vDx" style="font-size:.78rem">--</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="slbl">Clinical Picture &amp; Plan of Action (PHI Chapter 10)</div>
+  <div id="planOutput"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Maternal Vent Settings</div>
+  <div id="ventMaternal"><div class="empty"><div class="et">Enter weight and height on Mother tab.</div></div></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Neonatal Vent Settings (if delivery occurs)</div>
+  <div id="ventNeonatal"></div>
+</div>
+
+<div class="card">
+  <div class="slbl">Maternal Rescue Airway</div>
+  <div id="airwayMaternal"><div class="empty"><div class="et">Enter weight on Mother tab.</div></div></div>
+  <div class="callout callout-warn"><strong>Pregnancy is a difficult airway by default.</strong>
+    Anticipate edema, mucosal friability, decreased FRC, faster desaturation, increased aspiration risk.
+    Pre-oxygenate aggressively. Use ramped position. Consider a smaller ETT than predicted (cervical and oropharyngeal edema).</div>
+</div>
+
+<div class="card">
+  <div class="slbl">Newborn Airway</div>
+  <div id="airwayNeonatal"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// COLOR SYSTEMS — Broselow / Handtevy
+// ════════════════════════════════════════════════════════════════
+var BROSELOW_COLORS = {
+  '0.5 kg':{name:'Gray',hex:'#9ca3af',text:'#fff',age:'Neonate',wt:0.5},
+  '1 kg':  {name:'Gray',hex:'#9ca3af',text:'#fff',age:'Neonate',wt:1},
+  '3 kg':  {name:'Pink',hex:'#f472b6',text:'#fff',age:'Term Newborn',wt:3.5},
+  '6 kg':  {name:'Red',hex:'#ef4444',text:'#fff',age:'4-5 mo',wt:6},
+  '8 kg':  {name:'Purple',hex:'#a855f7',text:'#fff',age:'6-9 mo',wt:8},
+  '10 kg': {name:'Yellow',hex:'#fbbf24',text:'#111',age:'1 yr',wt:10},
+  '12 kg': {name:'White',hex:'#e2e8f0',text:'#111',age:'2 yr',wt:12},
+  '15 kg': {name:'Blue',hex:'#3b82f6',text:'#fff',age:'3-4 yr',wt:15},
+  '20 kg': {name:'Orange',hex:'#f97316',text:'#fff',age:'5-6 yr',wt:20},
+  '30 kg': {name:'Green',hex:'#22c55e',text:'#fff',age:'7-9 yr',wt:30}
+};
+var HANDTEVY_COLORS = {
+  '1 kg':  {name:'Gray',hex:'#9ca3af',text:'#fff',age:'Neonate',wt:1},
+  '5 kg':  {name:'Gray',hex:'#9ca3af',text:'#fff',age:'2 mo',wt:5},
+  '6 kg':  {name:'Pink',hex:'#f472b6',text:'#fff',age:'4 mo',wt:6},
+  '8 kg':  {name:'Red',hex:'#ef4444',text:'#fff',age:'6 mo',wt:8},
+  '10 kg': {name:'Purple',hex:'#a855f7',text:'#fff',age:'1 yr',wt:10},
+  '12 kg': {name:'Yellow',hex:'#fbbf24',text:'#111',age:'2 yr',wt:12},
+  '15 kg': {name:'White',hex:'#e2e8f0',text:'#111',age:'3 yr',wt:15},
+  '20 kg': {name:'Blue',hex:'#3b82f6',text:'#fff',age:'5 yr',wt:20},
+  '25 kg': {name:'Orange',hex:'#f97316',text:'#fff',age:'7 yr',wt:25},
+  '30 kg': {name:'Green',hex:'#22c55e',text:'#fff',age:'9 yr',wt:30}
+};
+
+window.colorSystem = (function(){
+  try{ return localStorage.getItem('ob_color_sys') || 'handtevy'; }catch(e){ return 'handtevy'; }
+})();
+
+// Newborn focus: target 0.5–10 kg primarily
+function getColorMap(){ return window.colorSystem === 'handtevy' ? HANDTEVY_COLORS : BROSELOW_COLORS; }
+
+function setColorSys(sys){
+  window.colorSystem = sys;
+  try{ localStorage.setItem('ob_color_sys', sys); }catch(e){}
+  document.getElementById('csBros').classList.toggle('cs-btn-active', sys==='broselow');
+  document.getElementById('csHt').classList.toggle('cs-btn-active', sys==='handtevy');
+  renderColorStrip();
+  recomputeNewborn();
+}
+
+function renderColorStrip(){
+  var map = getColorMap();
+  var strip = document.getElementById('colorStrip');
+  strip.innerHTML = '';
+  Object.keys(map).forEach(function(k){
+    var c = map[k];
+    var div = document.createElement('div');
+    div.className = 'color-cell' + (state.nb.tier === k ? ' active' : '');
+    div.style.background = c.hex;
+    div.style.color = c.text;
+    div.dataset.tier = k;
+    div.innerHTML = '<span class="cc-wt">' + c.wt + ' kg</span><span class="cc-age">' + c.age + '</span>';
+    div.onclick = function(){
+      state.nb.tier = k;
+      state.nb.tierWt = c.wt;
+      renderColorStrip();
+      recomputeNewborn();
+    };
+    strip.appendChild(div);
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// CONVERSIONS & STATE
+// ════════════════════════════════════════════════════════════════
+var round = function(v, d){ d = d||1; if(!isFinite(v)) return null; var m = Math.pow(10,d); return Math.round(v*m)/m; };
+var lbToKg = function(lb){ return lb * 0.45359237; };
+var kgToLb = function(kg){ return kg / 0.45359237; };
+var ftInToCm = function(ft, inch){ return (ft*12 + inch) * 2.54; };
+var inToCm = function(inch){ return inch * 2.54; };
+var cmToFtIn = function(cm){ var t = cm/2.54; var ft = Math.floor(t/12); var inch = t - ft*12; return {ft:ft, inch:round(inch,1)}; };
+
+// Devine female IBW
+var ibwFemale = function(cm){ var inch = cm/2.54; if(inch <= 60) return 45.5; return 45.5 + 2.3*(inch-60); };
+// PHI Chapter 2 SAFER standard female: 5'2" (62 in / 157 cm) = 50 kg IBW
+var STD_FEMALE_HT_CM = 62 * 2.54;   // 157.48 cm
+var STD_FEMALE_IBW = 50;             // PHI standard (red row on Height-to-IBM chart)
+var STD_FEMALE_WT = 50;              // PHI standard female weight for fallback dosing
+
+// Effective weight / IBW used for dosing.
+// Order of precedence:  entered ABW  →  IBW from entered height  →  PHI 50 kg standard.
+function dosingWt(){ return state.m.weightKg || state.m.ibwFromHeight || STD_FEMALE_WT; }
+function dosingIbw(){ return state.m.ibwFromHeight || STD_FEMALE_IBW; }
+// Are we actually using the PHI 50 kg fallback? Only when BOTH ABW and height are unknown.
+function isPhiFallback(){ return !state.m.weightKg && !state.m.heightCm; }
+
+// Quick preset buttons fill the height field in inches and recompute
+function setHeightPreset(totalInches){
+  var ft = Math.floor(totalInches/12);
+  var inch = totalInches - ft*12;
+  var unit = document.getElementById('mHeightUnit');
+  unit.value = 'ft';
+  refreshMHeight();
+  document.getElementById('mHeight').value = ft;
+  document.getElementById('mHeightInches').value = inch;
+  recomputeMother();
+}
+// Weight preset (kg) — fills the weight field and recomputes
+function setWeightPreset(kg){
+  var unit = document.getElementById('mWeightUnit');
+  unit.value = 'kg';
+  document.getElementById('mWeight').value = kg;
+  recomputeMother();
+}
+
+var state = {
+  // weightKg = entered ABW; heightCm = entered height; ibwFromHeight = Devine IBW from heightCm only;
+  // ibw = effective IBW used in display (= ibwFromHeight || PHI 50);
+  // ibwIsDefault = true when ibw came from PHI 50 fallback (no height entered)
+  m: {weightKg:null, heightCm:null, ibwFromHeight:null, ibw:null, ibwIsDefault:false, bmi:null, ga:null, dx:''},
+  nb: {weightKg:null, tier:null, tierWt:null, doseWt:null, mol:null, apgar1:null, apgar5:null}
+};
+
+// SpO2 by minute of life
+function spo2Target(min){
+  if(min == null || isNaN(min)) return null;
+  if(min < 1) return '60-65%';
+  if(min < 2) return '60-65%';
+  if(min < 3) return '65-70%';
+  if(min < 4) return '70-75%';
+  if(min < 5) return '75-80%';
+  if(min < 10) return '80-85%';
+  return '85-95%';
+}
+function ettSize(wKg){
+  if(wKg == null) return null;
+  if(wKg < 1) return '2.5 uncuffed';
+  if(wKg < 2) return '2.5-3.0 uncuffed';
+  if(wKg < 3) return '3.0 uncuffed';
+  if(wKg < 4) return '3.5 uncuffed';
+  if(wKg < 10) return '3.5-4.0 uncuffed';
+  return '4.0+ uncuffed';
+}
+
+// ════════════════════════════════════════════════════════════════
+// MOTHER PATIENT INPUT
+// ════════════════════════════════════════════════════════════════
+function refreshMHeight(){
+  var u = document.getElementById('mHeightUnit').value;
+  var ftRow = document.getElementById('mFtInRow');
+  var hMain = document.getElementById('mHeight');
+  if(u === 'ft'){ ftRow.style.display = 'flex'; hMain.placeholder = 'Feet'; }
+  else { ftRow.style.display = 'none'; hMain.placeholder = u === 'in' ? 'Inches' : 'cm'; }
+}
+function recomputeMother(){
+  var w = parseFloat(document.getElementById('mWeight').value);
+  var wU = document.getElementById('mWeightUnit').value;
+  var hM = parseFloat(document.getElementById('mHeight').value);
+  var hI = parseFloat(document.getElementById('mHeightInches').value);
+  var hU = document.getElementById('mHeightUnit').value;
+  var ga = parseFloat(document.getElementById('mGA').value);
+
+  state.m.weightKg = isFinite(w) ? (wU === 'lbs' ? lbToKg(w) : w) : null;
+  if(isFinite(hM)){
+    if(hU === 'cm') state.m.heightCm = hM;
+    else if(hU === 'in') state.m.heightCm = inToCm(hM);
+    else if(hU === 'ft') state.m.heightCm = ftInToCm(hM, isFinite(hI) ? hI : 0);
+  } else state.m.heightCm = null;
+
+  // ibwFromHeight is calculated ONLY from entered height (no fallback)
+  state.m.ibwFromHeight = state.m.heightCm ? ibwFemale(state.m.heightCm) : null;
+  // ibw shown in display: real IBW if height entered, else PHI 50 fallback
+  if(state.m.ibwFromHeight){
+    state.m.ibw = state.m.ibwFromHeight;
+    state.m.ibwIsDefault = false;
+  } else {
+    state.m.ibw = STD_FEMALE_IBW;
+    state.m.ibwIsDefault = true;
+  }
+  state.m.bmi = (state.m.weightKg && state.m.heightCm) ? state.m.weightKg / Math.pow(state.m.heightCm/100, 2) : null;
+  state.m.ga = isFinite(ga) ? ga : null;
+
+  // Render chips
+  document.getElementById('cMWt').textContent = state.m.weightKg
+    ? round(state.m.weightKg,1) + ' kg / ' + round(kgToLb(state.m.weightKg),1) + ' lb'
+    : 'Not entered';
+  document.getElementById('cMHt').textContent = state.m.heightCm
+    ? (function(){ var f = cmToFtIn(state.m.heightCm); return round(state.m.heightCm,1) + ' cm / ' + f.ft + "'" + f.inch + '"'; })()
+    : 'Not entered';
+  document.getElementById('cMIBW').textContent = state.m.ibwFromHeight
+    ? round(state.m.ibwFromHeight,1) + ' kg'
+    : '50 kg *';
+  document.getElementById('cMIBWNote').textContent = state.m.ibwFromHeight
+    ? 'From height (Devine)'
+    : '* PHI 50 kg fallback';
+
+  // Dosing weight = ABW or IBW from height or 50 PHI
+  var dw = dosingWt();
+  var dwSrc = state.m.weightKg
+    ? 'ABW (entered)'
+    : (state.m.ibwFromHeight ? 'IBW from height' : '* PHI 50 kg fallback');
+  document.getElementById('cMDose').textContent = round(dw,1) + ' kg';
+  document.getElementById('cMDoseNote').textContent = dwSrc;
+
+  document.getElementById('cMBMI').textContent = state.m.bmi ? round(state.m.bmi,1) : '--';
+
+  // Status pill
+  document.getElementById('ptStatus').textContent = state.m.weightKg
+    ? 'M ' + round(state.m.weightKg,0) + 'kg ABW'
+    : (state.m.heightCm ? 'M IBW ' + round(state.m.ibwFromHeight,0) + 'kg' : 'M 50kg STD');
+
+  // PHI fallback banner — only when BOTH ABW and height unknown
+  var fb = document.getElementById('phiFallbackBanner');
+  if(fb) fb.style.display = isPhiFallback() ? 'block' : 'none';
+
+  renderDiagnosisDrugs();
+  renderVent();
+  renderAirway();
+  renderAllDrugs();
+  renderPlan();
+  renderIntubation();
+}
+
+// ════════════════════════════════════════════════════════════════
+// NEWBORN INPUT
+// ════════════════════════════════════════════════════════════════
+function recomputeNewborn(){
+  var w = parseFloat(document.getElementById('nWeight').value);
+  var wU = document.getElementById('nWeightUnit').value;
+  state.nb.weightKg = isFinite(w) ? (wU === 'lbs' ? lbToKg(w) : w) : null;
+  state.nb.mol = parseFloat(document.getElementById('mol').value);
+  state.nb.apgar1 = parseFloat(document.getElementById('apgar1').value);
+  state.nb.apgar5 = parseFloat(document.getElementById('apgar5').value);
+
+  // Dose weight: actual if known, else color tier weight
+  state.nb.doseWt = state.nb.weightKg || state.nb.tierWt;
+
+  var map = getColorMap();
+  var c = state.nb.tier ? map[state.nb.tier] : null;
+  document.getElementById('cNTier').textContent = c ? c.name + ' / ' + c.wt + ' kg' : '--';
+  document.getElementById('cNAge').textContent = c ? c.age : '';
+  document.getElementById('cNWt').textContent = state.nb.doseWt ? round(state.nb.doseWt,2) + ' kg' : '--';
+  document.getElementById('cNSpO2').textContent = spo2Target(state.nb.mol) || '--';
+  document.getElementById('cNETT').textContent = ettSize(state.nb.doseWt) || '--';
+
+  renderNRP();
+  renderNewbornDrugs();
+  renderVent();
+  renderAirway();
+  renderAllDrugs();
+}
+
+// ════════════════════════════════════════════════════════════════
+// DIAGNOSES (PHI Chapter 10 OB)
+// ════════════════════════════════════════════════════════════════
+var DIAGNOSES = [
+  {id:'ptl', name:'Preterm / Active Labor', sub:'Tocolysis indicated'},
+  {id:'prom', name:'PROM', sub:'Premature ROM'},
+  {id:'bleeding', name:'Vaginal Bleeding', sub:'Previa / abruption'},
+  {id:'pph', name:'Postpartum Hemorrhage', sub:'>500 mL vag / >1000 mL CS'},
+  {id:'postpartum', name:'Routine Postpartum', sub:'Standard care'},
+  {id:'pih', name:'PIH / Mild Preeclampsia', sub:'Seizure prophylaxis'},
+  {id:'severe_pre', name:'Severe Preeclampsia', sub:'SBP >160 / DBP >110'},
+  {id:'eclampsia', name:'Eclamptic Seizure', sub:'Active convulsion'},
+  {id:'thyroid', name:'Thyroid Storm', sub:'Hypermetabolic state'},
+  {id:'pain', name:'Labor Pain', sub:'Unrelieved by tocolysis'},
+  {id:'nv', name:'Nausea / Vomiting', sub:''},
+  {id:'anxiety', name:'Anxiety', sub:''},
+  {id:'mag_tox', name:'Magnesium Toxicity', sub:'Calcium rescue'},
+  {id:'cord_prolapse', name:'Cord Prolapse', sub:'Obstetric emergency'},
+  {id:'precipitous', name:'Precipitous Delivery', sub:'Imminent delivery'},
+  {id:'newborn', name:'Newborn Resuscitation', sub:'Post-delivery'}
+];
+
+function renderDxGrid(){
+  var grid = document.getElementById('dxGrid');
+  grid.innerHTML = DIAGNOSES.map(function(d){
+    return '<div class="dx-card' + (state.m.dx===d.id?' on':'') + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
+  }).join('');
+  grid.querySelectorAll('.dx-card').forEach(function(el){
+    el.onclick = function(){
+      state.m.dx = el.dataset.id === state.m.dx ? '' : el.dataset.id;
+      renderDxGrid();
+      renderDiagnosisDrugs();
+    };
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// DRUG LIBRARY (PHI Chapter 10)
+// ════════════════════════════════════════════════════════════════
+function fmtCalc(label){ return '<span class="rv calc">' + label + '</span>'; }
+// Wrap max-value of a range in a coral-highlighted span
+function mx(v){ return '<span class="mx">' + v + '</span>'; }
+// Build a "lo to MAX unit" string
+function rng(lo, hi, unit){ return lo + ' to ' + mx(hi) + (unit ? ' ' + unit : ''); }
+// FORM_LABELS: maps form type → display label
+var FORM_LABELS = {
+  premix:    'Premix Bag — Ready to Hang',
+  vial:      'Vial — Draw Up',
+  vialmix:   'Vial → Mix to Bag',
+  syringe:   'Pre-filled Syringe — Ready to Push',
+  po:        'PO — Tablet / Capsule'
+};
+function formBadge(form){
+  if(!form) return '';
+  return '<div class="fb fb-' + form + '">' + (FORM_LABELS[form] || form) + '</div>';
+}
+function rcCard(opts){
+  // opts: name, generic, indication, color, form, rows[{k,v,cls}], note, warn
+  var rows = (opts.rows||[]).map(function(r){
+    return '<div class="rr"><span class="rk">' + r.k + '</span><span class="rv ' + (r.cls||'dose') + '">' + r.v + '</span></div>';
+  }).join('');
+  var note = opts.note ? '<div class="rc-note">' + opts.note + '</div>' : '';
+  var warn = opts.warn ? '<div class="rc-warn">' + opts.warn + '</div>' : '';
+  var ind = opts.indication ? '<div class="rc-ind">' + opts.indication + '</div>' : '';
+  var sub = opts.generic ? '<div class="rc-names">' + opts.generic + '</div>' : '';
+  var formCls = opts.form ? ' form-' + opts.form : '';
+  var badge = formBadge(opts.form);
+  return '<div class="rc' + formCls + '"><div class="rc-bar" style="background:' + (opts.color || 'var(--cyan)') + '"></div>' +
+    '<div class="rc-cat">' + (opts.cat || '') + '</div>' +
+    '<div class="rc-name">' + opts.name + '</div>' +
+    sub + badge + ind + rows + note + warn + '</div>';
+}
+
+// ──── Maternal drugs ────
+// PHI carries Magnesium Sulfate 5 g / 10 mL vials (50% = 500 mg/mL)
+// Premix prep: 4 vials (20 g = 40 mL of 50%) added to 500 mL NS bag ≈ 40 mg/mL working solution
+// From premix: 1 g = 25 mL  →  2 g/hr = 50 mL/hr, 3 g/hr = 75 mL/hr, 4 g/hr = 100 mL/hr
+function magVol(g){ return round(g*25, 0) + ' mL'; }
+function magRate(gPerHr){ return round(gPerHr*25, 0) + ' mL/hr'; }
+function magLoadRate(g, min){ return round((g*25)/(min/60), 0) + ' mL/hr × ' + min + ' min'; }
+// Volume of 50% mag (5 g/10 mL) needed for a given gram dose: 1 g = 2 mL of 50%
+function magVialVol(g){ return round(g*2, 1) + ' mL of 50% (' + round(g/5, 2) + ' vials)'; }
+
+var DRUGS_MATERNAL = {
+  magPreeclampsia: function(){
+    return rcCard({
+      name:'Magnesium Sulfate', generic:'Mg2+ infusion — Stock 5 g / 10 mL vial (50% = 500 mg/mL)', cat:'SEIZURE / MAG',
+      form:'vialmix',
+      indication:'Seizure prophylaxis in preeclampsia / PIH', color:'var(--purple)',
+      rows:[
+        {k:'Mix premix bag', v:'4 vials (20 g / 40 mL) into 500 mL NS bag = 40 mg/mL', cls:'calc'},
+        {k:'Loading', v:'4 to ' + mx('6') + ' gm IV over 20-30 min'},
+        {k:'Load — from vial', v:magVialVol(4) + '  /  ' + mx(magVialVol(6)), cls:'calc'},
+        {k:'Load — from premix', v:magVol(4) + ' (4 g) to ' + mx(magVol(6) + ' (6 g)'), cls:'calc'},
+        {k:'Load pump rate', v:magLoadRate(4,20) + '  /  ' + mx(magLoadRate(6,30)), cls:'calc'},
+        {k:'Maintenance', v:'2 gm/hr IV continuous'},
+        {k:'Maint pump rate', v:magRate(2), cls:'calc'},
+        {k:'Toxicity check', v:'DTRs, RR, AMS', cls:'warn'}
+      ],
+      note:'Mix loading dose: draw appropriate vials (1 g = 2 mL of 50%), add to 100-150 mL NS, infuse over 20-30 min. Maintenance: hang the 20 g/500 mL premix at 50 mL/hr.'
+    });
+  },
+  magEclampsia: function(){
+    return rcCard({
+      name:'Magnesium Sulfate', generic:'Eclampsia load — Stock 5 g / 10 mL vial (50%)', cat:'SEIZURE / MAG',
+      form:'vialmix',
+      indication:'Active eclamptic seizure', color:'var(--rose)',
+      rows:[
+        {k:'Loading', v:'6 gm IV over 15-20 min'},
+        {k:'Load — from vial', v:magVialVol(6), cls:'calc'},
+        {k:'Mix in NS', v:'12 mL of 50% mag into 100-150 mL NS, infuse over 15-20 min', cls:'calc'},
+        {k:'Load — premix bag', v:magVol(6) + ' from 20 g/500 mL bag', cls:'calc'},
+        {k:'Load pump rate', v:magLoadRate(6,15) + '  /  ' + magLoadRate(6,20), cls:'calc'},
+        {k:'Maintenance', v:'2 gm/hr IV continuous'},
+        {k:'Maint premix mix', v:'4 vials (20 g / 40 mL) → 500 mL NS = 40 mg/mL', cls:'calc'},
+        {k:'Maint pump rate', v:magRate(2), cls:'calc'}
+      ],
+      note:'If less than 6 gm given PTA, give additional bolus to bring total to 6 gm.',
+      warn:'CONTRAINDICATED within 1 hour of nifedipine.'
+    });
+  },
+  magTocolysis: function(){
+    return rcCard({
+      name:'Magnesium Sulfate', generic:'Tocolysis dose — Stock 5 g / 10 mL vial (50%)', cat:'TOCOLYSIS',
+      form:'vialmix',
+      indication:'Preterm labor / tocolysis in active bleeding', color:'var(--purple)',
+      rows:[
+        {k:'Loading', v:'6 gm IV over 20-30 min'},
+        {k:'Load — from vial', v:magVialVol(6), cls:'calc'},
+        {k:'Mix in NS', v:'12 mL of 50% mag into 100-150 mL NS', cls:'calc'},
+        {k:'Load — premix bag', v:magVol(6) + ' from 20 g/500 mL bag', cls:'calc'},
+        {k:'Load pump rate', v:magLoadRate(6,20) + '  /  ' + magLoadRate(6,30), cls:'calc'},
+        {k:'Maintenance', v:'3 to ' + mx('4') + ' gm/hr IV continuous'},
+        {k:'Maint premix mix', v:'4 vials (20 g / 40 mL) → 500 mL NS = 40 mg/mL', cls:'calc'},
+        {k:'Maint pump rate', v:magRate(3) + ' to ' + mx(magRate(4)), cls:'calc'},
+        {k:'Titration', v:'q 45-60 min PRN'}
+      ],
+      note:'Target: less than 1 contraction every 10 min. Stop if RR < 12 or DTRs lost.',
+      warn:'CONTRAINDICATED within 1 hour of nifedipine.'
+    });
+  },
+  labetalol: function(){
+    // PHI carries 100 mg / 20 mL vials (5 mg/mL)
+    return rcCard({
+      name:'Labetalol', generic:'Combined α/β blocker — Stock 100 mg / 20 mL vial (5 mg/mL)', cat:'HTN',
+      form:'vial',
+      indication:'Severe-range BP (2 SBP > 160 OR 2 DBP > 110 in 15 min)', color:'var(--cyan)',
+      rows:[
+        {k:'Mix', v:'Push undiluted from 100 mg/20 mL vial — or dilute 100 mg in 100 mL NS = 1 mg/mL drip', cls:'calc'},
+        {k:'Dose 1', v:'20 mg slow IV push over 2 min'},
+        {k:'Dose 1 vol', v:'4 mL of 5 mg/mL  /  20 mL of 1 mg/mL diluted', cls:'calc'},
+        {k:'Dose 2', v:'40 mg IV in 10-20 min PRN'},
+        {k:'Dose 2 vol', v:'8 mL of 5 mg/mL  /  40 mL of 1 mg/mL', cls:'calc'},
+        {k:'Dose 3+', v:mx('80 mg') + ' IV q 10-20 min PRN'},
+        {k:'Dose 3 vol', v:mx('16 mL of 5 mg/mL') + '  /  ' + mx('80 mL of 1 mg/mL'), cls:'calc'},
+        {k:'Max total', v:mx('300 mg (= 3 vials / 60 mL)'), cls:'warn'}
+      ],
+      note:'Push slowly with patient supine. Use ONE agent through full protocol before switching. Treat within 10-20 min of severe-range BP. For drip: 100 mg in 100 mL NS = 1 mg/mL, titrate.'
+    });
+  },
+  hydralazine: function(){
+    // Stock 20 mg/mL; commonly diluted to 1 mg/mL (1 mL drug + 19 mL NS)
+    return rcCard({
+      name:'Hydralazine', generic:'Direct vasodilator (Stock 20 mg/mL — dilute to 1 mg/mL)', cat:'HTN',
+      form:'vial',
+      indication:'Severe-range BP (alternative to labetalol)', color:'var(--cyan)',
+      rows:[
+        {k:'Dose 1', v:'10 mg IV over 2 min'},
+        {k:'Dose 1 vol', v:'0.5 mL stock  /  10 mL @ 1 mg/mL', cls:'calc'},
+        {k:'Dose 2', v:'10 mg IV at 20 min PRN'},
+        {k:'Dose 2 vol', v:'0.5 mL stock  /  10 mL @ 1 mg/mL', cls:'calc'},
+        {k:'Dose 3', v:'5 mg IV at another 20 min'},
+        {k:'Dose 3 vol', v:'0.25 mL stock  /  5 mL @ 1 mg/mL', cls:'calc'},
+        {k:'Max total', v:mx('30 mg'), cls:'warn'}
+      ],
+      note:'Target DBP 90-105 or 20% reduction.',
+      warn:'HOLD if HR > 120.'
+    });
+  },
+  nifedipine: function(){
+    return rcCard({
+      name:'Nifedipine', generic:'Calcium channel blocker (10 mg IR caps)', cat:'HTN',
+      form:'po',
+      indication:'Severe-range BP (PO option)', color:'var(--cyan)',
+      rows:[
+        {k:'Dose 1', v:'10 mg PO'},
+        {k:'Dose 1 caps', v:'1 cap × 10 mg', cls:'calc'},
+        {k:'Dose 2', v:'20 mg PO at 30 min PRN'},
+        {k:'Dose 2 caps', v:'2 caps × 10 mg', cls:'calc'},
+        {k:'Dose 3', v:'20 mg PO at another 30 min PRN'},
+        {k:'Max total', v:mx('50 mg'), cls:'warn'}
+      ],
+      warn:'CONTRAINDICATES magnesium for 1 hour after dose.'
+    });
+  },
+  lorazepamSeizure: function(){
+    // Stock 2 mg/mL
+    return rcCard({
+      name:'Lorazepam', generic:'Benzodiazepine - eclampsia (Stock 2 mg/mL)', cat:'SEIZURE',
+      form:'vial',
+      indication:'Eclamptic seizure control', color:'var(--rose)',
+      rows:[
+        {k:'Dose', v:'2 mg IV / IM / IN'},
+        {k:'Volume', v:'1 mL', cls:'calc'},
+        {k:'Repeat', v:'q 5 min until controlled'}
+      ]
+    });
+  },
+  midazolamSeizure: function(){
+    // Stock 5 mg/mL or 1 mg/mL — show both
+    return rcCard({
+      name:'Midazolam', generic:'Benzodiazepine - eclampsia (alt)', cat:'SEIZURE',
+      form:'vial',
+      indication:'Eclamptic seizure control if no lorazepam', color:'var(--rose)',
+      rows:[
+        {k:'Dose', v:'5 mg IV / IM / IN'},
+        {k:'Volume', v:'1 mL of 5 mg/mL  /  5 mL of 1 mg/mL', cls:'calc'}
+      ]
+    });
+  },
+  terbutaline: function(){
+    // Stock 1 mg/mL
+    return rcCard({
+      name:'Terbutaline', generic:'β2 agonist - fast tocolysis (Stock 1 mg/mL)', cat:'TOCOLYSIS',
+      form:'vial',
+      indication:'Contractions more frequent than q 6 min (bridge while mag prepared)', color:'var(--orange)',
+      rows:[
+        {k:'Dose', v:'0.25 mg SQ'},
+        {k:'Volume', v:'0.25 mL', cls:'calc'},
+        {k:'Repeat', v:'q 20-30 min PRN'}
+      ],
+      warn:'Avoid in maternal tachyarrhythmia, cardiac disease, uncontrolled diabetes.'
+    });
+  },
+  ketorolac: function(){
+    // Stock 30 mg/mL
+    return rcCard({
+      name:'Ketorolac', generic:'NSAID alternative tocolytic (Stock 30 mg/mL)', cat:'TOCOLYSIS',
+      form:'vial',
+      indication:'Tocolysis when terbutaline contraindicated', color:'var(--orange)',
+      rows:[
+        {k:'Dose', v:'30 mg IV over 30-60 sec'},
+        {k:'Volume', v:'1 mL', cls:'calc'},
+        {k:'Repeat', v:'1× after 60 min'}
+      ]
+    });
+  },
+  oxytocin: function(){
+    // 30 u in 500 mL = 0.06 u/mL → 500 mL/hr = 30 u/hr; 1000 mL/hr = 60 u/hr
+    return rcCard({
+      name:'Oxytocin', generic:'Pitocin (10 u/mL stock — Mix 30 u / 500 mL = 0.06 u/mL)', cat:'HEMORRHAGE',
+      form:'vialmix',
+      indication:'Postpartum atony / PPH (after placenta delivers)', color:'var(--teal)',
+      rows:[
+        {k:'Mix', v:'30 units in 500 mL NS/LR'},
+        {k:'Mix volume', v:'3 mL of 10 u/mL into 500 mL bag', cls:'calc'},
+        {k:'Rate', v:'500-1000 mL/hr (= 30-60 u/hr)'},
+        {k:'No IV', v:'10 units IM'},
+        {k:'IM volume', v:'1 mL of 10 u/mL', cls:'calc'}
+      ],
+      note:'Combine with fundal massage. Titrate to sustain uterine contraction.'
+    });
+  },
+  txa: function(){
+    // Stock 100 mg/mL
+    return rcCard({
+      name:'Tranexamic Acid (TXA)', generic:'Antifibrinolytic (Stock 100 mg/mL)', cat:'HEMORRHAGE',
+      form:'vialmix',
+      indication:'Postpartum hemorrhage', color:'var(--teal)',
+      rows:[
+        {k:'1st dose', v:'1 gm IV over 10 min'},
+        {k:'1st vol', v:'10 mL (mix in 100 mL NS, run @ 600 mL/hr × 10 min)', cls:'calc'},
+        {k:'2nd dose', v:'1 gm IV over 10 min if bleeding continues at 30 min'},
+        {k:'2nd vol', v:'10 mL', cls:'calc'}
+      ],
+      note:'Within 3 hr of bleeding onset. Rule out retained placenta, full bladder, prolapsed uterus first.'
+    });
+  },
+  fentanyl: function(){
+    // Stock 50 mcg/mL — IBW-based dose. Uses entered height first; PHI 50 only if no height.
+    var ibw = dosingIbw();
+    var actual = state.m.weightKg;
+    var dfltIbw = !state.m.ibwFromHeight;
+    var lo = round(0.5*ibw, 0);
+    var hi = round(1*ibw, 0);
+    var calc = lo + ' to ' + mx(hi + ' mcg');
+    var vol = round(lo/50, 2) + ' to ' + mx(round(hi/50, 2) + ' mL');
+    var ibwLabel = round(ibw,1) + ' kg IBW' + (dfltIbw ? ' (PHI 50 kg fallback)' : ' (from height)');
+    var actualLine = (actual ? round(actual,1) + ' kg ABW / ' : '') + ibwLabel;
+    return rcCard({
+      name:'Fentanyl', generic:'Opioid analgesic (Stock 50 mcg/mL)', cat:'PAIN',
+      form:'vial',
+      indication:'Labor pain unrelieved by tocolysis; headache; non-labor pain', color:'var(--amber)',
+      rows:[
+        {k:'Dose', v:'0.5-1 mcg/kg IBW'},
+        {k:'Patient wt', v:actualLine, cls:'calc'},
+        {k:'Calc dose', v:calc, cls:'calc'},
+        {k:'Calc volume', v:vol, cls:'calc'},
+        {k:'Route', v:'IV over 1 min, IM, IN'},
+        {k:'Repeat', v:'q 1 hr PRN'}
+      ],
+      warn:'DO NOT give if delivery possible within 1 hour.'
+    });
+  },
+  acetaminophen: function(){
+    return rcCard({
+      name:'Acetaminophen', generic:'APAP (325 mg or 500 mg tabs)', cat:'PAIN',
+      form:'po',
+      indication:'Pain or fever', color:'var(--amber)',
+      rows:[
+        {k:'Dose', v:'650 to ' + mx('1000') + ' mg PO'},
+        {k:'Tabs', v:'2 × 325 mg  /  2 × 500 mg', cls:'calc'}
+      ]
+    });
+  },
+  ondansetron: function(){
+    // Stock 2 mg/mL
+    return rcCard({
+      name:'Ondansetron', generic:'5-HT3 antagonist (Stock 2 mg/mL)', cat:'NAUSEA',
+      form:'vial',
+      indication:'Nausea / vomiting (first line)', color:'var(--sky)',
+      rows:[
+        {k:'Dose', v:'4 mg IV over 2-5 min'},
+        {k:'Volume', v:'2 mL', cls:'calc'},
+        {k:'Repeat', v:'1× in 30 min PRN'},
+        {k:'Max', v:mx('8 mg') + ' in 8 hours', cls:'warn'}
+      ]
+    });
+  },
+  promethazine: function(){
+    // Stock 25 mg/mL
+    return rcCard({
+      name:'Promethazine', generic:'Phenergan (Stock 25 mg/mL)', cat:'NAUSEA',
+      form:'vial',
+      indication:'N/V (alternative)', color:'var(--sky)',
+      rows:[
+        {k:'IV', v:'12.5 mg, dilute in 10 mL NS, over 2 min'},
+        {k:'IV vol', v:'0.5 mL drug + 9.5 mL NS = 10 mL', cls:'calc'},
+        {k:'IM', v:'25 mg deep IM'},
+        {k:'IM vol', v:'1 mL', cls:'calc'},
+        {k:'Repeat', v:'q 4-6 hr PRN'}
+      ],
+      warn:'EPS risk; if dystonia develops give diphenhydramine 25-50 mg IV/IM.'
+    });
+  },
+  midazolamAnxiety: function(){
+    return rcCard({
+      name:'Midazolam', generic:'Benzodiazepine - anxiety', cat:'PAIN',
+      form:'vial',
+      indication:'Anxiety', color:'var(--amber)',
+      rows:[
+        {k:'Dose', v:'2 to ' + mx('5') + ' mg IV/IM/IN'},
+        {k:'Vol (5 mg/mL)', v:'0.4 to ' + mx('1 mL'), cls:'calc'},
+        {k:'Vol (1 mg/mL)', v:'2 to ' + mx('5 mL'), cls:'calc'},
+        {k:'Max single', v:mx('5 mg'), cls:'warn'}
+      ],
+      note:'Give 2 mg, observe, additional dose if indicated.'
+    });
+  },
+  lorazepamAnxiety: function(){
+    return rcCard({
+      name:'Lorazepam', generic:'Benzodiazepine - anxiety (Stock 2 mg/mL)', cat:'PAIN',
+      form:'vial',
+      indication:'Anxiety', color:'var(--amber)',
+      rows:[
+        {k:'Dose', v:'0.5 to ' + mx('1') + ' mg IV'},
+        {k:'Volume', v:'0.25 to ' + mx('0.5 mL'), cls:'calc'}
+      ]
+    });
+  },
+  caCl: function(){
+    return rcCard({
+      name:'Calcium Chloride', generic:'CaCl2 10% (100 mg/mL — 10 mL pre-filled syringe / Bristojet)', cat:'OTHER',
+      form:'syringe',
+      indication:'Magnesium toxicity (loss of DTRs, weakness, RR < 12)', color:'var(--rose)',
+      rows:[
+        {k:'Dose', v:'0.5 to ' + mx('1') + ' gm IV over 3 min'},
+        {k:'Volume', v:'5 to ' + mx('10 mL'), cls:'calc'},
+        {k:'Repeat', v:'1× if symptoms persist'}
+      ],
+      warn:'Stop the magnesium infusion FIRST. CaCl has 3× elemental Ca of gluconate; prefer central access.'
+    });
+  },
+  caGluc: function(){
+    return rcCard({
+      name:'Calcium Gluconate', generic:'Ca gluconate 10% (100 mg/mL — 1 g per 10 mL vial)', cat:'OTHER',
+      form:'vial',
+      indication:'Magnesium toxicity (peripheral IV friendly)', color:'var(--rose)',
+      rows:[
+        {k:'Dose', v:'0.5 to ' + mx('1') + ' gm IV over 3 min'},
+        {k:'Volume', v:'5 to ' + mx('10 mL'), cls:'calc'},
+        {k:'Repeat', v:'1× if symptoms persist'}
+      ],
+      warn:'Stop the magnesium infusion FIRST.'
+    });
+  },
+  ptu: function(){
+    return rcCard({
+      name:'Propylthiouracil', generic:'PTU (50 mg tabs)', cat:'OTHER',
+      form:'po',
+      indication:'Thyroid storm in pregnancy', color:'var(--lime)',
+      rows:[
+        {k:'Loading', v:'300 to ' + mx('600') + ' mg PO'},
+        {k:'Loading tabs', v:'6 to ' + mx('12') + ' × 50 mg', cls:'calc'},
+        {k:'Maintenance', v:'150 to ' + mx('200') + ' mg PO q 4-6 hr'},
+        {k:'Maint tabs', v:'3 to ' + mx('4') + ' × 50 mg', cls:'calc'}
+      ],
+      warn:'REQUIRES online physician order. NG tube if patient cannot swallow.'
+    });
+  },
+  fluidBolus: function(){
+    // Wt-based bolus uses ABW first, then IBW from height, then PHI 50.
+    var w = dosingWt();
+    var src = state.m.weightKg ? '(from ABW)'
+            : state.m.heightCm ? '(from IBW / height)'
+            : '(from PHI 50 kg fallback)';
+    var lo = round(10*w, 0);
+    var hi = round(20*w, 0);
+    var wbCalc = lo + ' to ' + mx(hi + ' mL') + ' (10-' + mx('20') + ' mL/kg) ' + src;
+    return rcCard({
+      name:'Crystalloid (LR or NS)', generic:'IV fluid (1000 mL bag — ready to hang)', cat:'HEMORRHAGE',
+      form:'premix',
+      indication:'Hypovolemia, hemorrhage, fetal resuscitation', color:'var(--teal)',
+      rows:[
+        {k:'Maintenance', v:'LR 50-100 mL/hr (total intake 125-150 mL/hr)'},
+        {k:'PROM/PTL', v:'250-500 mL bolus'},
+        {k:'Wt-based bolus', v:wbCalc, cls:'calc'},
+        {k:'Hemorrhage', v:'3 mL crystalloid per 1 mL EBL'}
+      ],
+      note:'Place a 2nd 18 g IV for active bleeding or suspected abruption.'
+    });
+  },
+  // ──── INDUCTION / RSI ────
+  ketamineInduction: function(){
+    var w = dosingWt();
+    var src = state.m.weightKg ? '(ABW)' : state.m.heightCm ? '(IBW from ht)' : '(PHI 50 kg fallback)';
+    // PHI Chapter 2/6: RSI 1.5-2 mg/kg IV. Max RSI dose 2 mg/kg.
+    var loMg = round(1.5*w, 0);
+    var hiMg = round(2*w, 0);
+    var loML = round(loMg/50, 2);
+    var hiML = round(hiMg/50, 2);
+    return rcCard({
+      name:'Ketamine — Induction', generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — PHI preferred RSI agent', cat:'INDUCTION',
+      form:'vial',
+      indication:'RSI induction in pregnancy — preferred for hemodynamic instability, hemorrhage, or asthma', color:'var(--orange)',
+      rows:[
+        {k:'PHI dose (RSI)', v:'1.5 to ' + mx('2') + ' mg/kg IV push over 30 sec'},
+        {k:'Patient wt', v:round(w,1) + ' kg ' + src, cls:'calc'},
+        {k:'Calc dose', v:loMg + ' to ' + mx(hiMg + ' mg'), cls:'calc'},
+        {k:'Calc volume', v:loML + ' to ' + mx(hiML + ' mL') + ' of 50 mg/mL', cls:'calc'},
+        {k:'Max RSI dose', v:mx('2 mg/kg = ' + hiMg + ' mg (' + hiML + ' mL)'), cls:'warn'},
+        {k:'Onset', v:'30-60 sec'},
+        {k:'Duration', v:'10 to ' + mx('20') + ' min (single dose)'}
+      ],
+      note:'PHI preferred induction agent. Preserves BP, increases HR — good for hypovolemic / hypotensive parturients. Older "raises ICP" concern is largely disproven in modern literature.',
+      warn:'Caution in severe pre-eclampsia (may worsen HTN). Use full max dose for OB transport — see Max-Dose RSI Strategy below.'
+    });
+  },
+  etomidateInduction: function(){
+    var w = dosingWt();
+    var src = state.m.weightKg ? '(ABW)' : state.m.heightCm ? '(IBW from ht)' : '(PHI 50 kg fallback)';
+    var dose = round(0.3*w, 1);
+    var vol = round(dose/2, 2);
+    return rcCard({
+      name:'Etomidate — REFERENCE ONLY', generic:'Stock 20 mg / 10 mL vial (2 mg/mL) — NOT on PHI formulary', cat:'INDUCTION',
+      form:'vial',
+      indication:'Alternative RSI induction agent (not standing order — listed for reference only)', color:'var(--tx2)',
+      rows:[
+        {k:'Standard dose', v:'0.3 mg/kg IV push'},
+        {k:'Patient wt', v:round(w,1) + ' kg ' + src, cls:'calc'},
+        {k:'Calc dose', v:dose + ' mg', cls:'calc'},
+        {k:'Calc volume', v:vol + ' mL of 2 mg/mL', cls:'calc'},
+        {k:'Onset', v:'30 sec'},
+        {k:'Duration', v:'5-10 min'}
+      ],
+      note:'Hemodynamically neutral. Brief myoclonus on injection. Single-dose adrenal suppression (clinically minor).',
+      warn:'⚠ NOT on PHI Health formulary — no standing order. Listed only for reference / receiving facility hand-off context. Use ketamine as PHI preferred RSI induction.'
+    });
+  },
+  rocuroniumRSI: function(){
+    // PHI dose: 1.5 mg/kg IBW IV or 2 mg/kg IM (Chapter 6 — formulary)
+    // Use IBW for paralytic dosing per PHI standard.
+    var ibw = dosingIbw();
+    var src = state.m.ibwFromHeight ? '(IBW from ht)' : '(PHI 50 kg IBW fallback)';
+    var dose = round(1.5*ibw, 0);
+    var vol = round(dose/10, 2);
+    var doseIM = round(2*ibw, 0);
+    var volIM = round(doseIM/10, 2);
+    return rcCard({
+      name:'Rocuronium — RSI', generic:'Stock 100 mg / 10 mL vial (10 mg/mL) — PHI formulary', cat:'PARALYTIC',
+      form:'vial',
+      indication:'RSI paralysis — preferred over succinylcholine in eclamptic/preeclamptic patients on magnesium', color:'var(--rose)',
+      rows:[
+        {k:'PHI dose IV', v:'1.5 mg/kg IBW IV push'},
+        {k:'PHI dose IM', v:'2 mg/kg IBW IM (onset ~5 min)'},
+        {k:'IBW', v:round(ibw,1) + ' kg ' + src, cls:'calc'},
+        {k:'Calc dose IV', v:dose + ' mg = ' + vol + ' mL', cls:'calc'},
+        {k:'Calc dose IM', v:doseIM + ' mg = ' + volIM + ' mL', cls:'calc'},
+        {k:'Onset', v:'60-90 sec IV'},
+        {k:'Duration', v:'45-90 min — anticipate prolonged with magnesium'}
+      ],
+      note:'PHI standing order. Re-dose 0.15-0.3 mg/kg PRN for transport paralysis. Reversal: sugammadex 16 mg/kg if available at receiving facility.',
+      warn:'MAGNESIUM POTENTIATES — duration may double. Ensure sedation drip is running BEFORE paralytic wears off (locked-in awake patient is a critical safety event).'
+    });
+  },
+  succinylcholineRSI: function(){
+    // PHI: ON FORMULARY but standing order is for DANGEROUS AGITATION only (4 mg/kg IM, onset 3-4 min).
+    // Routine RSI dose is 1.5 mg/kg IV (literature) — not a PHI standing order for routine RSI.
+    var ibw = dosingIbw();
+    var src = state.m.ibwFromHeight ? '(IBW from ht)' : '(PHI 50 kg IBW fallback)';
+    var doseIV = round(1.5*ibw, 0);
+    var volIV = round(doseIV/20, 2);
+    var doseIM = round(4*ibw, 0);
+    var volIM = round(doseIM/20, 2);
+    return rcCard({
+      name:'Succinylcholine — Caution in OB', generic:'Stock 200 mg / 10 mL vial (20 mg/mL) — PHI formulary for DANGEROUS AGITATION only', cat:'PARALYTIC',
+      form:'vial',
+      indication:'PHI standing order is dangerous agitation 4 mg/kg IM. Not PHI standing order for routine RSI.', color:'var(--red)',
+      rows:[
+        {k:'PHI dose (Dangerous Agitation)', v:'4 mg/kg IBW IM (onset 3-4 min)'},
+        {k:'IBW', v:round(ibw,1) + ' kg ' + src, cls:'calc'},
+        {k:'Calc Dangerous-Agitation IM', v:doseIM + ' mg = ' + volIM + ' mL', cls:'calc'},
+        {k:'Literature RSI (NOT PHI SO)', v:'1.5 mg/kg IV push'},
+        {k:'Calc literature RSI IV', v:doseIV + ' mg = ' + volIV + ' mL', cls:'calc'},
+        {k:'Onset IV', v:'30-60 sec'},
+        {k:'Duration', v:'5-10 min'}
+      ],
+      warn:'⚠ AVOID in OB whenever rocuronium is available. Magnesium potentiates → prolonged paralysis. Hyperkalemia risk (burns/crush/denervation). MH risk. Pseudocholinesterase reduced in late pregnancy = longer-than-expected duration. PHI does not list sux as a routine RSI agent.'
+    });
+  },
+  // ──── POST-INTUBATION SEDATION DRIPS ────
+  ketamineDrip: function(){
+    var w = dosingWt();
+    var src = state.m.weightKg ? '(ABW)' : state.m.heightCm ? '(IBW from ht)' : '(PHI 50 kg fallback)';
+    // PHI max infusion: 4 mg/kg/hr adult (2 mg/kg/hr peds)
+    // Mix: 500 mg in 100 mL = 5 mg/mL
+    var loMgHr = round(1*w, 0);
+    var midMgHr = round(3*w, 0);
+    var maxMgHr = round(4*w, 0);
+    var loRate = round(loMgHr/5, 1);
+    var midRate = round(midMgHr/5, 1);
+    var maxRate = round(maxMgHr/5, 1);
+    return rcCard({
+      name:'Ketamine Drip — Sedation', generic:'Mix 500 mg (10 mL of 50 mg/mL) into 100 mL NS = 5 mg/mL', cat:'SEDATION',
+      form:'vialmix',
+      indication:'Post-intubation sedation — esp. when hemodynamically tenuous', color:'var(--orange)',
+      rows:[
+        {k:'Mix prep', v:'500 mg (1 vial / 10 mL) into 100 mL NS bag = 5 mg/mL', cls:'calc'},
+        {k:'PHI typical', v:'1 to ' + mx('3') + ' mg/kg/hr (max 4 mg/kg/hr)'},
+        {k:'Patient wt', v:round(w,1) + ' kg ' + src, cls:'calc'},
+        {k:'Typical dose', v:loMgHr + ' to ' + midMgHr + ' mg/hr', cls:'calc'},
+        {k:'Typical pump rate', v:loRate + ' to ' + midRate + ' mL/hr', cls:'calc'},
+        {k:'PHI MAX', v:mx('4 mg/kg/hr = ' + maxMgHr + ' mg/hr (' + maxRate + ' mL/hr)'), cls:'warn'},
+        {k:'Bolus PRN', v:'0.5 mg/kg IV (= ' + round(0.5*w,0) + ' mg / ' + round(0.5*w/50,2) + ' mL of stock)'}
+      ],
+      note:'PHI maximum infusion is 4 mg/kg/hr (adult). For OB transport — start at PHI max if patient is on paralytic and likely to stay that way (paralytic outlives induction → awareness risk).'
+    });
+  },
+  midazolamDrip: function(){
+    var w = dosingWt();
+    var src = state.m.weightKg ? '(ABW)' : state.m.heightCm ? '(IBW from ht)' : '(PHI 50 kg fallback)';
+    // Mix: 50 mg (10 mL of 5 mg/mL) into 100 mL = 0.5 mg/mL
+    var loMgHr = round(0.05*w, 1);
+    var hiMgHr = round(0.2*w, 1);
+    var loRate = round(loMgHr/0.5, 1);
+    var hiRate = round(hiMgHr/0.5, 1);
+    return rcCard({
+      name:'Midazolam Drip — Sedation', generic:'Mix 50 mg (10 mL of 5 mg/mL) into 100 mL NS = 0.5 mg/mL', cat:'SEDATION',
+      form:'vialmix',
+      indication:'Post-intubation sedation — alternative or adjunct', color:'var(--amber)',
+      rows:[
+        {k:'Mix prep', v:'50 mg (10 mL of 5 mg/mL) into 100 mL NS = 0.5 mg/mL', cls:'calc'},
+        {k:'Dose', v:'0.05 to ' + mx('0.2') + ' mg/kg/hr (typical 1 to ' + mx('10') + ' mg/hr)'},
+        {k:'Patient wt', v:round(w,1) + ' kg ' + src, cls:'calc'},
+        {k:'Calc dose', v:loMgHr + ' to ' + mx(hiMgHr + ' mg/hr'), cls:'calc'},
+        {k:'Pump rate', v:loRate + ' to ' + mx(hiRate + ' mL/hr'), cls:'calc'}
+      ],
+      note:'Crosses placenta — neonatal respiratory depression if delivery imminent. Deeper sedation than ketamine; can drop BP.'
+    });
+  },
+  fentanylDrip: function(){
+    var w = dosingWt();
+    var src = state.m.weightKg ? '(ABW)' : state.m.heightCm ? '(IBW from ht)' : '(PHI 50 kg fallback)';
+    // Mix 500 mcg in 100 mL = 5 mcg/mL OR 1000 mcg in 100 mL = 10 mcg/mL — show both
+    var loMcgHr = round(0.5*w, 0);
+    var hiMcgHr = round(2*w, 0);
+    return rcCard({
+      name:'Fentanyl Drip — Analgesia', generic:'Mix 1000 mcg (20 mL of 50 mcg/mL) into 100 mL NS = 10 mcg/mL', cat:'SEDATION',
+      form:'vialmix',
+      indication:'Post-intubation analgesia — pair with sedation', color:'var(--amber)',
+      rows:[
+        {k:'Mix prep', v:'1000 mcg (20 mL of 50 mcg/mL) into 100 mL NS = 10 mcg/mL', cls:'calc'},
+        {k:'Dose', v:'0.5 to ' + mx('2') + ' mcg/kg/hr'},
+        {k:'Patient wt', v:round(w,1) + ' kg ' + src, cls:'calc'},
+        {k:'Calc dose', v:loMcgHr + ' to ' + mx(hiMcgHr + ' mcg/hr'), cls:'calc'},
+        {k:'Pump rate', v:round(loMcgHr/10,1) + ' to ' + mx(round(hiMcgHr/10,1) + ' mL/hr') + ' (at 10 mcg/mL)', cls:'calc'}
+      ],
+      warn:'Crosses placenta — neonatal opioid effects if delivery imminent.'
+    });
+  },
+  // Newborn naloxone
+  naloxoneNeo: function(){
+    var w = state.nb.doseWt;
+    var calc = w ? round(0.1*w, 2) + ' mg' : '--';
+    return rcCard({
+      name:'Naloxone (Newborn)', generic:'Narcan', cat:'NEWBORN',
+      form:'vial',
+      indication:'Newborn respiratory depression with maternal opioid within 4 hr', color:'var(--purple)',
+      rows:[
+        {k:'Dose', v:'0.1 mg/kg IV/IM/IN'},
+        {k:'Calculated', v:calc, cls:'calc'}
+      ],
+      note:'PPV remains primary intervention. Naloxone is adjunct.'
+    });
+  },
+  epiNeo: function(){
+    var w = state.nb.doseWt;
+    var loMg = w ? round(0.01*w, 3) : null;
+    var hiMg = w ? round(0.03*w, 3) : null;
+    var loML = w ? round(0.1*w, 2) : null; // 0.1 mg/mL conc → 0.1 mL/kg
+    var hiML = w ? round(0.3*w, 2) : null;
+    return rcCard({
+      name:'Epinephrine (Newborn)', generic:'1:10,000 (0.1 mg/mL — pre-filled syringe / Bristojet)', cat:'NEWBORN',
+      form:'syringe',
+      indication:'Newborn HR < 60 despite 30 sec effective PPV + chest compressions', color:'var(--rose)',
+      rows:[
+        {k:'Dose', v:'0.01 to ' + mx('0.03') + ' mg/kg IV/IO'},
+        {k:'Calc dose', v:(loMg ? loMg + ' to ' + mx(hiMg + ' mg') : '--'), cls:'calc'},
+        {k:'Calc volume', v:(loML ? loML + ' to ' + mx(hiML + ' mL') + ' (1:10,000)' : '--'), cls:'calc'},
+        {k:'Repeat', v:'q 3-5 min PRN'},
+        {k:'ETT route', v:'0.05 to ' + mx('0.1') + ' mg/kg (preferred IV/IO)'}
+      ],
+      note:'IV/IO preferred. Use 1 mg/10 mL (0.1 mg/mL) concentration.'
+    });
+  },
+  nsBolusNeo: function(){
+    var w = state.nb.doseWt;
+    var calc = w ? round(10*w, 0) + ' mL' : '--';
+    return rcCard({
+      name:'Volume Expansion (Newborn)', generic:'NS or LR (250 mL bag)', cat:'NEWBORN',
+      form:'premix',
+      indication:'Newborn shock, hypovolemia, blood loss', color:'var(--teal)',
+      rows:[
+        {k:'Dose', v:'10 mL/kg IV/IO over 5-10 min'},
+        {k:'Calculated', v:calc, cls:'calc'},
+        {k:'Repeat', v:'PRN to total ~30 mL/kg'}
+      ],
+      note:'Newborn maximum total typically ~30 mL/kg before reassessment.'
+    });
+  },
+  d10Neo: function(){
+    var w = state.nb.doseWt;
+    var calc = w ? round(2*w, 1) + ' mL' : '--';
+    return rcCard({
+      name:'Dextrose 10% (Newborn)', generic:'D10W (premix bag — ready to use)', cat:'NEWBORN',
+      form:'premix',
+      indication:'Neonatal hypoglycemia (glucose < 50 mg/dL)', color:'var(--amber)',
+      rows:[
+        {k:'Dose', v:'2 mL/kg D10W IV (0.2 gm/kg)'},
+        {k:'Calculated', v:calc, cls:'calc'}
+      ],
+      warn:'D50/D25 NOT for neonates. D10 is the only safe concentration.'
+    });
+  }
+};
+
+// ════════════════════════════════════════════════════════════════
+// DIAGNOSIS → DRUG MAPPING
+// ════════════════════════════════════════════════════════════════
+var DX_DRUG_MAP = {
+  ptl: ['terbutaline','magTocolysis','ketorolac','fentanyl','fluidBolus'],
+  prom: ['fluidBolus','terbutaline','magTocolysis'],
+  bleeding: ['fluidBolus','magTocolysis'],
+  pph: ['oxytocin','txa','fluidBolus'],
+  postpartum: ['oxytocin','acetaminophen','fentanyl'],
+  pih: ['magPreeclampsia'],
+  severe_pre: ['magPreeclampsia','labetalol','hydralazine','nifedipine','fentanyl','acetaminophen'],
+  eclampsia: ['lorazepamSeizure','midazolamSeizure','magEclampsia','labetalol','hydralazine','fentanyl'],
+  thyroid: ['ptu','acetaminophen'],
+  pain: ['fentanyl','acetaminophen'],
+  nv: ['ondansetron','promethazine'],
+  anxiety: ['midazolamAnxiety','lorazepamAnxiety'],
+  mag_tox: ['caGluc','caCl'],
+  cord_prolapse: ['terbutaline'],
+  precipitous: ['oxytocin','naloxoneNeo'],
+  newborn: ['epiNeo','nsBolusNeo','d10Neo','naloxoneNeo']
+};
+
+var DX_NOTES = {
+  bleeding: '<div class="callout callout-danger"><strong>NO digital vaginal exam</strong> until placenta previa ruled out. Place 2nd 18 g IV. 3:1 crystalloid replacement.</div>',
+  prom: '<div class="callout callout-info"><strong>NO digital exam.</strong> Sterile speculum only if indicated. Hips elevated if cervix > 3-4 cm (cord prolapse risk).</div>',
+  pph: '<div class="callout callout-warn"><strong>Beyond oxytocin and TXA</strong> (methylergonovine, carboprost, misoprostol) requires online medical control. Empty bladder (cath). Massage fundus.</div>',
+  severe_pre: '<div class="callout callout-warn"><strong>Severe-range BP:</strong> 2 SBP > 160 OR 2 DBP > 110 in 15 min. Treat within 10-20 min. Use ONE agent through full protocol before switching.</div>',
+  eclampsia: '<div class="callout callout-danger"><strong>Sequence:</strong> Airway → Oxygen → Benzodiazepine → Magnesium → Antihypertensive</div>',
+  cord_prolapse: '<div class="callout callout-danger"><strong>Knee-chest or Trendelenburg.</strong> Manually elevate the presenting part off the cord. DO NOT replace the cord. NRB 100% O2. Tocolysis to reduce contractions.</div>',
+  precipitous: '<div class="callout callout-warn"><strong>Stop tocolysis.</strong> OB kit open. Position. Warm towels. Call roles (one airway/monitoring, one delivery/neonate).</div>',
+  mag_tox: '<div class="callout callout-danger"><strong>STOP the magnesium infusion FIRST.</strong> Then give calcium. Watch RR and reflexes. Notify medical control.</div>',
+  newborn: '<div class="callout callout-info"><strong>NRP sequence:</strong> Warm, dry, position, suction PRN, stimulate. Reassess HR and respirations. PPV → compressions → epi.</div>'
+};
+
+function renderDiagnosisDrugs(){
+  var out = document.getElementById('mDrugs');
+  var dx = state.m.dx;
+  if(!dx){
+    out.innerHTML = '<div class="empty"><div class="ei">○</div><div class="et">Select a diagnosis above</div></div>';
+    renderPlan();
+    return;
+  }
+  var note = DX_NOTES[dx] || '';
+  var keys = DX_DRUG_MAP[dx] || [];
+  var html = note + keys.map(function(k){ return DRUGS_MATERNAL[k] ? DRUGS_MATERNAL[k]() : ''; }).join('');
+  out.innerHTML = html;
+  renderPlan();
+}
+
+// Newborn drugs (always shown on newborn tab if weight set)
+function renderNewbornDrugs(){
+  var out = document.getElementById('nDrugs');
+  if(!state.nb.doseWt){
+    out.innerHTML = '<div class="empty"><div class="et">Select a color tier or enter weight</div></div>';
+    return;
+  }
+  out.innerHTML = ['epiNeo','nsBolusNeo','d10Neo','naloxoneNeo'].map(function(k){ return DRUGS_MATERNAL[k](); }).join('');
+}
+
+// NRP quick reference
+function renderNRP(){
+  var html = '<div class="vent-wrap"><table class="vt"><thead><tr><th>Min of life</th><th>Target SpO2</th></tr></thead><tbody>' +
+    '<tr><td>1</td><td>60-65%</td></tr>' +
+    '<tr><td>2</td><td>65-70%</td></tr>' +
+    '<tr><td>3</td><td>70-75%</td></tr>' +
+    '<tr><td>4</td><td>75-80%</td></tr>' +
+    '<tr><td>5</td><td>80-85%</td></tr>' +
+    '<tr><td>10</td><td>85-95%</td></tr>' +
+    '</tbody></table></div>' +
+    '<div class="callout callout-info"><strong>NRP:</strong> Warm, dry, position, suction PRN, stimulate (30 sec). HR &lt; 100 or apnea: PPV 40-60/min, room air term, 21-30% O2 preterm. HR &lt; 60 despite effective PPV x 30 sec: 3:1 compressions:ventilation (90 + 30 = 120/min). Epinephrine if HR &lt; 60 despite compressions.</div>' +
+    '<div class="callout callout-warn"><strong>Withholding criteria:</strong> Confirmed GA &lt; 23 wk, BW &lt; 400 g, anencephaly, lethal malformation. Contact medical control before discontinuing.</div>';
+  document.getElementById('nrpOutput').innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════════════
+// CLINICAL PICTURE & PLAN OF ACTION (PHI Chapter 10 protocol summaries)
+// ════════════════════════════════════════════════════════════════
+var DX_PLAN = {
+  ptl: {
+    picture:'Preterm labor — uterine contractions before 37 weeks with cervical change. Goal is uterine quiescence and steroid coverage prior to delivery.',
+    plan:[
+      'Left lateral position; continuous fetal monitoring',
+      'Terbutaline 0.25 mg SQ as bridge while preparing magnesium',
+      'Magnesium sulfate 6 g IV load over 20-30 min, then 3-4 g/hr',
+      'Crystalloid 250-500 mL bolus PRN',
+      'Antenatal steroids if 24-34 wk per medical control',
+      'No digital exam; PROM/bleeding precautions'
+    ]
+  },
+  prom: {
+    picture:'Premature rupture of membranes prior to onset of labor. Risks: cord prolapse, chorioamnionitis, abruption.',
+    plan:[
+      'NO digital vaginal exam — sterile speculum only if essential',
+      'Hips elevated / Trendelenburg if cervix > 3-4 cm (cord prolapse risk)',
+      'Tocolysis (terbutaline / mag) if contracting',
+      'Crystalloid 250-500 mL bolus',
+      'Antibiotics per medical control',
+      'Continuous fetal monitoring; transport supine left lateral tilt'
+    ]
+  },
+  bleeding: {
+    picture:'Antepartum vaginal bleeding — high concern for placenta previa or abruption until proven otherwise.',
+    plan:[
+      'NO digital vaginal exam until previa ruled out by US',
+      'Two large-bore IVs (18 g)',
+      'Crystalloid resuscitation 3 mL per 1 mL EBL',
+      'Magnesium tocolysis if abruption suspected',
+      'Continuous fetal monitoring; left lateral tilt',
+      'TXA 1 g IV over 10 min per medical control if hemorrhagic',
+      'May repeat TXA 1 g IV over 10 min at 30 min if bleeding continues (PHI protocol allows 2nd dose)'
+    ]
+  },
+  pph: {
+    picture:'Postpartum hemorrhage: > 500 mL after vaginal birth or > 1000 mL after cesarean. Causes: Tone, Trauma, Tissue, Thrombin.',
+    plan:[
+      'Bimanual fundal massage; empty bladder (cath)',
+      'Oxytocin: mix 30 u in 500 mL NS at 500-1000 mL/hr (or 10 u IM if no IV)',
+      'TXA 1 g IV over 10 min — 1st dose (within 3 hours of bleeding onset)',
+      'TXA 1 g IV over 10 min — 2nd dose at 30 min if bleeding continues (PHI allows repeat)',
+      'Crystalloid 3:1 EBL replacement; blood per medical control',
+      'Methergine / hemabate / misoprostol require online medical control',
+      'Inspect for retained placenta, lacerations, uterine inversion'
+    ]
+  },
+  postpartum: {
+    picture:'Routine postpartum transfer. Watch for delayed PPH, postpartum preeclampsia, and DVT/PE.',
+    plan:[
+      'Fundal tone q15min; quantify bleeding',
+      'Maintain oxytocin infusion per receiving facility orders',
+      'BP monitoring — postpartum HTN is common up to 6 weeks',
+      'Pain control: acetaminophen, fentanyl PRN',
+      'Monitor for SOB, calf pain, headache (PE / postpartum eclampsia)'
+    ]
+  },
+  pih: {
+    picture:'Pregnancy-induced hypertension or mild preeclampsia: SBP ≥ 140 or DBP ≥ 90 with or without proteinuria.',
+    plan:[
+      'Magnesium sulfate 4-6 g IV load over 20-30 min, then 2 g/hr',
+      'Treat severe-range BP (≥160/110) within 10-20 min if it develops',
+      'DTRs, RR, urine output q1h',
+      'Headache, visual changes, RUQ pain = warning signs',
+      'Strict I&O; left lateral tilt'
+    ]
+  },
+  severe_pre: {
+    picture:'Severe preeclampsia: SBP ≥ 160 or DBP ≥ 110 (two readings, 15 min apart) with proteinuria or end-organ dysfunction. HELLP risk.',
+    plan:[
+      'Magnesium sulfate 4-6 g IV load, then 2 g/hr (seizure prophylaxis)',
+      'Treat severe-range BP within 10-20 minutes',
+      'First line: Labetalol 20 mg IV → 40 → 80 (max 300 mg)',
+      'Alternative: Hydralazine 10 mg IV q20min (max 30 mg)',
+      'PO option: Nifedipine 10 mg → 20 → 20 (no mag for 1 hr after)',
+      'Use ONE agent through full protocol before switching'
+    ]
+  },
+  eclampsia: {
+    picture:'Active or recent generalized tonic-clonic seizure in pregnancy or up to 6 weeks postpartum. Maternal and fetal emergency.',
+    plan:[
+      'AIRWAY → OXYGEN → BENZO → MAG → ANTIHYPERTENSIVE',
+      'Lorazepam 2 mg IV/IM/IN (or midazolam 5 mg if no Ativan)',
+      'Magnesium sulfate 6 g IV load over 15-20 min, then 2 g/hr',
+      'Treat severe-range BP (labetalol or hydralazine)',
+      'Anticipate intubation; left lateral tilt',
+      'Continuous fetal monitoring; prepare for emergent delivery'
+    ]
+  },
+  thyroid: {
+    picture:'Thyroid storm in pregnancy: life-threatening hypermetabolic state with fever, tachycardia, AMS, GI symptoms.',
+    plan:[
+      'PTU 300-600 mg PO/NG loading, then 150-200 mg q4-6h (online order required)',
+      'Beta-blockade for HR control per medical control',
+      'Active cooling; treat fever',
+      'Crystalloid resuscitation',
+      'Monitor fetal status — maternal tachycardia and fever cause fetal compromise'
+    ]
+  },
+  pain: {
+    picture:'Labor pain unrelieved by tocolysis, headache, or non-labor pain in pregnancy.',
+    plan:[
+      'Fentanyl 0.5-1 mcg/kg IBW IV/IM/IN q1h PRN',
+      'Acetaminophen 650-1000 mg PO as adjunct',
+      'Non-pharmacologic measures: positioning, reassurance',
+      'DO NOT give opioids if delivery possible within 1 hour'
+    ]
+  },
+  nv: {
+    picture:'Nausea/vomiting in pregnancy. Watch for dehydration and hyperemesis gravidarum.',
+    plan:[
+      'Ondansetron 4 mg IV over 2-5 min (1st line); repeat 1× in 30 min PRN',
+      'Promethazine 12.5 mg IV diluted in 10 mL over 2 min (alt)',
+      'Crystalloid bolus 250-500 mL for dehydration',
+      'Address aspiration risk if AMS'
+    ]
+  },
+  anxiety: {
+    picture:'Anxiety in pregnant patient. Often situational; rule out hypoxia, hypoglycemia, hemorrhage first.',
+    plan:[
+      'Reassurance, supportive care, position of comfort',
+      'Midazolam 2-5 mg IV/IM/IN if escalation',
+      'Or Lorazepam 0.5-1 mg IV',
+      'Avoid benzos near delivery (neonatal respiratory depression)'
+    ]
+  },
+  mag_tox: {
+    picture:'Magnesium toxicity: loss of DTRs, weakness, RR < 12, AMS, respiratory arrest at high levels.',
+    plan:[
+      'STOP the magnesium infusion FIRST',
+      'Calcium gluconate 0.5-1 g IV over 3 min (peripheral-friendly)',
+      'OR Calcium chloride 0.5-1 g IV (3× elemental Ca; central preferred)',
+      'Support airway/ventilation; intubate if RR < 8',
+      'Notify medical control; check Mg level if available'
+    ]
+  },
+  cord_prolapse: {
+    picture:'Umbilical cord visible or palpable in / at the vaginal canal. True OB emergency — cord compression causes fetal hypoxia.',
+    plan:[
+      'KNEE-CHEST or steep TRENDELENBURG immediately',
+      'Manually elevate the presenting part off the cord — DO NOT replace cord',
+      'NRB 100% O2 to mother',
+      'Tocolysis with terbutaline 0.25 mg SQ to reduce contractions',
+      'Cover exposed cord with warm saline gauze',
+      'Rapid transport — emergency cesarean is the definitive treatment'
+    ]
+  },
+  precipitous: {
+    picture:'Imminent or in-progress delivery during transport — typically multiparous, advanced cervical change, or strong urge to push.',
+    plan:[
+      'STOP tocolysis immediately',
+      'Open OB kit; assign roles (one airway/monitoring, one delivery/neonate)',
+      'Position mother; warm towels ready; warm environment',
+      'Deliver, dry, stim newborn within 30 sec',
+      'Clamp & cut cord; deliver placenta with gentle traction',
+      'Anticipate PPH (oxytocin ready) and neonatal resuscitation'
+    ]
+  },
+  newborn: {
+    picture:'Post-delivery neonate requiring assessment or resuscitation per NRP guidelines.',
+    plan:[
+      'Warm, dry, position, suction PRN, stimulate (within 30 sec)',
+      'HR < 100 or apnea: PPV 40-60/min (room air term, 21-30% O2 preterm)',
+      'HR < 60 despite effective PPV × 30 sec: 3:1 compressions:ventilation',
+      'Epinephrine 0.01-0.03 mg/kg IV/IO if HR < 60 despite compressions',
+      'Volume expansion 10 mL/kg NS for shock/hypovolemia',
+      'D10 2 mL/kg if glucose < 50; naloxone 0.1 mg/kg if maternal opioids'
+    ]
+  }
+};
+
+function renderPlan(){
+  var ventOut = document.getElementById('planOutput');
+  var motherOut = document.getElementById('mPlanOutput');
+  var dx = state.m.dx;
+
+  // Update Vent-tab parameter chips
+  var w = state.m.weightKg, h = state.m.heightCm, ibwH = state.m.ibwFromHeight;
+  if(document.getElementById('vWt')){
+    document.getElementById('vWt').textContent = w
+      ? round(w,1) + ' kg / ' + round(kgToLb(w),1) + ' lb'
+      : 'Not entered';
+    document.getElementById('vHt').textContent = h ? round(h,1) + ' cm' : 'Not entered';
+    document.getElementById('vIBW').textContent = ibwH ? round(ibwH,1) + ' kg' : '50 kg *';
+    var dxObj = DIAGNOSES.filter(function(d){ return d.id === dx; })[0];
+    document.getElementById('vDx').textContent = dxObj ? dxObj.name : 'Not selected';
+  }
+
+  // Build plan HTML
+  var html;
+  if(!dx || !DX_PLAN[dx]){
+    html = '<div class="empty"><div class="ei">○</div><div class="et">Select a diagnosis to see the protocol summary.</div></div>';
+  } else {
+    var p = DX_PLAN[dx];
+    var planLis = p.plan.map(function(s){ return '<li style="margin-bottom:5px">' + s + '</li>'; }).join('');
+    html =
+      '<div style="font-size:.86rem;line-height:1.55;color:var(--tx0);margin-bottom:12px"><strong style="color:var(--rose)">Picture: </strong>' + p.picture + '</div>' +
+      '<div class="slbl" style="margin-top:10px">Plan of Action</div>' +
+      '<ol style="padding-left:18px;font-size:.83rem;line-height:1.55;color:var(--tx0)">' + planLis + '</ol>';
+  }
+  if(ventOut) ventOut.innerHTML = html;
+  if(motherOut) motherOut.innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════════════
+// INTUBATION — SAFER checklist + induction/paralytic/sedation drug rendering
+// ════════════════════════════════════════════════════════════════
+var SAFER_ITEMS = [
+  {l:'S', t:'Suction & Saturation',
+    items:['Yankauer / wide-bore suction on, working',
+           'SpO2 ≥ 95% pre-induction (target 100% if possible)',
+           'NRB at 15 L/min × 3-4 min for pre-O2',
+           'NC at 15 L/min for apneic oxygenation']},
+  {l:'A', t:'Airway equipment & Assess',
+    items:['ETT × 2 sizes (primary + 0.5 smaller for OB edema)',
+           'BVM with PEEP valve attached',
+           'Laryngoscope working (DL + VL if available)',
+           'OPA / NPA selected',
+           'BIAD (i-gel / LMA) backup at bedside',
+           'Surgical airway gear identified']},
+  {l:'F', t:'Fluids & Failed-airway plan',
+    items:['IV × 1 reliable (× 2 for hemorrhage/abruption)',
+           'Push-dose pressor or norepi drip prepped if hypotensive',
+           'Failed airway plan briefed (Plan A → B → C)',
+           'Pt position: ramped, left lateral tilt 15-30°']},
+  {l:'E', t:'EtCO2, Equipment, & End-point',
+    items:['Capnography attached and reading',
+           'Monitor + cuff cycling',
+           'Drugs drawn up, labeled, and at bedside',
+           'Sedation/analgesia drips prepped — start BEFORE paralytic wears off']},
+  {l:'R', t:'Roles, Read-back, Resuscitate',
+    items:['Roles assigned: laryngoscopist · drug pusher · monitor watcher',
+           'Read-back: dose, route, and timing for each drug',
+           'Hemodynamic plan if BP drops post-induction',
+           'Time-out / final go-around']}
+];
+
+function getSaferState(){
+  try{
+    var s = localStorage.getItem('ob_safer_state');
+    return s ? JSON.parse(s) : {};
+  }catch(e){ return {}; }
+}
+function setSaferState(s){
+  try{ localStorage.setItem('ob_safer_state', JSON.stringify(s)); }catch(e){}
+}
+function toggleSafer(idx){
+  var s = getSaferState();
+  s[idx] = !s[idx];
+  setSaferState(s);
+  renderSafer();
+}
+function resetSafer(){
+  setSaferState({});
+  renderSafer();
+}
+function renderSafer(){
+  var grid = document.getElementById('saferGrid');
+  if(!grid) return;
+  var s = getSaferState();
+  grid.innerHTML = SAFER_ITEMS.map(function(item, i){
+    var checked = !!s[i];
+    var lis = item.items.map(function(t){ return '<li>' + t + '</li>'; }).join('');
+    return '<div class="safer-row' + (checked ? ' checked' : '') + '" onclick="toggleSafer(' + i + ')">' +
+      '<div class="safer-letter">' + item.l + '</div>' +
+      '<div class="safer-body"><div class="safer-title">' + item.t + '</div>' +
+      '<div class="safer-items"><ul>' + lis + '</ul></div></div></div>';
+  }).join('');
+}
+
+function renderRsiMaxDose(){
+  var out = document.getElementById('rsiMaxDose');
+  if(!out) return;
+  var abw = dosingWt();
+  var ibw = dosingIbw();
+  var abwSrc = state.m.weightKg ? '(ABW)' : state.m.heightCm ? '(IBW from ht — no ABW)' : '(PHI 50 kg fallback)';
+  var ibwSrc = state.m.ibwFromHeight ? '(IBW from ht)' : '(PHI 50 kg IBW fallback)';
+
+  // Ketamine induction MAX = 2 mg/kg ABW
+  var ketMaxMg = round(2*abw, 0);
+  var ketMaxML = round(ketMaxMg/50, 2);
+  // Roc MAX = 1.5 mg/kg IBW (PHI)
+  var rocMaxMg = round(1.5*ibw, 0);
+  var rocMaxML = round(rocMaxMg/10, 2);
+  // Ketamine drip MAX = 4 mg/kg/hr ABW from 5 mg/mL premix
+  var ketDripMaxMgHr = round(4*abw, 0);
+  var ketDripMaxRate = round(ketDripMaxMgHr/5, 1);
+
+  out.innerHTML =
+    '<div style="font-size:.85rem;line-height:1.55;color:var(--tx0);margin-bottom:14px">' +
+      '<strong style="color:var(--red)">For OB transport, default to MAX RSI doses.</strong><br>' +
+      'Rationale: pregnancy raises cardiac output and clearance, magnesium potentiates paralytic duration but NOT induction, ' +
+      'aspiration risk demands a fast deep block, and underdosing risks awareness during a long transport. ' +
+      'Lock the airway in one pass with full induction + full paralytic + max ketamine drip running before paralytic wears off.' +
+    '</div>' +
+    '<div class="vent-wrap"><table class="vt" style="border:1px solid rgba(255,95,109,.4);border-radius:8px;overflow:hidden">' +
+      '<thead><tr style="background:rgba(255,95,109,.08)">' +
+        '<th style="color:var(--red)">Drug</th><th>PHI Max Dose</th><th>Patient Calc</th><th>Volume</th>' +
+      '</tr></thead><tbody>' +
+      '<tr><td><strong style="color:var(--orange)">Ketamine — Induction</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">500 mg / 10 mL</div></td>' +
+        '<td>2 mg/kg ABW IV push</td>' +
+        '<td class="ibw-c">' + round(abw,1) + ' kg ' + abwSrc + '<br><strong>' + ketMaxMg + ' mg</strong></td>' +
+        '<td class="tv-c">' + ketMaxML + ' mL</td></tr>' +
+      '<tr><td><strong style="color:var(--rose)">Rocuronium — RSI</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">100 mg / 10 mL</div></td>' +
+        '<td>1.5 mg/kg IBW IV push</td>' +
+        '<td class="ibw-c">' + round(ibw,1) + ' kg ' + ibwSrc + '<br><strong>' + rocMaxMg + ' mg</strong></td>' +
+        '<td class="tv-c">' + rocMaxML + ' mL</td></tr>' +
+      '<tr style="background:rgba(0,212,245,.04)"><td><strong style="color:var(--orange)">Ketamine drip — MAX</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">5 mg/mL premix (500 mg / 100 mL NS)</div></td>' +
+        '<td>4 mg/kg/hr ABW (PHI max)</td>' +
+        '<td class="ibw-c">' + round(abw,1) + ' kg ' + abwSrc + '<br><strong>' + ketDripMaxMgHr + ' mg/hr</strong></td>' +
+        '<td class="tv-c">' + ketDripMaxRate + ' mL/hr</td></tr>' +
+    '</tbody></table></div>' +
+    '<div class="callout callout-warn" style="margin-top:12px;font-size:.78rem"><strong>Sequence:</strong> ' +
+      '(1) Pre-O2 + ramped + left tilt → (2) Push ketamine ' + ketMaxMg + ' mg → (3) Push roc ' + rocMaxMg + ' mg immediately after → ' +
+      '(4) Wait 60-90 sec → (5) Intubate → (6) Confirm EtCO2 → (7) Start ketamine drip at ' + ketDripMaxRate + ' mL/hr (' + ketDripMaxMgHr + ' mg/hr) <strong>before paralytic wears off</strong>. ' +
+      'Re-dose roc 0.15-0.3 mg/kg PRN.</div>' +
+    '<div class="callout callout-info" style="margin-top:8px;font-size:.78rem"><strong>If hypertensive (severe pre-E / eclampsia):</strong> ' +
+      'Consider reducing ketamine to 1.5 mg/kg (lower end) to limit catecholamine surge. Do NOT reduce roc — full dose is still needed for clean intubating conditions.</div>';
+}
+
+function renderIntubation(){
+  renderRsiMaxDose();
+  // Induction
+  var ind = document.getElementById('tubeInduction');
+  if(ind) ind.innerHTML = ['ketamineInduction','etomidateInduction'].map(function(k){ return DRUGS_MATERNAL[k](); }).join('');
+  // Paralytics
+  var par = document.getElementById('tubeParalytics');
+  if(par) par.innerHTML = ['rocuroniumRSI','succinylcholineRSI'].map(function(k){ return DRUGS_MATERNAL[k](); }).join('');
+  // Post-intubation drips
+  var sed = document.getElementById('tubeSedation');
+  if(sed) sed.innerHTML = ['ketamineDrip','midazolamDrip','fentanylDrip'].map(function(k){ return DRUGS_MATERNAL[k](); }).join('');
+
+  // Equipment
+  var eq = document.getElementById('tubeEquipment');
+  if(eq){
+    var w = dosingWt();
+    var src = state.m.weightKg ? round(w,1) + ' kg ABW' : state.m.heightCm ? round(w,1) + ' kg IBW (height)' : '50 kg PHI std *';
+    var igel, lma;
+    if(w < 30){ igel = '2.5'; lma = '2.5'; }
+    else if(w < 50){ igel = '3'; lma = '3'; }
+    else if(w < 90){ igel = '4'; lma = '4'; }
+    else { igel = '5'; lma = '5'; }
+    eq.innerHTML = '<div class="vent-wrap"><table class="vt"><thead><tr><th>Item</th><th>Size</th><th>Notes</th></tr></thead><tbody>' +
+      '<tr><td>Primary ETT</td><td class="et-c">7.0 mm cuffed</td><td>Standard adult female pre-pregnancy.</td></tr>' +
+      '<tr><td>Backup ETT</td><td class="et-c">6.0-6.5 mm cuffed</td><td>OB airway edema — have a smaller tube ready.</td></tr>' +
+      '<tr><td>Stylet</td><td>Adult — pre-bent ~30° hockey stick</td><td>Bougie strongly preferred for difficult view.</td></tr>' +
+      '<tr><td>Laryngoscope blade</td><td>Mac 3 / Miller 3</td><td>VL (CMAC / GlideScope) recommended in pregnancy.</td></tr>' +
+      '<tr><td>i-gel (rescue)</td><td class="ig-c">Size ' + igel + '</td><td>Based on ' + src + '.</td></tr>' +
+      '<tr><td>LMA (rescue)</td><td class="ig-c">Size ' + lma + '</td><td>Same sizing as i-gel.</td></tr>' +
+      '<tr><td>OPA</td><td>Adult M / L</td><td>Unconscious patient only.</td></tr>' +
+      '<tr><td>NPA</td><td>28-32 Fr</td><td>Lubricate well — friable nasal mucosa in pregnancy.</td></tr>' +
+      '<tr><td>BVM</td><td>Adult</td><td>Attach PEEP valve (5-8 cmH2O) for pre-O2.</td></tr>' +
+      '<tr><td>EtCO2</td><td>Mainstream or sidestream</td><td>Confirm placement with 4+ waveforms over 6 breaths.</td></tr>' +
+      '<tr><td>Suction</td><td>Yankauer + 14 Fr soft catheter</td><td>Wide-bore for emesis; soft for ETT.</td></tr>' +
+      '<tr><td>ETT depth</td><td>21 cm at lip (typical female)</td><td>Re-confirm by auscultation + EtCO2.</td></tr>' +
+      '</tbody></table></div>';
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// VENT / AIRWAY
+// ════════════════════════════════════════════════════════════════
+function renderVent(){
+  var matOut = document.getElementById('ventMaternal');
+  // Vt is IBW-based. IBW comes from entered height; if no height, use PHI 50 kg fallback.
+  var ibw = dosingIbw();
+  var dflt = !state.m.ibwFromHeight;
+  var ibwLabel = state.m.ibwFromHeight ? 'From height (Devine)' : 'PHI 50 kg fallback';
+  var vtLo = round(6*ibw, 0);
+  var vtHi = round(8*ibw, 0);
+  // Source tag helper
+  function src(s){
+    var color = s.indexOf('PHI') === 0 ? 'var(--cyan)' : (s.indexOf('Physiology') === 0 ? 'var(--amber)' : 'var(--tx2)');
+    return ' <span style="font-family:var(--mono);font-size:.6rem;color:' + color + ';opacity:.85;font-weight:700;letter-spacing:.05em">[' + s + ']</span>';
+  }
+  matOut.innerHTML =
+    '<div class="callout callout-info" style="margin-bottom:10px;font-size:.78rem">' +
+      '<strong>Source note:</strong> PHI Chapter 10 OB does not contain explicit vent settings. ' +
+      'Settings below are drawn from <strong>PHI Chapter 3 Respiratory</strong>, <strong>PHI Chapter 2 SAFER</strong> for IBW, and ' +
+      '<strong>pregnancy physiology</strong> (ACOG / SCC obstetrics) for OB-specific layered guidance.' +
+    '</div>' +
+    '<div class="vent-wrap"><table class="vt"><thead><tr><th>Setting</th><th>Value</th></tr></thead><tbody>' +
+      '<tr><td>IBW (basis for Vt)</td><td class="ibw-c">' + round(ibw,1) + ' kg <span style="opacity:.7;font-size:.7rem">— ' + ibwLabel + '</span>' + src('PHI Ch 2 SAFER') + '</td></tr>' +
+      '<tr><td><strong style="color:var(--teal)">Mode (primary)</strong></td><td><strong>(S)CMV+ / APVcmv</strong> (Hamilton T1) — fully controlled' + src('Recommended for sedated/paralyzed OB pt') + '</td></tr>' +
+      '<tr><td>Mode (alternative)</td><td>PCV+ if pressure-targeted preferred; <strong>SIMV+ / PSIMV+</strong> only if pt has reliable spontaneous effort or is being weaned' + src('Physiology — pregnancy') + '</td></tr>' +
+      '<tr><td>Mode (ReVel)</td><td>A/C Pressure or A/C Volume' + src('PHI Ch 3 Resp') + '</td></tr>' +
+      '<tr><td>Tidal Volume</td><td class="tv-c">' + vtLo + ' to ' + vtHi + ' mL (6-8 mL/kg IBW)' + src('PHI Ch 3 Resp') + '</td></tr>' +
+      '<tr><td>ΔP control (if PCV+)</td><td>10-15 cmH2O — titrate to Vt' + src('PHI Ch 3 Resp') + '</td></tr>' +
+      '<tr><td>Rate</td><td>12-16 / min — titrate to PaCO2 / EtCO2 target' + src('PHI Ch 3 Resp') + '</td></tr>' +
+      '<tr><td>PEEP</td><td>5-8 cmH2O' + src('PHI Ch 3 Resp') + '</td></tr>' +
+      '<tr><td>I-time</td><td>1.0 sec (I:E ~1:2 at rate 12-16)' + src('PHI Ch 3 Resp') + '</td></tr>' +
+      '<tr><td>FiO2 (initial)</td><td>100%, then titrate to SpO2 93-99%' + src('PHI Ch 3 Resp') + '</td></tr>' +
+      '<tr><td>EtCO2 target</td><td>30-35 mmHg (PaCO2 32-35)' + src('Physiology — pregnancy') + '</td></tr>' +
+      '<tr><td>Position</td><td>Left lateral tilt 15-30°' + src('PHI Ch 10 OB — basic airway') + '</td></tr>' +
+    '</tbody></table></div>' +
+    '<div class="callout callout-warn" style="margin-top:8px"><strong>Mode rationale:</strong> Most OB transports (post-eclamptic seizure, postpartum AMS, severe pre-eclampsia with pulmonary edema) are deeply sedated/paralyzed. (S)CMV+ / APVcmv locks in minute ventilation and PaCO2. SIMV+ relies on spontaneous drive and risks hypoventilation in a paralyzed parturient — reserve for awake / spontaneously triggering patients or weaning.</div>' +
+    '<div class="callout callout-warn" style="margin-top:8px"><strong>OB-specific physiology (not PHI Ch 10 protocol):</strong> Pregnancy reduces FRC and raises O2 consumption — rapid desaturation is expected. Maternal hypocapnia (PaCO2 &lt; 30) reduces uterine blood flow; target 32-35 mmHg (mild physiologic hypocapnia is normal in pregnancy). Avoid auto-PEEP — set rate to allow full expiration.</div>' +
+    (dflt ? '<div class="callout callout-warn" style="margin-top:8px"><strong>* Vt calculated from PHI 50 kg standard IBW.</strong> Enter height on Mother tab for Devine-IBW Vt.</div>' : '');
+
+  var nOut = document.getElementById('ventNeonatal');
+  nOut.innerHTML = '<div class="vent-wrap"><table class="vt"><thead><tr><th>Setting</th><th>Value</th></tr></thead><tbody>' +
+    '<tr><td>Mode</td><td>PCV+ / PSIMV+ Neonate (Hamilton T1) / Pressure A/C (ReVel)</td></tr>' +
+    '<tr><td>ΔP control</td><td class="tv-c">10 cmH2O</td></tr>' +
+    '<tr><td>Rate</td><td>40-60 / min</td></tr>' +
+    '<tr><td>PEEP</td><td>5 cmH2O</td></tr>' +
+    '<tr><td>I-time</td><td>0.5 sec</td></tr>' +
+    '<tr><td>FiO2 (initial)</td><td>21% term, 21-30% preterm; titrate to SpO2 by minute</td></tr>' +
+    '</tbody></table></div>' +
+    '<div class="callout callout-info"><strong>Hamilton T1 Neonatal mode:</strong> requires Aerogen for nebs. Pneumatic neb not available. Use Neonate circuit for &lt; 10 kg.</div>';
+}
+
+function renderAirway(){
+  var mOut = document.getElementById('airwayMaternal');
+  // Use ABW first; if absent, use IBW from height; if neither, PHI 50 kg fallback
+  var w = dosingWt();
+  var phi = isPhiFallback();
+  var src = state.m.weightKg ? 'ABW ' + round(w,1) + ' kg'
+          : state.m.heightCm ? 'IBW ' + round(w,1) + ' kg (from height)'
+          : '50 kg PHI std *';
+  var igel, lma;
+  if(w < 30){ igel = '2.5'; lma = '2.5'; }
+  else if(w < 50){ igel = '3'; lma = '3'; }
+  else if(w < 90){ igel = '4'; lma = '4'; }
+  else { igel = '5'; lma = '5'; }
+  mOut.innerHTML = '<div class="vent-wrap"><table class="vt"><thead><tr><th>Device</th><th>Size</th><th>Notes</th></tr></thead><tbody>' +
+    '<tr><td>ETT</td><td class="et-c">6.5-7.0 mm cuffed</td><td>Smaller than typical adult; airway edema. Have 6.0 ready.</td></tr>' +
+    '<tr><td>i-gel</td><td class="ig-c">Size ' + igel + '</td><td>Based on ' + src + '.</td></tr>' +
+    '<tr><td>LMA</td><td class="ig-c">Size ' + lma + '</td><td>Same sizing as i-gel.</td></tr>' +
+    '<tr><td>OPA</td><td>Adult M / L</td><td>Unconscious patient only.</td></tr>' +
+    '<tr><td>NPA</td><td>28-32 Fr</td><td>Lubricate well; nasal mucosa friable in pregnancy.</td></tr>' +
+    '</tbody></table></div>' +
+    (phi ? '<div class="callout callout-warn" style="margin-top:8px"><strong>* Sizing using PHI 50 kg standard.</strong> Both ABW and height are unknown. Enter either on Mother tab for patient-specific sizing.</div>' : '');
+
+  // Newborn
+  var nOut = document.getElementById('airwayNeonatal');
+  var w = state.nb.doseWt;
+  var ettStr = w ? ettSize(w) : '--';
+  var blade = w ? (w < 2 ? 'Miller 0' : 'Miller 1') : '--';
+  var igel = w ? (w < 5 ? '1' : (w < 12 ? '1.5' : '2')) : '--';
+  nOut.innerHTML = '<div class="vent-wrap"><table class="vt"><thead><tr><th>Device</th><th>Size</th></tr></thead><tbody>' +
+    '<tr><td>ETT</td><td class="et-c">' + ettStr + '</td></tr>' +
+    '<tr><td>Laryngoscope blade</td><td>' + blade + '</td></tr>' +
+    '<tr><td>i-gel</td><td class="ig-c">Size ' + igel + '</td></tr>' +
+    '<tr><td>BVM mask</td><td>Term: size 1; Preterm: size 0</td></tr>' +
+    '<tr><td>Suction</td><td>10 Fr (term), 8 Fr (preterm)</td></tr>' +
+    '</tbody></table></div>';
+}
+
+// ════════════════════════════════════════════════════════════════
+// ALL DRUGS BROWSE TAB
+// ════════════════════════════════════════════════════════════════
+var ALL_DRUGS = [
+  {cat:'hypertension', key:'labetalol',        form:'vial'},
+  {cat:'hypertension', key:'hydralazine',      form:'vial'},
+  {cat:'hypertension', key:'nifedipine',       form:'po'},
+  {cat:'seizure',      key:'magPreeclampsia',  form:'vialmix'},
+  {cat:'seizure',      key:'magEclampsia',     form:'vialmix'},
+  {cat:'seizure',      key:'lorazepamSeizure', form:'vial'},
+  {cat:'seizure',      key:'midazolamSeizure', form:'vial'},
+  {cat:'tocolysis',    key:'magTocolysis',     form:'vialmix'},
+  {cat:'tocolysis',    key:'terbutaline',      form:'vial'},
+  {cat:'tocolysis',    key:'ketorolac',        form:'vial'},
+  {cat:'hemorrhage',   key:'oxytocin',         form:'vialmix'},
+  {cat:'hemorrhage',   key:'txa',              form:'vialmix'},
+  {cat:'hemorrhage',   key:'fluidBolus',       form:'premix'},
+  {cat:'pain',         key:'fentanyl',         form:'vial'},
+  {cat:'pain',         key:'acetaminophen',    form:'po'},
+  {cat:'pain',         key:'midazolamAnxiety', form:'vial'},
+  {cat:'pain',         key:'lorazepamAnxiety', form:'vial'},
+  {cat:'nv',           key:'ondansetron',      form:'vial'},
+  {cat:'nv',           key:'promethazine',     form:'vial'},
+  {cat:'other',        key:'caCl',             form:'syringe'},
+  {cat:'other',        key:'caGluc',           form:'vial'},
+  {cat:'other',        key:'ptu',              form:'po'},
+  {cat:'rsi',          key:'ketamineInduction',form:'vial'},
+  {cat:'rsi',          key:'etomidateInduction',form:'vial'},
+  {cat:'rsi',          key:'rocuroniumRSI',    form:'vial'},
+  {cat:'rsi',          key:'succinylcholineRSI',form:'vial'},
+  {cat:'rsi',          key:'ketamineDrip',     form:'vialmix'},
+  {cat:'rsi',          key:'midazolamDrip',    form:'vialmix'},
+  {cat:'rsi',          key:'fentanylDrip',     form:'vialmix'},
+  {cat:'newborn',      key:'epiNeo',           form:'syringe'},
+  {cat:'newborn',      key:'nsBolusNeo',       form:'premix'},
+  {cat:'newborn',      key:'d10Neo',           form:'premix'},
+  {cat:'newborn',      key:'naloxoneNeo',      form:'vial'}
+];
+
+// Render order for form sections
+var FORM_ORDER = [
+  {key:'premix',  label:'Premix Bags — Ready to Hang'},
+  {key:'vialmix', label:'Vial → Mix to Bag'},
+  {key:'vial',    label:'Vials — Draw Up'},
+  {key:'syringe', label:'Pre-filled Syringes — Ready to Push'},
+  {key:'po',      label:'PO — Tablets / Capsules'}
+];
+
+var activeMedsCat = 'all';
+function renderAllDrugs(cat){
+  if(cat) activeMedsCat = cat;
+  var out = document.getElementById('allDrugs');
+  var list = activeMedsCat === 'all' ? ALL_DRUGS : ALL_DRUGS.filter(function(d){ return d.cat === activeMedsCat; });
+
+  // Group by form
+  function renderGroup(key, label){
+    var items = list.filter(function(d){ return d.form === key; });
+    if(!items.length) return '';
+    var hdr = '<div class="form-section-hdr h-' + key + '">' + label + ' <span style="font-family:var(--mono);opacity:.6;font-size:.65rem">[' + items.length + ']</span></div>';
+    var cards = '<div class="rg" style="margin-bottom:6px">' + items.map(function(d){ return DRUGS_MATERNAL[d.key] ? DRUGS_MATERNAL[d.key]() : ''; }).join('') + '</div>';
+    return hdr + cards;
+  }
+  // Header banner with patient weight context
+  var banner = '';
+  var mw = state.m.weightKg, mibwH = state.m.ibwFromHeight, nw = state.nb.doseWt;
+  var parts = [];
+  if(mw && mibwH)      parts.push('Mother: ABW ' + round(mw,1) + ' kg / IBW ' + round(mibwH,1) + ' kg');
+  else if(mw)          parts.push('Mother: ABW ' + round(mw,1) + ' kg (no height — IBW fallback 50 kg)');
+  else if(mibwH)       parts.push('Mother: IBW ' + round(mibwH,1) + ' kg (no ABW — IBW used for dosing wt)');
+  else                 parts.push('Mother: <strong>50 kg PHI std *</strong> (no ABW, no height)');
+  if(nw) parts.push('Newborn: ' + round(nw,2) + ' kg');
+  var phi = isPhiFallback();
+  var cls = phi ? 'callout-warn' : 'callout-info';
+  var prefix = phi ? '<strong>* Using PHI 50 kg standard:</strong> ' : '<strong>Active dosing weight:</strong> ';
+  banner = '<div class="callout ' + cls + '" style="margin-bottom:10px">' + prefix + parts.join(' &nbsp;|&nbsp; ') + '</div>';
+  // Form legend strip
+  var legend = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">' +
+    '<span class="fb fb-premix">' + FORM_LABELS.premix + '</span>' +
+    '<span class="fb fb-vialmix">' + FORM_LABELS.vialmix + '</span>' +
+    '<span class="fb fb-vial">' + FORM_LABELS.vial + '</span>' +
+    '<span class="fb fb-syringe">' + FORM_LABELS.syringe + '</span>' +
+    '<span class="fb fb-po">' + FORM_LABELS.po + '</span></div>';
+  // Render each form group in order
+  var grouped = FORM_ORDER.map(function(f){ return renderGroup(f.key, f.label); }).join('');
+  out.innerHTML = banner + legend + grouped;
+}
+
+// ════════════════════════════════════════════════════════════════
+// WIRE UP
+// ════════════════════════════════════════════════════════════════
+// Nav tabs
+document.querySelectorAll('.nav-tab').forEach(function(t){
+  t.onclick = function(){
+    document.querySelectorAll('.nav-tab').forEach(function(x){ x.classList.remove('on'); });
+    t.classList.add('on');
+    document.querySelectorAll('.pg').forEach(function(x){ x.classList.remove('on'); });
+    document.getElementById('pg' + t.dataset.pg.charAt(0).toUpperCase() + t.dataset.pg.slice(1)).classList.add('on');
+  };
+});
+
+// Med tabs
+document.querySelectorAll('#medTabs .tab').forEach(function(t){
+  t.onclick = function(){
+    document.querySelectorAll('#medTabs .tab').forEach(function(x){ x.classList.remove('on'); });
+    t.classList.add('on');
+    renderAllDrugs(t.dataset.cat);
+  };
+});
+
+// Mother inputs
+['mWeight','mWeightUnit','mHeight','mHeightInches','mHeightUnit','mGA'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', recomputeMother);
+});
+document.getElementById('mHeightUnit').addEventListener('change', refreshMHeight);
+
+// Newborn inputs
+['nWeight','nWeightUnit','mol','apgar1','apgar5'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', recomputeNewborn);
+});
+
+// Init — wrapped in try/catch to surface any runtime errors visibly
+function showInitError(stepName, err){
+  var msg = '⚠ App failed to initialize at: ' + stepName + '\n\n' +
+    (err && err.message ? err.message : String(err)) + '\n\n' +
+    (err && err.stack ? err.stack : '');
+  // Show in a visible banner on the page
+  var banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#7f1d1d;color:#fff;padding:14px 16px;font-family:monospace;font-size:.78rem;white-space:pre-wrap;border-bottom:3px solid #f87171;max-height:50vh;overflow:auto';
+  banner.textContent = msg;
+  document.body.insertBefore(banner, document.body.firstChild);
+  // Also dump to console
+  if(window.console && console.error) console.error('[StatFlight INIT]', stepName, err);
+}
+function safeRun(name, fn){
+  try{ fn(); }catch(e){ showInitError(name, e); throw e; }
+}
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(function(e){ console.warn('SW reg failed:', e); }); }
+safeRun('refreshMHeight',  function(){ refreshMHeight(); });
+safeRun('renderDxGrid',    function(){ renderDxGrid(); });
+safeRun('recomputeMother', function(){ recomputeMother(); });
+safeRun('renderColorStrip',function(){ renderColorStrip(); });
+safeRun('recomputeNewborn',function(){ recomputeNewborn(); });
+safeRun('renderAllDrugs',  function(){ renderAllDrugs('all'); });
+safeRun('setColorSys',     function(){ setColorSys(window.colorSystem); });
+safeRun('renderPlan',      function(){ renderPlan(); });
+safeRun('renderSafer',     function(){ renderSafer(); });
+safeRun('renderIntubation',function(){ renderIntubation(); });
+</script>
+</body>
+</html>
