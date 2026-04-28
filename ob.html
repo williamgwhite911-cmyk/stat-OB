@@ -214,6 +214,26 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .empty .et{font-size:.85rem}
 
 @media(max-width:600px){.topbar{padding:0 12px}.tb-sub{display:none}.page{padding:14px 10px 50px}}
+
+.pdf-overlay{position:fixed;inset:0;background:rgba(3,7,16,.97);z-index:9999;display:none;flex-direction:column;animation:pdfFadeIn .15s ease}
+.pdf-overlay.show{display:flex}
+@keyframes pdfFadeIn{from{opacity:0}to{opacity:1}}
+.pdf-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg1);border-bottom:1px solid var(--bd1);flex-shrink:0;min-height:52px;flex-wrap:wrap}
+.pdf-back{background:var(--s1);border:1px solid var(--bd2);color:var(--tx0);font-family:var(--mono);font-size:.78rem;font-weight:600;letter-spacing:.04em;padding:8px 14px 8px 10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s;flex-shrink:0}
+.pdf-back:hover,.pdf-back:active{background:var(--s2);border-color:var(--cyan);color:var(--cyan)}
+.pdf-back-icon{font-size:1.1rem;line-height:1}
+.pdf-title{flex:1;min-width:0;font-family:var(--mono);font-size:.7rem;color:var(--tx1);letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.pdf-nav{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.pdf-nav-btn{background:var(--s1);border:1px solid var(--bd2);color:var(--tx0);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:1.1rem;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0;transition:all .12s}
+.pdf-nav-btn:hover:not(:disabled){background:var(--s2);border-color:var(--cyan);color:var(--cyan)}
+.pdf-nav-btn:disabled{opacity:.35;cursor:not-allowed}
+.pdf-page-info{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:.72rem;color:var(--tx1);padding:0 6px}
+.pdf-page-input{width:42px;background:var(--bg0);border:1px solid var(--bd1);color:var(--tx0);font-family:var(--mono);font-size:.72rem;text-align:center;padding:5px 4px;border-radius:5px;-moz-appearance:textfield;appearance:textfield}
+.pdf-page-input::-webkit-outer-spin-button,.pdf-page-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.pdf-frame-wrap{flex:1;background:#1a1a1a;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:8px;position:relative}
+.pdf-canvas{background:#fff;display:block;max-width:100%;height:auto;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.pdf-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--tx1);font-family:var(--mono);font-size:.78rem;letter-spacing:.05em;text-transform:uppercase}
+.pdf-loading.hidden{display:none}
 </style>
 </head>
 <body>
@@ -560,6 +580,160 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 
 <script>
 // ════════════════════════════════════════════════════════════════
+// PDF OVERLAY VIEWER (PDF.js canvas-based)
+// ════════════════════════════════════════════════════════════════
+var __pdfjsReady = null;
+var __pdfDoc = null;
+var __pdfCurrentPage = 1;
+var __pdfRenderTask = null;
+var PDFJS_VER = '3.11.174';
+var PDFJS_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/' + PDFJS_VER;
+
+function ensurePdfJs(){
+  if(__pdfjsReady) return __pdfjsReady;
+  __pdfjsReady = new Promise(function(resolve, reject){
+    if(window.pdfjsLib){ resolve(window.pdfjsLib); return; }
+    var s = document.createElement('script');
+    s.src = PDFJS_BASE + '/pdf.min.js';
+    s.onload = function(){
+      if(!window.pdfjsLib){ reject(new Error('PDF.js failed to load')); return; }
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_BASE + '/pdf.worker.min.js';
+      resolve(window.pdfjsLib);
+    };
+    s.onerror = function(){ reject(new Error('PDF.js script failed to load (offline?)')); };
+    document.head.appendChild(s);
+  });
+  return __pdfjsReady;
+}
+
+function openPdfOverlay(url, title){
+  var ov = document.getElementById('pdfOverlay');
+  var tt = document.getElementById('pdfOverlayTitle');
+  var loading = document.getElementById('pdfLoading');
+  if(!ov) return;
+  if(tt) tt.textContent = title || 'Protocol';
+  ov.classList.add('show');
+  document.documentElement.style.overflow='hidden';
+  document.body.style.overflow='hidden';
+  if(loading) loading.classList.remove('hidden');
+
+  // Parse #page=N from url
+  var pageMatch = url.match(/#.*page=(\d+)/);
+  var startPage = pageMatch ? parseInt(pageMatch[1], 10) : 1;
+  var cleanUrl = url.split('#')[0];
+
+  ensurePdfJs().then(function(pdfjsLib){
+    return pdfjsLib.getDocument({url: cleanUrl}).promise;
+  }).then(function(doc){
+    __pdfDoc = doc;
+    var totalEl = document.getElementById('pdfPageTotal');
+    if(totalEl) totalEl.textContent = doc.numPages;
+    __pdfCurrentPage = Math.min(Math.max(1, startPage), doc.numPages);
+    var inp = document.getElementById('pdfPageInput');
+    if(inp){ inp.value = __pdfCurrentPage; inp.max = doc.numPages; }
+    return renderPdfPage(__pdfCurrentPage);
+  }).catch(function(err){
+    if(loading){ loading.textContent = 'Failed to load PDF: ' + (err.message || err); }
+    console.error('PDF load failed:', err);
+  });
+}
+
+function renderPdfPage(num){
+  var loading = document.getElementById('pdfLoading');
+  if(!__pdfDoc) return Promise.resolve();
+  if(__pdfRenderTask){ try{ __pdfRenderTask.cancel(); }catch(e){} __pdfRenderTask = null; }
+  return __pdfDoc.getPage(num).then(function(page){
+    var canvas = document.getElementById('pdfCanvas');
+    var wrap = document.getElementById('pdfFrameWrap');
+    if(!canvas || !wrap) return;
+    var availW = wrap.clientWidth - 16;
+    var rawViewport = page.getViewport({scale: 1});
+    var fitScale = availW / rawViewport.width;
+    var dpr = window.devicePixelRatio || 1;
+    var viewport = page.getViewport({scale: fitScale * dpr});
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+    canvas.style.width = Math.floor(viewport.width / dpr) + 'px';
+    canvas.style.height = Math.floor(viewport.height / dpr) + 'px';
+    var ctx = canvas.getContext('2d');
+    __pdfRenderTask = page.render({canvasContext: ctx, viewport: viewport});
+    return __pdfRenderTask.promise.then(function(){
+      __pdfRenderTask = null;
+      if(loading) loading.classList.add('hidden');
+      updatePdfNavButtons();
+    });
+  }).catch(function(err){
+    if(err && err.name === 'RenderingCancelledException') return;
+    console.error('PDF render failed:', err);
+  });
+}
+
+function updatePdfNavButtons(){
+  var prev = document.getElementById('pdfPrevBtn');
+  var next = document.getElementById('pdfNextBtn');
+  if(!__pdfDoc) return;
+  if(prev) prev.disabled = __pdfCurrentPage <= 1;
+  if(next) next.disabled = __pdfCurrentPage >= __pdfDoc.numPages;
+}
+
+function pdfPrevPage(){
+  if(!__pdfDoc || __pdfCurrentPage <= 1) return;
+  __pdfCurrentPage--;
+  var inp = document.getElementById('pdfPageInput');
+  if(inp) inp.value = __pdfCurrentPage;
+  renderPdfPage(__pdfCurrentPage);
+}
+
+function pdfNextPage(){
+  if(!__pdfDoc || __pdfCurrentPage >= __pdfDoc.numPages) return;
+  __pdfCurrentPage++;
+  var inp = document.getElementById('pdfPageInput');
+  if(inp) inp.value = __pdfCurrentPage;
+  renderPdfPage(__pdfCurrentPage);
+}
+
+function pdfGoToPage(){
+  if(!__pdfDoc) return;
+  var inp = document.getElementById('pdfPageInput');
+  if(!inp) return;
+  var n = parseInt(inp.value, 10);
+  if(isNaN(n)) return;
+  n = Math.min(Math.max(1, n), __pdfDoc.numPages);
+  __pdfCurrentPage = n;
+  inp.value = n;
+  renderPdfPage(n);
+}
+
+function closePdfOverlay(){
+  var ov = document.getElementById('pdfOverlay');
+  var loading = document.getElementById('pdfLoading');
+  if(!ov) return;
+  ov.classList.remove('show');
+  if(__pdfRenderTask){ try{ __pdfRenderTask.cancel(); }catch(e){} __pdfRenderTask = null; }
+  if(__pdfDoc){ try{ __pdfDoc.destroy(); }catch(e){} __pdfDoc = null; }
+  __pdfCurrentPage = 1;
+  if(loading){ loading.classList.remove('hidden'); loading.textContent = 'Loading…'; }
+  document.documentElement.style.overflow='';
+  document.body.style.overflow='';
+}
+
+document.addEventListener('keydown', function(e){
+  var ov = document.getElementById('pdfOverlay');
+  if(!ov || !ov.classList.contains('show')) return;
+  if(e.key === 'Escape'){ closePdfOverlay(); }
+  else if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); pdfNextPage(); }
+  else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); pdfPrevPage(); }
+});
+
+// Re-render current page on resize (so canvas stays crisp / fits)
+window.addEventListener('resize', function(){
+  if(__pdfDoc && document.getElementById('pdfOverlay').classList.contains('show')){
+    clearTimeout(window.__pdfResizeTimer);
+    window.__pdfResizeTimer = setTimeout(function(){ renderPdfPage(__pdfCurrentPage); }, 200);
+  }
+});
+
+// ════════════════════════════════════════════════════════════════
 // COLOR SYSTEMS — Broselow / Handtevy
 // ════════════════════════════════════════════════════════════════
 var BROSELOW_COLORS = {
@@ -866,9 +1040,13 @@ function renderProtocolBtn(dx){
   var ref = PROTOCOL_PAGES[dx];
   if(!ref) return '';
   var file = PROTOCOL_FILES[ref.src];
+  if(!file) return '';
   var url = file + '#page=' + (ref.page || 1) + '&zoom=page-fit';
   var fileLabel = file ? file.replace(/^protocols\//,'').replace(/\.pdf$/i,'') : 'Protocol';
-  return '<a href="' + url + '" target="_blank" rel="noopener" class="proto-btn" onclick="return openProtocol(event,\'' + dx + '\')">' +
+  var title = ref.label + (ref.page > 1 ? ' — p. ' + ref.page : '');
+  var safeUrl = url.replace(/'/g,"\\'");
+  var safeTitle = title.replace(/'/g,"\\'");
+  return '<a href="' + url + '" class="proto-btn" onclick="return openProtocolViaOverlay(event,\'' + dx + '\',\'' + safeUrl + '\',\'' + safeTitle + '\')">' +
     '<span class="proto-icon">📖</span>' +
     '<span class="proto-text">' +
       '<span class="proto-label">View PHI Protocol</span>' +
@@ -879,18 +1057,18 @@ function renderProtocolBtn(dx){
     '<span class="proto-chev">›</span>' +
   '</a>';
 }
-function openProtocol(e, dx){
+function openProtocolViaOverlay(e, dx, url, title){
+  e.preventDefault();
   var ref = PROTOCOL_PAGES[dx];
   if(!ref) return false;
-  var file = PROTOCOL_FILES[ref.src];
-  if(PROTOCOL_AVAILABLE[ref.src] === false){
-    e.preventDefault();
+  if(typeof PROTOCOL_AVAILABLE !== 'undefined' && PROTOCOL_AVAILABLE[ref.src] === false){
+    var file = PROTOCOL_FILES[ref.src];
     var fileBare = file ? file.replace(/^protocols\//,'') : 'PHI_*.pdf';
-    alert('PHI Protocol PDF "' + fileBare + '" is not installed.\n\n' +
-      'Drop the matching chapter into protocols/<chapter>/ and re-run merge.py.');
+    alert('PHI Protocol PDF "' + fileBare + '" is not installed.\n\nDrop the matching chapter into protocols/<chapter>/ and re-run merge.py.');
     return false;
   }
-  return true;
+  openPdfOverlay(url, title);
+  return false;
 }
 function openProtocolGeneric(e, srcKey){
   var file = PROTOCOL_FILES[srcKey];
@@ -919,7 +1097,15 @@ var DIAGNOSES = [
   {id:'mag_tox', name:'Magnesium Toxicity', sub:'Calcium rescue'},
   {id:'cord_prolapse', name:'Cord Prolapse', sub:'Obstetric emergency'},
   {id:'precipitous', name:'Precipitous Delivery', sub:'Imminent delivery'},
-  {id:'newborn', name:'Newborn Resuscitation', sub:'Post-delivery'}
+  {id:'newborn', name:'Newborn Resuscitation', sub:'Post-delivery'},
+  {id:'open_fracture', name:'Open Fracture (Maternal)', sub:'Trauma in pregnancy · L lateral tilt'},
+  {id:'aaa', name:'AAA / Aortic Catastrophe', sub:'Rare in pregnancy · connective tissue dz'},
+  {id:'dissection', name:'Aortic Dissection (Maternal)', sub:'Connective tissue dz · 3rd trimester'},
+  {id:'herniation', name:'Brain Herniation (Maternal)', sub:'Eclampsia · ICH · severe pre-eclampsia'},
+  {id:'hemshock', name:'Hemorrhagic Shock (Maternal)', sub:'Pregnancy compensates · then crashes'},
+  {id:'post_intubation', name:'Post-Intubation Sedation (Maternal)', sub:'Analgesia first · pregnancy-safe agents'},
+  {id:'anxiolysis_extra', name:'Anxiolysis (Pre-flight)', sub:'Treat before loading'},
+  {id:'agitation', name:'Dangerous Agitation (Maternal)', sub:'Pregnancy-safe sedation'}
 ];
 
 function renderDxGrid(){
@@ -1585,7 +1771,15 @@ var DX_DRUG_MAP = {
   mag_tox: ['caGluc','caCl'],
   cord_prolapse: ['terbutaline'],
   precipitous: ['oxytocin','naloxoneNeo'],
-  newborn: ['epiNeo','nsBolusNeo','d10Neo','naloxoneNeo']
+  newborn: ['epiNeo','nsBolusNeo','d10Neo','naloxoneNeo'],
+  open_fracture: ['fentanyl','fluidBolus','txa'],
+  aaa: ['fluidBolus','fentanyl','txa'],
+  dissection: ['labetalol','fentanyl'],
+  herniation: ['magEclampsia','lorazepamSeizure','fentanyl'],
+  hemshock: ['fluidBolus','txa','oxytocin'],
+  post_intubation: ['fentanyl','ketamineDrip'],
+  anxiolysis_extra: ['fentanyl'],
+  agitation: ['magEclampsia','fentanyl']
 };
 
 var DX_NOTES = {
@@ -1810,6 +2004,112 @@ var DX_PLAN = {
       'Epinephrine 0.01-0.03 mg/kg IV/IO if HR < 60 despite compressions',
       'Volume expansion 10 mL/kg NS for shock/hypovolemia',
       'D10 2 mL/kg if glucose < 50; naloxone 0.1 mg/kg if maternal opioids'
+    ]
+  },
+  open_fracture: {
+    picture:'Open (compound) fracture in maternal patient. Pregnancy considerations: increased blood volume masks shock, supine hypotension after 20 wk requires LEFT LATERAL TILT, fetus is the second patient — fetal HR check is part of secondary survey.',
+    plan:[
+      'LEFT LATERAL TILT (15° wedge under right hip) for any pt >20 wk gestation',
+      'Control hemorrhage: direct pressure, pressure dressing, tourniquet PRN',
+      'Maternal vitals — but remember pregnant pts compensate before crashing',
+      'Fetal HR check after maternal stabilization (normal 110-160)',
+      'NV check distal to injury before/after splinting',
+      'Sterile saline-moistened gauze; splint in position found',
+      'Pain: fentanyl 0.5-1 mcg/kg IV (safe in pregnancy)',
+      'TXA 1-2 g IV — pregnancy-safe; consider if significant hemorrhage <3 hr',
+      'Early IV abx per receiving (cefazolin 2 g IV)',
+      'Transport to OB/trauma capable center; consider perimortem c-section criteria if maternal arrest'
+    ]
+  },
+  aaa: {
+    picture:'AAA or aortic dissection in pregnancy is RARE but devastating. Risk factors: Marfan, Ehlers-Danlos, chronic HTN, late gestation. Type A dissection in 3rd trimester or peripartum is a known catastrophe.',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'Two large-bore IVs — don\'t delay transport',
+      'Permissive hypotension to palpable radial pulse / normal mentation',
+      'Cautious crystalloid 250 mL aliquots; blood products preferred',
+      'BP both arms; document pulse deficits',
+      'Pain: fentanyl titrated',
+      'Pre-alert: vascular AND OB at receiving',
+      'Consider perimortem c-section if maternal arrest >20 wk gestation'
+    ]
+  },
+  dissection: {
+    picture:'Aortic dissection in pregnancy — Type A is surgical emergency. Beta-blockers and select vasodilators are pregnancy-acceptable; labetalol is first-line for rate and BP control.',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'BP both arms — treat higher; document pulse deficits',
+      'Goal: HR <60 AND SBP 100-120 mmHg (lowest tolerated maintaining utero-placental perfusion)',
+      'RATE FIRST: labetalol 20 mg IV q10 min (preferred in pregnancy) or escalate per medical control',
+      'NEVER vasodilate before rate control',
+      'Pain: fentanyl IV',
+      'Avoid IV in extremity with pulse deficit',
+      'Pre-alert OB + CT surgery'
+    ]
+  },
+  herniation: {
+    picture:'Maternal brain herniation — consider eclampsia-related ICH, AVM/aneurysm rupture, severe pre-eclampsia with PRES. Cushing triad (HTN + bradycardia + irregular respirations), pupillary asymmetry, posturing.',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'HOB 30°, head midline, loosen c-collar/tube ties',
+      'SpO2 >94%, EtCO2 35-40',
+      '3% NaCl 250 mL IV over 5-15 min — FIRST LINE',
+      'Mannitol 0.5-1 g/kg IV over 30 min (online order; relative caution in pregnancy)',
+      'If eclamptic: magnesium 4-6 g IV load over 15-20 min, then 2 g/hr',
+      'Treat seizures: lorazepam, midazolam',
+      'Pain/sedation: fentanyl + ketamine',
+      'Notify receiving OB/neurosurgery; consider c-section criteria if maternal arrest >20 wk'
+    ]
+  },
+  hemshock: {
+    picture:'Maternal hemorrhagic shock — pregnancy increases blood volume 30-50%, so vital sign changes appear LATE. By the time SBP drops, blood loss is substantial. Sources: PPH, placental abruption, uterine rupture, ectopic, trauma.',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'External hemorrhage control; uterine massage if PPH',
+      'Two large-bore IVs/IO',
+      'Crystalloid 250-500 mL aliquots; blood products preferred (1:1:1)',
+      'TXA 1 g IV (pregnancy-safe; can repeat in 30 min if PPH ongoing)',
+      'Calcium 1 g IV per unit blood',
+      'Oxytocin 20 units in 1 L IV wide open if PPH',
+      'WARM patient; monitor lactate, base deficit',
+      'If maternal arrest >20 wk: perimortem c-section within 4 min',
+      'Pre-alert OB, blood bank for MTP'
+    ]
+  },
+  post_intubation: {
+    picture:'Post-intubation sedation in maternal patient. Pregnancy-acceptable: fentanyl, ketamine, propofol (short-term), midazolam (sparingly). AVOID prolonged benzodiazepine if delivery imminent (neonatal depression).',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'ANALGESIA FIRST: fentanyl 0.5-2 mcg/kg IV q10 min PRN, then 1-2 mcg/kg/hr',
+      'Sedation: ketamine 1-2 mg/kg IV bolus → 1-4 mg/kg/hr (good hemodynamic profile)',
+      'Minimize midazolam if delivery anticipated (neonatal depression risk)',
+      'If paralyzed: never use RASS/CPOT — patient is paralyzed but aware without sedation',
+      'Bolus sedation before paralysis to avoid dysphoria',
+      'Reassess q10-15 min: HR, BP, ventilator synchrony, fetal HR if monitored'
+    ]
+  },
+  anxiolysis_extra: {
+    picture:'Anxious maternal patient pre-loading. Treat pain first. Untreated anxiety can escalate to dangerous agitation, especially in confined transport.',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'Address pain first — fentanyl IV/IN',
+      'Verbal de-escalation, calm environment',
+      'Midazolam 0.5-2 mg IV/IM/IN q5 min PRN (minimize if delivery anticipated)',
+      'Or lorazepam 0.5-2 mg IV/IM/IN q10-20 min PRN',
+      'CAUTION: benzo + opioid combo',
+      'Have BVM, I-gel, suction at head of bed'
+    ]
+  },
+  agitation: {
+    picture:'Maternal dangerous agitation — risk to mother, fetus, crew, aircraft. Causes: eclampsia, hypoxia, hypoglycemia, head injury, intoxication, severe anxiety. Identify reversible causes FIRST.',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'Reversible-cause sweep: glucose, SpO2, BP, fetal status, head injury',
+      'Magnesium if eclamptic features',
+      'Ketamine 1-2 mg/kg IV or 4-5 mg/kg IM — preserves airway/BP, pregnancy-acceptable',
+      'Or midazolam 2-5 mg IV/IM/IN (minimize if delivery anticipated)',
+      'BVM, I-gel at head of bed; continuous SpO2/EtCO2',
+      'Pilot notification before sedation if flight risk'
     ]
   }
 };
@@ -2245,5 +2545,28 @@ safeRun('renderPlan',      function(){ renderPlan(); });
 safeRun('renderSafer',     function(){ renderSafer(); });
 safeRun('renderIntubation',function(){ renderIntubation(); });
 </script>
+
+<div id="pdfOverlay" class="pdf-overlay" role="dialog" aria-label="Protocol PDF">
+  <div class="pdf-bar">
+    <button class="pdf-back" type="button" onclick="closePdfOverlay()" aria-label="Back to app">
+      <span class="pdf-back-icon">‹</span>BACK TO APP
+    </button>
+    <div class="pdf-title" id="pdfOverlayTitle">Protocol</div>
+    <div class="pdf-nav">
+      <button class="pdf-nav-btn" id="pdfPrevBtn" type="button" onclick="pdfPrevPage()" aria-label="Previous page">‹</button>
+      <div class="pdf-page-info">
+        <input class="pdf-page-input" id="pdfPageInput" type="number" min="1" inputmode="numeric" onchange="pdfGoToPage()" />
+        <span>/</span>
+        <span id="pdfPageTotal">–</span>
+      </div>
+      <button class="pdf-nav-btn" id="pdfNextBtn" type="button" onclick="pdfNextPage()" aria-label="Next page">›</button>
+    </div>
+  </div>
+  <div class="pdf-frame-wrap" id="pdfFrameWrap">
+    <canvas class="pdf-canvas" id="pdfCanvas"></canvas>
+    <div class="pdf-loading hidden" id="pdfLoading">Loading…</div>
+  </div>
+</div>
+
 </body>
 </html>

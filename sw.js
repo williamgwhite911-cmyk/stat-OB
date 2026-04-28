@@ -1,5 +1,5 @@
 // StatFlight Service Worker — offline cache
-const CACHE_NAME = 'statflight-v12';
+const CACHE_NAME = 'statflight-v15';
 const ASSETS = [
   './',
   './index.html',
@@ -63,7 +63,8 @@ self.addEventListener('fetch', (e) => {
         const cacheable =
           url.origin === self.location.origin ||
           url.host.includes('fonts.googleapis.com') ||
-          url.host.includes('fonts.gstatic.com');
+          url.host.includes('fonts.gstatic.com') ||
+          url.host.includes('cdnjs.cloudflare.com');
         if (cacheable && response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((c) => c.put(e.request, clone));

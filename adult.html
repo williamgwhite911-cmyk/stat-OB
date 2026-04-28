@@ -221,6 +221,26 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .circ-chk input{width:auto !important;margin:0}
 
 @media(max-width:600px){.topbar{padding:0 12px}.tb-sub{display:none}.page{padding:14px 10px 50px}}
+
+.pdf-overlay{position:fixed;inset:0;background:rgba(3,7,16,.97);z-index:9999;display:none;flex-direction:column;animation:pdfFadeIn .15s ease}
+.pdf-overlay.show{display:flex}
+@keyframes pdfFadeIn{from{opacity:0}to{opacity:1}}
+.pdf-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg1);border-bottom:1px solid var(--bd1);flex-shrink:0;min-height:52px;flex-wrap:wrap}
+.pdf-back{background:var(--s1);border:1px solid var(--bd2);color:var(--tx0);font-family:var(--mono);font-size:.78rem;font-weight:600;letter-spacing:.04em;padding:8px 14px 8px 10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s;flex-shrink:0}
+.pdf-back:hover,.pdf-back:active{background:var(--s2);border-color:var(--cyan);color:var(--cyan)}
+.pdf-back-icon{font-size:1.1rem;line-height:1}
+.pdf-title{flex:1;min-width:0;font-family:var(--mono);font-size:.7rem;color:var(--tx1);letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.pdf-nav{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.pdf-nav-btn{background:var(--s1);border:1px solid var(--bd2);color:var(--tx0);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:1.1rem;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0;transition:all .12s}
+.pdf-nav-btn:hover:not(:disabled){background:var(--s2);border-color:var(--cyan);color:var(--cyan)}
+.pdf-nav-btn:disabled{opacity:.35;cursor:not-allowed}
+.pdf-page-info{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:.72rem;color:var(--tx1);padding:0 6px}
+.pdf-page-input{width:42px;background:var(--bg0);border:1px solid var(--bd1);color:var(--tx0);font-family:var(--mono);font-size:.72rem;text-align:center;padding:5px 4px;border-radius:5px;-moz-appearance:textfield;appearance:textfield}
+.pdf-page-input::-webkit-outer-spin-button,.pdf-page-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.pdf-frame-wrap{flex:1;background:#1a1a1a;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:8px;position:relative}
+.pdf-canvas{background:#fff;display:block;max-width:100%;height:auto;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.pdf-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--tx1);font-family:var(--mono);font-size:.78rem;letter-spacing:.05em;text-transform:uppercase}
+.pdf-loading.hidden{display:none}
 </style>
 </head>
 <body>
@@ -445,6 +465,160 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 
 <script>
 // ════════════════════════════════════════════════════════════════
+// PDF OVERLAY VIEWER (PDF.js canvas-based)
+// ════════════════════════════════════════════════════════════════
+var __pdfjsReady = null;
+var __pdfDoc = null;
+var __pdfCurrentPage = 1;
+var __pdfRenderTask = null;
+var PDFJS_VER = '3.11.174';
+var PDFJS_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/' + PDFJS_VER;
+
+function ensurePdfJs(){
+  if(__pdfjsReady) return __pdfjsReady;
+  __pdfjsReady = new Promise(function(resolve, reject){
+    if(window.pdfjsLib){ resolve(window.pdfjsLib); return; }
+    var s = document.createElement('script');
+    s.src = PDFJS_BASE + '/pdf.min.js';
+    s.onload = function(){
+      if(!window.pdfjsLib){ reject(new Error('PDF.js failed to load')); return; }
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_BASE + '/pdf.worker.min.js';
+      resolve(window.pdfjsLib);
+    };
+    s.onerror = function(){ reject(new Error('PDF.js script failed to load (offline?)')); };
+    document.head.appendChild(s);
+  });
+  return __pdfjsReady;
+}
+
+function openPdfOverlay(url, title){
+  var ov = document.getElementById('pdfOverlay');
+  var tt = document.getElementById('pdfOverlayTitle');
+  var loading = document.getElementById('pdfLoading');
+  if(!ov) return;
+  if(tt) tt.textContent = title || 'Protocol';
+  ov.classList.add('show');
+  document.documentElement.style.overflow='hidden';
+  document.body.style.overflow='hidden';
+  if(loading) loading.classList.remove('hidden');
+
+  // Parse #page=N from url
+  var pageMatch = url.match(/#.*page=(\d+)/);
+  var startPage = pageMatch ? parseInt(pageMatch[1], 10) : 1;
+  var cleanUrl = url.split('#')[0];
+
+  ensurePdfJs().then(function(pdfjsLib){
+    return pdfjsLib.getDocument({url: cleanUrl}).promise;
+  }).then(function(doc){
+    __pdfDoc = doc;
+    var totalEl = document.getElementById('pdfPageTotal');
+    if(totalEl) totalEl.textContent = doc.numPages;
+    __pdfCurrentPage = Math.min(Math.max(1, startPage), doc.numPages);
+    var inp = document.getElementById('pdfPageInput');
+    if(inp){ inp.value = __pdfCurrentPage; inp.max = doc.numPages; }
+    return renderPdfPage(__pdfCurrentPage);
+  }).catch(function(err){
+    if(loading){ loading.textContent = 'Failed to load PDF: ' + (err.message || err); }
+    console.error('PDF load failed:', err);
+  });
+}
+
+function renderPdfPage(num){
+  var loading = document.getElementById('pdfLoading');
+  if(!__pdfDoc) return Promise.resolve();
+  if(__pdfRenderTask){ try{ __pdfRenderTask.cancel(); }catch(e){} __pdfRenderTask = null; }
+  return __pdfDoc.getPage(num).then(function(page){
+    var canvas = document.getElementById('pdfCanvas');
+    var wrap = document.getElementById('pdfFrameWrap');
+    if(!canvas || !wrap) return;
+    var availW = wrap.clientWidth - 16;
+    var rawViewport = page.getViewport({scale: 1});
+    var fitScale = availW / rawViewport.width;
+    var dpr = window.devicePixelRatio || 1;
+    var viewport = page.getViewport({scale: fitScale * dpr});
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+    canvas.style.width = Math.floor(viewport.width / dpr) + 'px';
+    canvas.style.height = Math.floor(viewport.height / dpr) + 'px';
+    var ctx = canvas.getContext('2d');
+    __pdfRenderTask = page.render({canvasContext: ctx, viewport: viewport});
+    return __pdfRenderTask.promise.then(function(){
+      __pdfRenderTask = null;
+      if(loading) loading.classList.add('hidden');
+      updatePdfNavButtons();
+    });
+  }).catch(function(err){
+    if(err && err.name === 'RenderingCancelledException') return;
+    console.error('PDF render failed:', err);
+  });
+}
+
+function updatePdfNavButtons(){
+  var prev = document.getElementById('pdfPrevBtn');
+  var next = document.getElementById('pdfNextBtn');
+  if(!__pdfDoc) return;
+  if(prev) prev.disabled = __pdfCurrentPage <= 1;
+  if(next) next.disabled = __pdfCurrentPage >= __pdfDoc.numPages;
+}
+
+function pdfPrevPage(){
+  if(!__pdfDoc || __pdfCurrentPage <= 1) return;
+  __pdfCurrentPage--;
+  var inp = document.getElementById('pdfPageInput');
+  if(inp) inp.value = __pdfCurrentPage;
+  renderPdfPage(__pdfCurrentPage);
+}
+
+function pdfNextPage(){
+  if(!__pdfDoc || __pdfCurrentPage >= __pdfDoc.numPages) return;
+  __pdfCurrentPage++;
+  var inp = document.getElementById('pdfPageInput');
+  if(inp) inp.value = __pdfCurrentPage;
+  renderPdfPage(__pdfCurrentPage);
+}
+
+function pdfGoToPage(){
+  if(!__pdfDoc) return;
+  var inp = document.getElementById('pdfPageInput');
+  if(!inp) return;
+  var n = parseInt(inp.value, 10);
+  if(isNaN(n)) return;
+  n = Math.min(Math.max(1, n), __pdfDoc.numPages);
+  __pdfCurrentPage = n;
+  inp.value = n;
+  renderPdfPage(n);
+}
+
+function closePdfOverlay(){
+  var ov = document.getElementById('pdfOverlay');
+  var loading = document.getElementById('pdfLoading');
+  if(!ov) return;
+  ov.classList.remove('show');
+  if(__pdfRenderTask){ try{ __pdfRenderTask.cancel(); }catch(e){} __pdfRenderTask = null; }
+  if(__pdfDoc){ try{ __pdfDoc.destroy(); }catch(e){} __pdfDoc = null; }
+  __pdfCurrentPage = 1;
+  if(loading){ loading.classList.remove('hidden'); loading.textContent = 'Loading…'; }
+  document.documentElement.style.overflow='';
+  document.body.style.overflow='';
+}
+
+document.addEventListener('keydown', function(e){
+  var ov = document.getElementById('pdfOverlay');
+  if(!ov || !ov.classList.contains('show')) return;
+  if(e.key === 'Escape'){ closePdfOverlay(); }
+  else if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); pdfNextPage(); }
+  else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); pdfPrevPage(); }
+});
+
+// Re-render current page on resize (so canvas stays crisp / fits)
+window.addEventListener('resize', function(){
+  if(__pdfDoc && document.getElementById('pdfOverlay').classList.contains('show')){
+    clearTimeout(window.__pdfResizeTimer);
+    window.__pdfResizeTimer = setTimeout(function(){ renderPdfPage(__pdfCurrentPage); }, 200);
+  }
+});
+
+// ════════════════════════════════════════════════════════════════
 // CONVERSIONS, IBW, STATE
 // ════════════════════════════════════════════════════════════════
 var round = function(v, d){ d = d||1; if(!isFinite(v)) return null; var m = Math.pow(10,d); return Math.round(v*m)/m; };
@@ -629,6 +803,14 @@ var PROTOCOL_PAGES = {
   // Trauma Ch 8
   trauma:      { src: 'trauma',  label: 'Trauma 8.1 — Trauma Assessment',                        page: 1  },
   burn:        { src: 'trauma',  label: 'Trauma 8.1.5 — Thermal Injuries',                       page: 14 },
+  hemshock:    { src: 'trauma',  label: 'Trauma 8.2 — Hemorrhagic Shock',                        page: 1  },
+  open_fracture:{ src: 'trauma', label: 'Trauma 8.3 — Open Fracture / Extremity Injury',         page: 1  },
+  // Cardiovascular
+  aaa:         { src: 'cardiovascular', label: 'Cardiovascular — AAA / Ruptured AAA',            page: 1  },
+  dissection:  { src: 'cardiovascular', label: 'Cardiovascular — Aortic Dissection',             page: 1  },
+  // Analgesia / Sedation Ch 5
+  post_intubation:{ src: 'analgesia', label: 'Analgesia 5.x — Post-Intubation Sedation',         page: 1  },
+  anxiolysis:  { src: 'analgesia', label: 'Analgesia 5.x — Anxiolysis',                          page: 1  },
   // Toxicology Ch 9
   tox:         { src: 'tox',     label: 'Tox 9.1 — Poisoning (Opioid OD, TCA, Cyanide)',         page: 1  },
   cyanide:     { src: 'tox',     label: 'Tox 9.1.2 — Cyanide Poisoning',                         page: 3  },
@@ -652,9 +834,14 @@ function renderProtocolBtn(dx){
   var ref = PROTOCOL_PAGES[dx];
   if(!ref) return '';
   var file = PROTOCOL_FILES[ref.src];
+  if(!file) return '';
   var url = file + '#page=' + (ref.page || 1) + '&zoom=page-fit';
   var fileLabel = file ? file.replace(/^protocols\//,'').replace(/\.pdf$/i,'') : 'Protocol';
-  return '<a href="' + url + '" target="_blank" rel="noopener" class="proto-btn" onclick="return openProtocol(event,\'' + dx + '\')">' +
+  var title = ref.label + (ref.page > 1 ? ' — p. ' + ref.page : '');
+  // Escape single quotes in url and title for inline onclick
+  var safeUrl = url.replace(/'/g,"\\'");
+  var safeTitle = title.replace(/'/g,"\\'");
+  return '<a href="' + url + '" class="proto-btn" onclick="return openProtocolViaOverlay(event,\'' + dx + '\',\'' + safeUrl + '\',\'' + safeTitle + '\')">' +
     '<span class="proto-icon">📖</span>' +
     '<span class="proto-text">' +
       '<span class="proto-label">View PHI Protocol</span>' +
@@ -664,6 +851,20 @@ function renderProtocolBtn(dx){
     '</span>' +
     '<span class="proto-chev">›</span>' +
   '</a>';
+}
+
+function openProtocolViaOverlay(e, dx, url, title){
+  e.preventDefault();
+  var ref = PROTOCOL_PAGES[dx];
+  if(!ref) return false;
+  if(typeof PROTOCOL_AVAILABLE !== 'undefined' && PROTOCOL_AVAILABLE[ref.src] === false){
+    var file = PROTOCOL_FILES[ref.src];
+    var fileBare = file ? file.replace(/^protocols\//,'') : 'PHI_*.pdf';
+    alert('PHI Protocol PDF "' + fileBare + '" is not installed.\n\nDrop the matching chapter into protocols/<chapter>/ and re-run merge.py.');
+    return false;
+  }
+  openPdfOverlay(url, title);
+  return false;
 }
 function openProtocol(e, dx){
   var ref = PROTOCOL_PAGES[dx];
@@ -714,7 +915,13 @@ var DIAGNOSES = [
   {id:'burn',       name:'Severe Burn',            sub:'>20% TBSA / airway'},
   {id:'hyperK',     name:'Hyperkalemia',           sub:'Peaked T, wide QRS'},
   {id:'agitation',  name:'Dangerous Agitation',    sub:'Excited delirium'},
-  {id:'pe',         name:'Pulmonary Embolism',     sub:'Massive / submassive'}
+  {id:'pe',         name:'Pulmonary Embolism',     sub:'Massive / submassive'},
+  {id:'open_fracture',name:'Open Fracture',        sub:'Compound fracture · hemorrhage + infection risk'},
+  {id:'aaa',        name:'AAA / Ruptured AAA',     sub:'Catastrophic vascular emergency'},
+  {id:'dissection', name:'Aortic Dissection',      sub:'Type A surgical · Type B medical'},
+  {id:'hemshock',   name:'Hemorrhagic Shock',      sub:'Damage control resuscitation'},
+  {id:'post_intubation',name:'Post-Intubation Sedation',sub:'Analgesia-first · paralytic outlives sedative'},
+  {id:'anxiolysis', name:'Anxiolysis',             sub:'Treat early · prevent escalation'}
 ];
 
 function renderDxGrid(){
@@ -780,7 +987,19 @@ var DX_PLAN = {
   agitation:{picture:'Excited delirium / dangerous agitation requiring chemical restraint per PHI Chapter 6.',
     plan:['Safety first — minimum staff, restraints if needed','Ketamine 3 mg/kg IBW IV/IO push OR 4 mg/kg IBW IM (PHI standing order)','Most concentrated formulation','Follow with ketamine infusion 4 mg/kg/hr (PHI adult)','Prepare for airway management — ketamine often → respiratory depression in dangerous-agitation doses','Sux 4 mg/kg IM available for refractory airway','Cardiac monitor, SpO2, EtCO2, frequent reassessment']},
   pe:{picture:'Pulmonary embolism — acute SOB, chest pain, tachycardia, hypoxia. Massive PE = hypotension, RV strain.',
-    plan:['Anticoagulation per receiving (heparin bolus + drip)','Hypotension → fluid bolus 500 mL (cautious — RV failure)','If massive PE with hypotension: thrombolytics at receiving (tPA 100 mg over 2 hr)','Vasopressor: Norepinephrine 1st line','Avoid intubation if possible — RV death','High-flow O2','ECMO consideration at receiving']}
+    plan:['Anticoagulation per receiving (heparin bolus + drip)','Hypotension → fluid bolus 500 mL (cautious — RV failure)','If massive PE with hypotension: thrombolytics at receiving (tPA 100 mg over 2 hr)','Vasopressor: Norepinephrine 1st line','Avoid intubation if possible — RV death','High-flow O2','ECMO consideration at receiving']},
+  open_fracture:{picture:'Open (compound) fracture — bone exposed through skin. High risk of hemorrhage, neurovascular injury, compartment syndrome, and infection. Gustilo-Anderson grading I (<1 cm clean) → III (>10 cm or vascular/contamination).',
+    plan:['Control hemorrhage: direct pressure, pressure dressing, tourniquet for extremity bleed not controlled by pressure','Assess neurovascular status distal to injury — pulses, cap refill, motor, sensation; document before AND after splinting','Irrigate gross contamination with sterile saline; do NOT scrub bone or attempt reduction in field','Cover with sterile saline-moistened gauze; splint in position found unless distal pulse absent','Pain control — fentanyl 0.5-1 mcg/kg IV titrated','Early IV antibiotics per receiving facility (cefazolin 2 g IV is typical for I-II; add gentamicin for III)','Tetanus status — note for receiving','TXA 2 g IV if significant hemorrhage and within 3 hr of injury','Reassess neurovascular status q15 min en route']},
+  aaa:{picture:'Abdominal aortic aneurysm — pulsatile mass, abdominal/flank/back pain, hypotension. Rupture is immediately life-threatening; outcome hinges on time to surgical repair.',
+    plan:['Two large-bore IVs — DO NOT delay transport for access','Permissive hypotension: target SBP 80-100 mmHg / palpable radial pulse / normal mentation','Cautious crystalloid 250 mL boluses; AVOID over-resuscitation','Blood products preferred over crystalloid if available','Pain control — fentanyl small aliquots; avoid morphine (histamine release)','Type & cross sent ahead; activate massive transfusion at receiving','Transport to vascular-capable center; pre-alert OR','Avoid HTN (worsens rupture); avoid profound hypotension (organ ischemia)']},
+  dissection:{picture:'Acute aortic dissection — tearing chest/back pain, pulse deficit, BP differential between arms. Type A (ascending) = surgical emergency. Type B (descending) = aggressive medical management.',
+    plan:['BP in BOTH arms — treat the higher reading; document pulse deficits','Goal: HR <60 AND SBP 100-120 mmHg (lowest tolerated maintaining perfusion)','RATE FIRST, then pressure: esmolol 500 mcg/kg load → 50 mcg/kg/min titrated; or labetalol 20 mg IV q10 min','Add vasodilator ONLY after beta-blockade: nicardipine 5 mg/hr titrated, or clevidipine 1-2 mg/hr','NEVER vasodilate before beta-block — reflex tachycardia worsens shear','Pain control — fentanyl IV (controls SNS surge)','AVOID IV in extremity with pulse deficit','Vital signs q5 min; serial neuro checks','Transport to cardiothoracic surgery center']},
+  hemshock:{picture:'Class III-IV hemorrhagic shock — tachycardia, narrow pulse pressure, AMS, cool skin, SBP <90, HR >110. Manage with damage-control resuscitation: hemorrhage control + balanced blood product resuscitation + permissive hypotension.',
+    plan:['External hemorrhage: direct pressure → tourniquet (extremity) → hemostatic dressing (junctional)','Pelvic binder for suspected pelvic fracture','Two large-bore IVs or IO; minimize crystalloid (250 mL aliquots only)','BLOOD PRODUCTS preferred — 1:1:1 PRBC:plasma:platelet if available','Permissive hypotension: target radial pulse / SBP 80-90 (NOT for TBI — TBI needs SBP ≥110)','TXA 2 g IV within 3 hr of injury','Prevent the lethal triad: WARM patient, monitor lactate/base deficit, calcium 1 g IV per unit blood (citrate binding)','Consider whole blood if available','Continuous reassessment — recheck tourniquet, dressings, vital signs q5 min']},
+  post_intubation:{picture:'Post-RSI/intubation analgesia and sedation. ALWAYS treat pain first. Paralytic outlasts induction agent — patient is paralyzed but AWARE without sedation. Stratify: assessable vs paralyzed (RASS not valid) vs hemodynamically unstable.',
+    plan:['ANALGESIA FIRST: fentanyl 0.5-2 mcg/kg IV q10 min PRN, then 1-2 mcg/kg/hr infusion','Then sedation: ketamine 1-2 mg/kg IV bolus → 1-4 mg/kg/hr infusion (preferred if unstable)','If paralyzed and non-assessable: ketamine monotherapy OR fentanyl + sedative DUAL agent','NEVER use RASS/CPOT/BPS on paralyzed patients — they cannot exhibit measurable behavior','If using ketamine infusion, ALWAYS bolus first to avoid dysphoria/under-sedation','Reassess every 10-15 min: HR, BP, pupils, lacrimation, ventilator synchrony','Goal: RASS -2 to 0 if assessable; deeper if paralyzed']},
+  anxiolysis:{picture:'Anxious patient pre-loading or in-flight. Untreated anxiety can escalate to dangerous agitation. Treat anxiety AFTER pain control (treat pain with opioid first).',
+    plan:['Address pain first — fentanyl titrated','Verbal de-escalation, environment control (calm, quiet, dim cabin)','Midazolam 0.5-2 mg IV/IM/IN q5 min PRN to effect (max ~5 mg single dose)','Or lorazepam 0.5-2 mg IV/IM/IN q10-20 min PRN','CAUTION: benzo + opioid combo — monitor closely for respiratory depression','Have BVM, I-gel, suction at head of bed','If escalates to dangerous agitation, switch to droperidol/ketamine pathway','Consider pilot notification for at-risk patients']}
 };
 
 function renderPlan(){
@@ -1288,7 +1507,13 @@ var DX_DRUGS = {
   burn:['fentanylBolus','fluidBolus','bloodAdmin'],
   hyperK:['cacl','cagluc','bicarb','insulinHK','albuterol','furosemide'],
   agitation:['ketamineAgit','succRSI','ketamineDrip'],
-  pe:['fluidBolus','norepi']
+  pe:['fluidBolus','norepi'],
+  open_fracture:['fentanylBolus','fluidBolus','txa'],
+  aaa:['fluidBolus','fentanylBolus','txa'],
+  dissection:['esmolol','labetalol','nicardipine','fentanylBolus'],
+  hemshock:['fluidBolus','txa','cacl'],
+  post_intubation:['fentanylBolus','ketamineDrip','midazolamDrip'],
+  anxiolysis:['midazolamSeizure','lorazepamSeizure','fentanylBolus']
 };
 
 function renderDxDrugs(){
@@ -1577,5 +1802,28 @@ safeRun('renderSafer',renderSafer);
 safeRun('renderIntubation',renderIntubation);
 safeRun('renderBurnMap',renderBurnMap);
 </script>
+
+<div id="pdfOverlay" class="pdf-overlay" role="dialog" aria-label="Protocol PDF">
+  <div class="pdf-bar">
+    <button class="pdf-back" type="button" onclick="closePdfOverlay()" aria-label="Back to app">
+      <span class="pdf-back-icon">‹</span>BACK TO APP
+    </button>
+    <div class="pdf-title" id="pdfOverlayTitle">Protocol</div>
+    <div class="pdf-nav">
+      <button class="pdf-nav-btn" id="pdfPrevBtn" type="button" onclick="pdfPrevPage()" aria-label="Previous page">‹</button>
+      <div class="pdf-page-info">
+        <input class="pdf-page-input" id="pdfPageInput" type="number" min="1" inputmode="numeric" onchange="pdfGoToPage()" />
+        <span>/</span>
+        <span id="pdfPageTotal">–</span>
+      </div>
+      <button class="pdf-nav-btn" id="pdfNextBtn" type="button" onclick="pdfNextPage()" aria-label="Next page">›</button>
+    </div>
+  </div>
+  <div class="pdf-frame-wrap" id="pdfFrameWrap">
+    <canvas class="pdf-canvas" id="pdfCanvas"></canvas>
+    <div class="pdf-loading hidden" id="pdfLoading">Loading…</div>
+  </div>
+</div>
+
 </body>
 </html>
