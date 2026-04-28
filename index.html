@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-  
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,8 +9,11 @@
 <meta name="theme-color" content="#030710">
 <title>StatFlight — Critical Care Transport</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="shortcut icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -40,10 +42,12 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
 .app-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
 .app-card.ob::before{background:linear-gradient(180deg,#be185d,#f472b6)}
 .app-card.peds::before{background:linear-gradient(180deg,#0e7490,#22d3ee)}
+.app-card.adult::before{background:linear-gradient(180deg,#15803d,#22c55e)}
 .app-card-row{display:flex;align-items:center;gap:18px}
-.app-card-icon{width:54px;height:54px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;letter-spacing:.02em}
+.app-card-icon{width:54px;height:54px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;letter-spacing:.02em}
 .app-card.ob .app-card-icon{background:linear-gradient(135deg,#be185d,#f472b6)}
 .app-card.peds .app-card-icon{background:linear-gradient(135deg,#0e7490,#22d3ee)}
+.app-card.adult .app-card-icon{background:linear-gradient(135deg,#15803d,#22c55e)}
 .app-card-body{flex:1;min-width:0}
 .app-card-name{font-size:1.15rem;font-weight:800;color:var(--tx0);margin-bottom:2px}
 .app-card-sub{font-family:var(--mono);font-size:.65rem;color:var(--tx1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
@@ -69,6 +73,18 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
 
 <div class="choose">
   <div class="choose-lbl">Open an app</div>
+
+  <a class="app-card adult" href="adult.html">
+    <div class="app-card-row">
+      <div class="app-card-icon">ADL</div>
+      <div class="app-card-body">
+        <div class="app-card-name">StatFlight Adult</div>
+        <div class="app-card-sub">Critical Care Transport</div>
+        <div class="app-card-desc">All PHI chapters. 25 adult diagnoses (cardiac, respiratory, neuro, tox, trauma), Devine IBW, intubation with SAFER + max-dose RSI, Rule of 9s burn mapping, 50+ drugs.</div>
+      </div>
+      <div class="app-card-arrow">›</div>
+    </div>
+  </a>
 
   <a class="app-card ob" href="ob.html">
     <div class="app-card-row">

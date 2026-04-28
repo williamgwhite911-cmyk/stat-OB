@@ -9,8 +9,11 @@
 <meta name="apple-mobile-web-app-title" content="StatFlight Peds">
 <title>StatFlight Peds — Pediatric Critical Care Transport</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="shortcut icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -97,8 +100,8 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .color-cell{flex:1;min-width:64px;padding:6px 4px;border-radius:5px;text-align:center;font-family:var(--mono);font-size:.56rem;font-weight:800;cursor:pointer;border:2px solid transparent;transition:all .15s;letter-spacing:.04em}
 .color-cell:hover{transform:translateY(-1px)}
 .color-cell.active{border-color:#fff;box-shadow:0 0 12px rgba(0,212,245,.4)}
-.color-cell .cc-wt{display:block;font-size:.78rem;margin-bottom:2px}
-.color-cell .cc-age{display:block;font-size:.48rem;opacity:.85}
+.color-cell .cc-age{display:block;font-size:.92rem;font-weight:900;line-height:1.1;letter-spacing:.01em;margin-bottom:2px}
+.color-cell .cc-wt{display:block;font-size:.55rem;opacity:.85;font-weight:700}
 
 .tabs{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 14px}
 .tab{padding:5px 12px;border-radius:100px;font-size:.72rem;font-weight:600;border:1px solid var(--bd1);background:transparent;color:var(--tx1);cursor:pointer;font-family:var(--body);transition:all .13s}
@@ -114,7 +117,18 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .rc.form-po{background:linear-gradient(180deg,rgba(167,139,250,.05),var(--s0) 60%);border-color:rgba(167,139,250,.28)}
 .rc-bar{position:absolute;left:0;top:0;bottom:0;width:3px}
 .rc-cat{font-family:var(--mono);font-size:.54rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tx1);margin-bottom:3px}
-.rc-name{font-size:1rem;font-weight:800;letter-spacing:-.015em;margin-bottom:2px}
+.rc-name{font-size:1rem;font-weight:800;letter-spacing:-.015em;margin-bottom:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* Line-of-therapy badge */
+.line-badge{display:inline-block;font-family:var(--mono);font-size:.55rem;font-weight:900;letter-spacing:.13em;padding:3px 8px;border-radius:5px;text-transform:uppercase;line-height:1}
+.line-badge.line-first{background:rgba(0,232,176,.18);color:var(--teal);border:1px solid rgba(0,232,176,.55);box-shadow:0 0 8px rgba(0,232,176,.25)}
+.line-badge.line-second{background:rgba(0,212,245,.15);color:var(--cyan);border:1px solid rgba(0,212,245,.45)}
+.line-badge.line-third{background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.45)}
+.line-badge.line-alt{background:rgba(251,191,36,.15);color:var(--amber);border:1px solid rgba(251,191,36,.45)}
+.line-badge.line-adj{background:rgba(148,163,184,.15);color:var(--tx2);border:1px solid rgba(148,163,184,.4)}
+/* MEDICAL CONTROL banner — high-visibility flag for non-standing-order drugs */
+.rc-mc{border-color:rgba(168,85,247,.6);box-shadow:0 0 22px rgba(168,85,247,.18)}
+.mc-banner{background:linear-gradient(135deg,rgba(168,85,247,.28),rgba(217,70,239,.18));border:2px solid rgba(168,85,247,.7);border-radius:9px;padding:8px 12px;margin:0 0 12px;text-align:center;font-family:var(--mono);font-size:.72rem;font-weight:900;letter-spacing:.1em;color:#e9d5ff;text-shadow:0 0 8px rgba(168,85,247,.6);box-shadow:0 0 16px rgba(168,85,247,.3),inset 0 1px 0 rgba(255,255,255,.08);text-transform:uppercase;animation:mcPulse 2.4s ease-in-out infinite}
+@keyframes mcPulse{0%,100%{box-shadow:0 0 16px rgba(168,85,247,.3),inset 0 1px 0 rgba(255,255,255,.08)}50%{box-shadow:0 0 26px rgba(168,85,247,.55),inset 0 1px 0 rgba(255,255,255,.1)}}
 .rc-names{font-size:.69rem;margin-bottom:10px;line-height:1.6;color:var(--tx2)}
 .rc-ind{font-size:.7rem;color:var(--tx1);font-style:italic;margin-bottom:8px;line-height:1.45}
 .rr{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--bd0);font-size:.79rem;gap:8px}
@@ -126,7 +140,22 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .rv.warn{color:var(--amber)}
 .rv .max,.rv .mx{color:#ff5f6d !important;font-weight:900;background:rgba(255,95,109,.12);padding:1px 6px;border-radius:5px;margin:0 1px;border:1px solid rgba(255,95,109,.3);text-shadow:0 0 6px rgba(255,95,109,.35)}
 .rv.calc .max,.rv.calc .mx{color:#ff7e87 !important}
+/* "GIVE BOX" — prominent under-stress dosing display */
+.give-box{background:linear-gradient(135deg,rgba(255,95,109,.18),rgba(255,126,135,.06) 60%);border:2px solid rgba(255,95,109,.55);border-radius:11px;padding:11px 14px 12px;margin:0 0 12px;text-align:center;box-shadow:0 0 18px rgba(255,95,109,.18),inset 0 1px 0 rgba(255,255,255,.05)}
+.give-box .gb-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.22em;font-weight:900;color:#ff5f6d;margin-bottom:3px;text-transform:uppercase}
+.give-box .gb-vol{font-family:var(--mono);font-size:1.7rem;font-weight:900;color:#ff7e87;line-height:1.05;letter-spacing:.01em;text-shadow:0 0 12px rgba(255,95,109,.45)}
+.give-box .gb-vol .gb-mg{display:inline-block;font-size:.78rem;color:var(--tx0);margin-left:8px;opacity:.92;font-weight:700;letter-spacing:.04em}
+.give-box .gb-conc{font-family:var(--mono);font-size:.72rem;color:var(--cyan);margin-top:6px;font-weight:800;letter-spacing:.05em;background:rgba(0,212,245,.08);border:1px solid rgba(0,212,245,.3);border-radius:6px;padding:3px 8px;display:inline-block}
+.give-box .gb-rule{font-size:.62rem;color:var(--tx2);margin-top:5px;font-style:italic;letter-spacing:.04em}
 .rc-note{margin-top:8px;padding:7px 10px;background:rgba(0,212,245,.05);border:1px solid rgba(0,212,245,.18);border-radius:7px;font-size:.68rem;color:var(--tx1);line-height:1.5}
+/* PHI Protocol PDF deep-link button (rendered above plan-of-action on diagnosis page) */
+.proto-btn{display:flex;align-items:center;gap:11px;padding:11px 14px;margin:8px 0 14px;background:linear-gradient(135deg,rgba(168,85,247,.18),rgba(34,211,238,.10));border:2px solid rgba(168,85,247,.55);border-radius:11px;text-decoration:none;color:var(--tx0);box-shadow:0 0 18px rgba(168,85,247,.18),inset 0 1px 0 rgba(255,255,255,.05);transition:transform .12s ease,box-shadow .2s ease,border-color .2s ease}
+.proto-btn:hover{transform:translateY(-1px);border-color:rgba(168,85,247,.85);box-shadow:0 0 24px rgba(168,85,247,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+.proto-icon{font-size:1.4rem;line-height:1;filter:drop-shadow(0 0 8px rgba(168,85,247,.5))}
+.proto-text{display:flex;flex-direction:column;flex:1;min-width:0}
+.proto-label{font-family:var(--mono);font-size:.7rem;font-weight:900;letter-spacing:.13em;color:#e9d5ff;text-transform:uppercase;text-shadow:0 0 6px rgba(168,85,247,.4)}
+.proto-cite{font-size:.72rem;color:var(--tx2);margin-top:2px;font-style:italic}
+.proto-chev{font-size:1.4rem;color:#c084fc;font-weight:900;opacity:.7}
 .rc-warn{margin-top:8px;padding:7px 10px;background:rgba(255,95,109,.07);border:1px solid rgba(255,95,109,.28);border-radius:7px;font-size:.68rem;color:var(--rose);line-height:1.5;font-weight:600}
 .fb{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.13em;padding:4px 9px;border-radius:5px;margin-bottom:10px}
 .fb-premix{background:rgba(0,232,176,.12);color:var(--teal);border:1px solid rgba(0,232,176,.4)}
@@ -348,6 +377,7 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 
 <div class="card">
   <div class="slbl">SAFER Pre-Intubation Checklist (PHI Chapter 2)</div>
+  <div id="tubeSaferProto"></div>
   <div class="safer-grid" id="saferGrid"></div>
   <div class="safer-actions">
     <button class="safer-btn" onclick="resetSafer()">Reset checklist</button>
@@ -426,6 +456,7 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
     <button class="tab" data-cat="tox">Toxicology</button>
     <button class="tab" data-cat="trauma">Trauma</button>
     <button class="tab" data-cat="nv">Nausea</button>
+    <button class="tab" data-cat="neonate">Neonate</button>
   </div>
   <div id="allDrugs"></div>
 </div>
@@ -438,28 +469,43 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 // COLOR SYSTEMS — Broselow / Handtevy
 // ════════════════════════════════════════════════════════════════
 // ageYrLo / ageYrHi = matching age range in decimal years for two-way age↔tier sync
+// Standard pediatric weight-color tiers.
+// Neonates (preterm + term newborn) all use GRAY shades for visual consistency.
+// Broselow ends at Green (9-10 yr, ~36 kg); Handtevy extends through age 13 (Black, Adult tiers).
+// Broselow Tape — official length-based zones with height ranges (cm).
+// Three Gray tiers cover newborn through 2 mo. Preemies prepended for NICU coverage.
 var BROSELOW_COLORS = {
-  '3 kg':  {name:'Pink',  hex:'#f472b6',text:'#fff',age:'Newborn',  wt:3.5,ageYrLo:0,    ageYrHi:0.08, ageYrPick:0.04},
-  '6 kg':  {name:'Red',   hex:'#ef4444',text:'#fff',age:'4-5 mo',   wt:6,  ageYrLo:0.25, ageYrHi:0.5,  ageYrPick:0.33},
-  '8 kg':  {name:'Purple',hex:'#a855f7',text:'#fff',age:'6-9 mo',   wt:8,  ageYrLo:0.5,  ageYrHi:0.83, ageYrPick:0.66},
-  '10 kg': {name:'Yellow',hex:'#fbbf24',text:'#111',age:'1 yr',     wt:10, ageYrLo:0.83, ageYrHi:1.49, ageYrPick:1},
-  '12 kg': {name:'White', hex:'#e2e8f0',text:'#111',age:'2 yr',     wt:12, ageYrLo:1.5,  ageYrHi:2.99, ageYrPick:2},
-  '15 kg': {name:'Blue',  hex:'#3b82f6',text:'#fff',age:'3-4 yr',   wt:15, ageYrLo:3,    ageYrHi:4.99, ageYrPick:4},
-  '20 kg': {name:'Orange',hex:'#f97316',text:'#fff',age:'5-6 yr',   wt:20, ageYrLo:5,    ageYrHi:6.99, ageYrPick:6},
-  '30 kg': {name:'Green', hex:'#22c55e',text:'#fff',age:'7-9 yr',   wt:30, ageYrLo:7,    ageYrHi:9.99, ageYrPick:8},
-  '40 kg': {name:'Black', hex:'#1f2937',text:'#fff',age:'10-12 yr', wt:40, ageYrLo:10,   ageYrHi:14,   ageYrPick:11}
+  '1 kg':    {name:'Gray (Preemie 1)', hex:'#475569',text:'#fff',age:'24-28 wk',                wt:1,    htCm:'~30-40',   ageYrLo:-0.30,ageYrHi:-0.18,ageYrPick:-0.25, preterm:true},
+  '1.5 kg':  {name:'Gray (Preemie 2)', hex:'#64748b',text:'#fff',age:'28-32 wk',                wt:1.5,  htCm:'~38-42',   ageYrLo:-0.18,ageYrHi:-0.10,ageYrPick:-0.15, preterm:true},
+  '2 kg':    {name:'Gray (Preemie 3)', hex:'#94a3b8',text:'#111',age:'32-36 wk',                wt:2,    htCm:'~42-46',   ageYrLo:-0.10,ageYrHi:-0.04,ageYrPick:-0.07, preterm:true},
+  '2.5 kg':  {name:'Gray (LBW Term)',  hex:'#cbd5e1',text:'#111',age:'36-40 wk LBW',            wt:2.5,  htCm:'~45-48',   ageYrLo:-0.04,ageYrHi:0,    ageYrPick:-0.02, preterm:true},
+  '3 kg':    {name:'Gray (Newborn)',   hex:'#94a3b8',text:'#fff',age:'Newborn (3 kg)',          wt:3,    htCm:'46.8-51.9',ageYrLo:0,    ageYrHi:0.04, ageYrPick:0.01},
+  '4 kg':    {name:'Gray (1 mo)',      hex:'#9ca3af',text:'#fff',age:'1 mo (4 kg)',             wt:4,    htCm:'51.9-55.0',ageYrLo:0.04, ageYrHi:0.13, ageYrPick:0.08},
+  '5 kg':    {name:'Gray (2 mo)',      hex:'#a8b3bf',text:'#111',age:'2 mo (5 kg)',             wt:5,    htCm:'55.0-59.2',ageYrLo:0.13, ageYrHi:0.25, ageYrPick:0.17},
+  '6.5 kg':  {name:'Pink',             hex:'#f472b6',text:'#fff',age:'4 mo (6-7 kg)',           wt:6.5,  htCm:'59.2-66.9',ageYrLo:0.25, ageYrHi:0.5,  ageYrPick:0.33},
+  '8.5 kg':  {name:'Red',              hex:'#ef4444',text:'#fff',age:'8 mo (8-9 kg)',           wt:8.5,  htCm:'66.9-74.2',ageYrLo:0.5,  ageYrHi:0.99, ageYrPick:0.66},
+  '10.5 kg': {name:'Purple',           hex:'#a855f7',text:'#fff',age:'1 yr (10-11 kg)',         wt:10.5, htCm:'74.2-83.8',ageYrLo:1,    ageYrHi:1.99, ageYrPick:1},
+  '13 kg':   {name:'Yellow',           hex:'#fbbf24',text:'#111',age:'2 yr (12-14 kg)',         wt:13,   htCm:'83.8-95.4',ageYrLo:2,    ageYrHi:3.99, ageYrPick:2},
+  '16.5 kg': {name:'White',            hex:'#e2e8f0',text:'#111',age:'4 yr (15-18 kg)',         wt:16.5, htCm:'95.4-108.3',ageYrLo:4,   ageYrHi:5.99, ageYrPick:4},
+  '21 kg':   {name:'Blue',             hex:'#3b82f6',text:'#fff',age:'6 yr (19-23 kg)',         wt:21,   htCm:'108.3-121.5',ageYrLo:6,  ageYrHi:7.99, ageYrPick:6},
+  '26.5 kg': {name:'Orange',           hex:'#f97316',text:'#fff',age:'8 yr (24-29 kg)',         wt:26.5, htCm:'121.5-130.7',ageYrLo:8,  ageYrHi:9.99, ageYrPick:8},
+  '33 kg':   {name:'Green',            hex:'#22c55e',text:'#fff',age:'10 yr (30-36 kg)',        wt:33,   htCm:'130.7-143.3',ageYrLo:10, ageYrHi:11.99,ageYrPick:10}
 };
+// Handtevy: same colors as Broselow through Green, plus Black + Adult tiers for ages 11-13.
 var HANDTEVY_COLORS = {
-  '5 kg':  {name:'Gray',  hex:'#9ca3af',text:'#fff',age:'2 mo', wt:5,  ageYrLo:0.08, ageYrHi:0.25, ageYrPick:0.16},
-  '6 kg':  {name:'Pink',  hex:'#f472b6',text:'#fff',age:'4 mo', wt:6,  ageYrLo:0.25, ageYrHi:0.5,  ageYrPick:0.33},
-  '8 kg':  {name:'Red',   hex:'#ef4444',text:'#fff',age:'6 mo', wt:8,  ageYrLo:0.5,  ageYrHi:0.83, ageYrPick:0.66},
-  '10 kg': {name:'Purple',hex:'#a855f7',text:'#fff',age:'1 yr', wt:10, ageYrLo:0.83, ageYrHi:1.49, ageYrPick:1},
-  '12 kg': {name:'Yellow',hex:'#fbbf24',text:'#111',age:'2 yr', wt:12, ageYrLo:1.5,  ageYrHi:2.49, ageYrPick:2},
-  '15 kg': {name:'White', hex:'#e2e8f0',text:'#111',age:'3 yr', wt:15, ageYrLo:2.5,  ageYrHi:3.99, ageYrPick:3},
-  '20 kg': {name:'Blue',  hex:'#3b82f6',text:'#fff',age:'5 yr', wt:20, ageYrLo:4,    ageYrHi:5.99, ageYrPick:5},
-  '25 kg': {name:'Orange',hex:'#f97316',text:'#fff',age:'7 yr', wt:25, ageYrLo:6,    ageYrHi:7.99, ageYrPick:7},
-  '30 kg': {name:'Green', hex:'#22c55e',text:'#fff',age:'9 yr', wt:30, ageYrLo:8,    ageYrHi:10.49, ageYrPick:9},
-  '40 kg': {name:'Black', hex:'#1f2937',text:'#fff',age:'12 yr',wt:40, ageYrLo:10.5, ageYrHi:14,   ageYrPick:12}
+  '1 kg':  {name:'Gray (Preemie 1)',hex:'#475569',text:'#fff',age:'24-28 wk',     wt:1,    ageYrLo:-0.30,ageYrHi:-0.18,ageYrPick:-0.25, preterm:true},
+  '1.5 kg':{name:'Gray (Preemie 2)',hex:'#64748b',text:'#fff',age:'28-32 wk',     wt:1.5,  ageYrLo:-0.18,ageYrHi:-0.10,ageYrPick:-0.15, preterm:true},
+  '2 kg':  {name:'Gray (Preemie 3)',hex:'#94a3b8',text:'#111',age:'32-36 wk',     wt:2,    ageYrLo:-0.10,ageYrHi:-0.04,ageYrPick:-0.07, preterm:true},
+  '2.5 kg':{name:'Gray (LBW Term)', hex:'#cbd5e1',text:'#111',age:'36-40 wk LBW', wt:2.5,  ageYrLo:-0.04,ageYrHi:0,    ageYrPick:-0.02, preterm:true},
+  '4 kg':  {name:'Gray',  hex:'#9ca3af',text:'#fff',age:'Newborn (3-5 kg)',   wt:4,    ageYrLo:0,    ageYrHi:0.25, ageYrPick:0.04},
+  '6.5 kg':{name:'Pink',  hex:'#f472b6',text:'#fff',age:'3-6 mo (6-7 kg)',    wt:6.5,  ageYrLo:0.25, ageYrHi:0.5,  ageYrPick:0.4},
+  '8.5 kg':{name:'Red',   hex:'#ef4444',text:'#fff',age:'6-12 mo (8-9 kg)',  wt:8.5,  ageYrLo:0.5,  ageYrHi:1,    ageYrPick:0.75},
+  '10.5 kg':{name:'Purple',hex:'#a855f7',text:'#fff',age:'~1 yr (10-11 kg)', wt:10.5, ageYrLo:1,    ageYrHi:1.49, ageYrPick:1},
+  '13 kg': {name:'Yellow',hex:'#fbbf24',text:'#111',age:'~2 yr (12-14 kg)',  wt:13,   ageYrLo:1.5,  ageYrHi:2.99, ageYrPick:2},
+  '16.5 kg':{name:'White',hex:'#e2e8f0',text:'#111',age:'3-4 yr (15-18 kg)', wt:16.5, ageYrLo:3,    ageYrHi:4.99, ageYrPick:3.5},
+  '21 kg': {name:'Blue',  hex:'#3b82f6',text:'#fff',age:'5-6 yr (19-23 kg)', wt:21,   ageYrLo:5,    ageYrHi:6.99, ageYrPick:5.5},
+  '26.5 kg':{name:'Orange',hex:'#f97316',text:'#fff',age:'7-8 yr (24-29 kg)',wt:26.5, ageYrLo:7,    ageYrHi:8.99, ageYrPick:7.5},
+  '40 kg': {name:'Green', hex:'#22c55e',text:'#fff',age:'9-13 yr (30-50 kg)',wt:40,   ageYrLo:9,    ageYrHi:14,   ageYrPick:11}
 };
 
 // Find the color tier whose age range contains the given age in years
@@ -507,17 +553,26 @@ function renderColorStrip(){
     div.style.background = c.hex;
     div.style.color = c.text;
     div.dataset.tier = k;
-    div.innerHTML = '<span class="cc-wt">' + c.wt + ' kg</span><span class="cc-age">' + c.age + '</span>';
+    // Age is the most prominent display; weight shown below.
+    // Parse age string "4 yr (15-18 kg)" → ageShort="4 yr", wtRange="15-18 kg".
+    var parts = c.age.split(' (');
+    var ageShort = parts[0];
+    var wtDetail = parts[1] ? parts[1].replace(')','') : (c.wt + ' kg');
+    div.innerHTML = '<span class="cc-age">' + ageShort + '</span><span class="cc-wt">' + wtDetail + '</span>';
     div.onclick = function(){
       state.tier = k;
       state.tierWt = c.wt;
       state.tierAge = c.age;
-      // Push the tier's age into the age input (year-based with appropriate unit)
+      // Push the tier's age into the age input
       var ageInput = document.getElementById('pAge');
       var ageUnit = document.getElementById('pAgeUnit');
       var ageYr = c.ageYrPick;
       if(ageInput && ageUnit){
-        if(ageYr < 1){
+        if(c.preterm){
+          // For preemies, clear the age input — gestational age is in the tier label, not the year-input
+          ageInput.value = '';
+          ageUnit.value = 'd';
+        } else if(ageYr < 1){
           ageUnit.value = 'mo';
           ageInput.value = Math.round(ageYr * 12);
         } else {
@@ -682,7 +737,73 @@ function recompute(){
 // ════════════════════════════════════════════════════════════════
 // DIAGNOSES + PLAN
 // ════════════════════════════════════════════════════════════════
+// ────────────────────────────────────────────────────────────────
+// PHI PROTOCOL DEEP-LINKS  (multi-chapter)
+// ────────────────────────────────────────────────────────────────
+// PHI Clinical Care Guidelines is organized by clinical chapter
+// (Medical, Cardiac, Trauma, Respiratory, etc.) — peds protocols
+// are woven into each chapter alongside adult content.
+//
+// Drop each chapter PDF into the protocols/ folder using these names:
+//   statflight/protocols/PHI_Medical.pdf       (Ch 6)
+//   statflight/protocols/PHI_Cardiac.pdf       (cardiac arrest, brady, SVT, VT)
+//   statflight/protocols/PHI_Trauma.pdf        (trauma, burn, TBI)
+//   statflight/protocols/PHI_Respiratory.pdf   (if separate from Medical)
+//   statflight/protocols/PHI_Airway.pdf        (Ch 2 — SAFER / RSI)
+//   statflight/protocols/PHI_OB.pdf            (OB / neonatal / preterm)
+//   statflight/protocols/PHI_Neuro.pdf         (seizure / TBI if separate)
+//   statflight/protocols/PHI_Toxicology.pdf    (if separate from Medical)
+//
+// Missing files don't break anything — the button just shows a
+// "not installed" message until you drop the PDF in.
+// ────────────────────────────────────────────────────────────────
+var PROTOCOL_FILES = {
+  medical:        'protocols/PHI_Medical.pdf',         // Ch 6
+  resusc:         'protocols/PHI_Resusc.pdf',          // Ch 4 — arrest, brady, tachy, shock
+  trauma:         'protocols/PHI_Trauma.pdf',          // Ch 8
+  neuro:          'protocols/PHI_Neuro.pdf',           // Ch 7 — seizure, stroke, ICP
+  tox:            'protocols/PHI_Tox.pdf',             // Ch 9
+  neonate:        'protocols/PHI_Neonate.pdf',         // Ch 11 — preterm, NRP
+  ob:             'protocols/PHI_Ob.pdf',              // Ch 10
+  safer:          'protocols/PHI_Safer.pdf',           // Ch 2 — Airway / RSI
+  analgesia:      'protocols/PHI_Analgesia.pdf',       // Ch 5 — pain / sedation
+  drugs:          'protocols/PHI_Drugs.pdf',           // Ch 1 — drug profiles
+  cardiovascular: 'protocols/PHI_Cardiovascular.pdf',  // curated cardio quick-ref
+  operations:     'protocols/PHI_Operations.pdf',      // admin / operations
+  appdex:         'protocols/PHI_Appdex.pdf'           // Appendix — abbreviations, dosing schemas, change log
+};
+
+// Each diagnosis maps to ONE source chapter file plus the starting page.
+// Page numbers below are calibrated to YOUR uploaded chapter PDFs.
+var PROTOCOL_PAGES = {
+  // ── RESUSCITATION (Ch 4) — cardiac arrest, brady, tachy, shock ──
+  arrest:     { src: 'resusc',  label: 'Resusc 4.1 — Cardiac Arrest',                          page: 1  },
+  brady:      { src: 'resusc',  label: 'Resusc 4.2 — Bradycardia (Peds on p.10)',              page: 9  },
+  svt:        { src: 'resusc',  label: 'Resusc 4.3 — Tachycardia',                             page: 11 },
+  vt:         { src: 'resusc',  label: 'Resusc 4.3 — Tachycardia (Wide-Complex)',              page: 11 },
+  // ── MEDICAL (Ch 6) ──
+  anaphylaxis:{ src: 'medical', label: 'Medical 6.6 — Allergic Reaction & Anaphylaxis',        page: 18 },
+  asthma:     { src: 'medical', label: 'Medical 6.7 — Asthma (Peds Asthma Score on p.24)',     page: 20 },
+  sepsis:     { src: 'medical', label: 'Medical 6.12 — Sepsis (Peds Special on p.32)',         page: 30 },
+  dka:        { src: 'medical', label: 'Medical 6.8 — Diabetic Crisis',                        page: 25 },
+  hypo:       { src: 'medical', label: 'Medical 6.9 — Hypoglycemia',                           page: 26 },
+  hyperK:     { src: 'medical', label: 'Medical 6.10 — Hyperkalemia',                          page: 27 },
+  croup:      { src: 'medical', label: 'Medical 6.11 — Respiratory Emergencies',               page: 29 },
+  bronchio:   { src: 'medical', label: 'Medical 6.11 — Respiratory Emergencies',               page: 29 },
+  // ── NEURO (Ch 7) ──
+  seizure:    { src: 'neuro',   label: 'Neuro 7.1 — Seizures & Status Epilepticus',            page: 1  },
+  icp:        { src: 'neuro',   label: 'Neuro 7.5 — Brain Herniation Syndrome',                page: 8  },
+  // ── TRAUMA (Ch 8) ──
+  trauma:     { src: 'trauma',  label: 'Trauma 8.1 — Trauma Assessment',                       page: 1  },
+  burn:       { src: 'trauma',  label: 'Trauma 8.1.5 — Thermal Injuries',                      page: 14 },
+  // ── TOXICOLOGY (Ch 9) ──
+  tox:        { src: 'tox',     label: 'Tox 9.1 — Poisoning (Opioid OD, TCA, Cyanide)',        page: 1  },
+  // ── NEONATE (Ch 11) ──
+  preterm:    { src: 'neonate', label: 'Neonate 11.1 — Neonatal Care & NRP (p.7)',             page: 1  }
+};
+
 var DIAGNOSES = [
+  {id:'preterm',    name:'Preterm / NRP',          sub:'Prematurity / unattended birth / NICU transport'},
   {id:'arrest',     name:'Cardiac Arrest',         sub:'PALS — VF/VT/PEA/asystole'},
   {id:'brady',      name:'Symptomatic Brady',      sub:'HR low for age + poor perfusion'},
   {id:'svt',        name:'SVT',                    sub:'Narrow tachy — stable / unstable'},
@@ -719,207 +840,222 @@ function renderDxGrid(){
 }
 
 var DX_PLAN = {
+  preterm: {
+    picture:'Premature or peri-natal newborn requiring resuscitation, NICU transport, or stabilization. Highest-risk patients: prematurity, hypothermia, hypoxia, hypoglycemia, and apnea. The "Golden Minute" of NRP applies.',
+    plan:[
+      '1st: WARM — polyethylene wrap (food-grade plastic) for <32 wk; radiant warmer; skin-to-skin if mom present and stable',
+      '1st (Golden Minute): DRY (term only — wet wrap for preemie under polyethylene), POSITION (sniffing, shoulder roll), SUCTION PRN, STIMULATE — within first 30 sec',
+      '1st (HR<100 or apnea): PPV at 40-60 breaths/min. FiO2 21-30% for preterm; titrate to SpO2 by minute of life',
+      'Targets: SpO2 1 min 60-65% / 2 min 65-70% / 3 min 70-75% / 5 min 80-85% / 10 min 85-95%',
+      '2nd (HR<60 after 30 sec effective PPV): 3:1 compressions:ventilation (= 90 + 30/min = 120 events/min)',
+      '2nd (HR<60 after 60 sec compressions): Epinephrine 0.01 mg/kg IV/IO (or 0.05-0.1 mg/kg ETT if no IV/IO)',
+      '2nd (hypovolemia): NS 10 mL/kg slow over 5-10 min — slower than term to reduce IVH risk',
+      '2nd (glucose < 47 mg/dL): D10 2 mL/kg IV/IO — NEVER D25 or D50 in neonates',
+      'AVOID: Naloxone if mother is opioid-dependent — precipitates seizures. BVM is the answer.',
+      '3rd (suspected ductal-dependent CHD): Alprostadil (PGE-1) 0.02-0.05 mcg/kg/min — REQUIRES MEDICAL CONTROL (no PHI standing orders)',
+      'Adjunct: anticipate apnea, RDS, IVH, NEC. Notify NICU early; prepare for advanced airway en route'
+    ]
+  },
   arrest: {
     picture:'Pediatric cardiac arrest. Most common cause is respiratory (hypoxia → bradycardia → arrest). Reverse the H/T causes.',
     plan:[
-      'Start CPR — 100-120/min, depth 1/3 AP diameter',
-      'BVM with high-flow O2 — 15:2 (one rescuer) or 30:2 (without advanced airway)',
-      'Advanced airway: ETT or BIAD — 1 breath q 2-3 sec when in place',
-      'Epinephrine 0.01 mg/kg IV/IO q 3-5 min (1:10,000)',
-      'Defibrillate if VF/pVT — 2 J/kg first, 4 J/kg subsequent',
-      'Amiodarone 5 mg/kg IV/IO during shockable rhythm',
-      'Search for and treat reversible causes (Hs/Ts)'
+      '1st: Start CPR — 100-120/min, depth 1/3 AP diameter',
+      '1st: BVM with high-flow O2 — 15:2 (one rescuer) or 30:2 (without advanced airway)',
+      '1st (shockable rhythm): Defibrillate BEFORE drugs — 2 J/kg → 4 J/kg → 6 J/kg per PHI',
+      '1st (any rhythm): Epinephrine 0.01 mg/kg IV/IO q 3-5 min (1:10,000)',
+      '2nd: Advanced airway — ETT or BIAD — 1 breath q 2-3 sec when in place',
+      '2nd (shockable, after 3rd shock + epi): Amiodarone 5 mg/kg IV/IO — OR Lidocaine 1 mg/kg per PHI',
+      'Throughout: search for and treat reversible causes (Hs/Ts)'
     ]
   },
   brady: {
     picture:'Symptomatic bradycardia — HR below age-appropriate threshold with poor perfusion. Almost always due to hypoxia in peds.',
     plan:[
-      'OXYGENATE AND VENTILATE FIRST — most common cause',
-      'BVM with 100% O2 if respiratory failure',
-      'CPR if HR < 60 with poor perfusion despite ventilation',
-      'Epinephrine 0.01 mg/kg IV/IO q 3-5 min if no improvement',
-      'Atropine 0.02 mg/kg (min 0.1 mg) for vagally-mediated brady',
-      'Pacing if no response — transcutaneous',
-      'Treat underlying cause (hypoxia, hypothermia, toxin, hyperkalemia)'
+      '1st: OXYGENATE AND VENTILATE — most common cause is hypoxia',
+      '1st: BVM with 100% O2 if respiratory failure',
+      '1st: CPR if HR < 60 with poor perfusion despite ventilation',
+      '2nd: Epinephrine 0.01 mg/kg IV/IO q 3-5 min if no improvement',
+      '2nd: Atropine 0.02 mg/kg (min 0.1 mg) for vagally-mediated brady (or organophosphate)',
+      '3rd: Transcutaneous pacing if no response',
+      'Throughout: treat underlying cause (hypoxia, hypothermia, toxin, hyperkalemia)'
     ]
   },
   svt: {
     picture:'Narrow-complex tachycardia. Infant SVT typically >220, child >180. Stable = vagal first; unstable = electricity.',
     plan:[
-      'Assess perfusion: stable vs unstable',
-      'STABLE: Vagal maneuvers (ice to face for infant; valsalva older)',
-      'STABLE: Adenosine 0.1 mg/kg rapid IV push (max 6 mg) → 0.2 mg/kg if no response (max 12 mg)',
-      'UNSTABLE: Synchronized cardioversion 0.5-1 J/kg → 2 J/kg',
-      '12-lead ECG before and after for documentation',
-      'Continuous monitoring; large-bore proximal IV for adenosine'
+      '1st: Assess perfusion — stable vs unstable',
+      '1st STABLE: Vagal maneuvers (ice to face for infant; valsalva for older)',
+      '2nd STABLE: Adenosine 0.1 mg/kg rapid IV push (max 6 mg) → 0.2 mg/kg if no response (max 12 mg)',
+      '1st UNSTABLE: Synchronized cardioversion 0.5-1 J/kg → 2 J/kg (electricity > drugs when unstable)',
+      'Adjunct: 12-lead ECG before and after; continuous monitoring; large-bore proximal IV for adenosine'
     ]
   },
   vt: {
     picture:'Wide-complex tachycardia with a pulse. Treat as VT until proven otherwise.',
     plan:[
-      'Assess perfusion: stable vs unstable',
-      'STABLE: Amiodarone 5 mg/kg IV/IO over 20-60 min',
-      'UNSTABLE: Synchronized cardioversion 0.5-1 J/kg → 2 J/kg',
-      'Pulseless VT → standard cardiac arrest algorithm',
-      'Look for reversible causes: electrolytes, drugs, hypoxia, ischemia'
+      '1st: Assess perfusion — stable vs unstable',
+      '1st UNSTABLE: Synchronized cardioversion 0.5-1 J/kg → 2 J/kg (electricity > drugs)',
+      '1st STABLE: Amiodarone 5 mg/kg IV/IO over 20-60 min — OR Lidocaine 1 mg/kg per PHI',
+      'Alt STABLE: Procainamide 15 mg/kg IBW IV/IO over 30-60 min — REQUIRES MEDICAL CONTROL (avoid combo with amiodarone)',
+      'Pulseless VT → standard cardiac arrest algorithm (defib first)',
+      'Throughout: look for reversible causes (electrolytes, drugs, hypoxia, ischemia)'
     ]
   },
   seizure: {
     picture:'Status epilepticus: seizure > 5 min OR 2+ seizures without full recovery. ABCs first; antiepileptic ladder second.',
     plan:[
-      'Position lateral, suction, NRB at 15 L/min',
-      'Check glucose — treat hypoglycemia immediately',
-      'Midazolam 0.1-0.2 mg/kg IV/IO/IM/IN (max 10 mg) — preferred first line',
-      'OR Lorazepam 0.05-0.1 mg/kg IV (max 4 mg) if IV access',
-      'If still seizing at 5-10 min: 2nd benzo dose',
-      'If still seizing at 15-20 min: Levetiracetam 60 mg/kg IV (max 4500 mg) over 5 min',
-      'OR Fosphenytoin 20 mg/kg PE IV (max 1500 mg PE)',
-      'Refractory: prepare for intubation + continuous infusion'
+      '1st: Position lateral, suction, NRB at 15 L/min — protect airway',
+      '1st: Check glucose — treat hypoglycemia immediately if low',
+      '1st: Midazolam IV/IO 0.1 mg/kg (max 5 mg) — or IM/IN 0.2 mg/kg (max 10 mg) per PHI',
+      'Alt 1st: Lorazepam 0.1 mg/kg IV/IO/IM (max 4 mg) per PHI',
+      'If still seizing at 5-10 min: repeat benzo dose (2nd benzo)',
+      '2nd (refractory ≥ 15-20 min): Levetiracetam 60 mg/kg IV (max 4500 mg) over 5 min',
+      'Alt 2nd: Fosphenytoin 15 mg PE/kg IV (max 1 g PE) — or Phenytoin 15 mg/kg IV (max 1 g) per PHI',
+      '3rd (refractory): prepare for intubation + continuous infusion'
     ]
   },
   anaphylaxis: {
     picture:'Multisystem allergic reaction — typically 2+ systems (skin, resp, GI, CV). Epi IM is the only proven life-saver.',
     plan:[
-      'Epinephrine 0.01 mg/kg of 1:1000 IM into anterolateral thigh (max 0.3 mg child, 0.5 mg adolescent)',
-      'Repeat IM q 5-15 min PRN until response',
-      'NS bolus 20 mL/kg if hypotensive',
-      'Diphenhydramine 1 mg/kg IV/IM (max 50 mg)',
-      'Famotidine 0.5 mg/kg IV (max 20 mg) — H2 adjunct',
-      'Methylprednisolone 2 mg/kg IV (max 125 mg)',
-      'Albuterol neb if bronchospasm',
-      'Refractory: Epi infusion 0.05-0.5 mcg/kg/min'
+      '1st: Epinephrine 0.01 mg/kg of 1:1000 IM into anterolateral thigh (max 0.3 mg child, 0.5 mg adolescent) — GIVE FIRST',
+      '1st: Repeat IM epi q 5-15 min PRN until response',
+      '1st: NS bolus 20 mL/kg if hypotensive',
+      '2nd (bronchospasm): Albuterol neb',
+      'Adjunct: Diphenhydramine 1 mg/kg IV/IM (max 50 mg) — H1 blocker, NEVER substitute for epi',
+      'Adjunct: Methylprednisolone 2 mg/kg IV (max 125 mg) — slow onset',
+      '3rd (refractory): Epi infusion 0.05-0.5 mcg/kg/min'
     ]
   },
   asthma: {
     picture:'Severe bronchospasm — silent chest, retractions, fatigue are pre-arrest signs. Inhaled β-agonist + steroid + magnesium escalation.',
     plan:[
-      'Albuterol 2.5-5 mg neb continuous OR every 20 min × 3',
-      'Ipratropium 0.5 mg neb (added to albuterol × 3)',
-      'Methylprednisolone 2 mg/kg IV (max 125 mg)',
-      'Magnesium sulfate 25-50 mg/kg IV (max 2 g) over 20 min',
-      'Epinephrine IM 0.01 mg/kg of 1:1000 if severe / silent chest',
-      'Avoid intubating if possible — high mortality. If forced: ketamine induction.'
+      '1st: Albuterol 2.5-5 mg neb continuous OR every 20 min × 3',
+      '2nd: Ipratropium 0.5 mg neb added to first 3 albuterol nebs',
+      '2nd: Methylprednisolone 2 mg/kg IV (max 125 mg) — give early, slow onset',
+      '3rd (refractory): Magnesium sulfate 25-50 mg/kg IV (max 2 g) over 20 min',
+      '3rd (severe / silent chest): Epinephrine IM 0.01 mg/kg of 1:1000',
+      'Last resort: avoid intubation if possible (high mortality). If forced: ketamine induction.'
     ]
   },
   croup: {
     picture:'Viral laryngotracheitis with stridor at rest. Severe: stridor at rest, retractions, ± agitation/AMS.',
     plan:[
-      'Keep child calm — agitation worsens stridor; let parent hold',
-      'Dexamethasone 0.6 mg/kg PO/IM/IV (max 16 mg)',
-      'Nebulized racemic epinephrine 2.25% — 0.05 mL/kg (max 0.5 mL) in 3 mL NS',
-      'OR L-epinephrine 5 mL of 1 mg/mL (1:1000) neb',
-      'Observe 2-4 hr after racemic — rebound stridor possible',
-      'Severe with impending failure: prepare for awake intubation by experienced provider — ETT 0.5-1 size SMALLER than predicted for age'
+      '1st: Keep child calm — agitation worsens stridor; let parent hold',
+      '1st: Dexamethasone 0.6 mg/kg PO/IM/IV (max 16 mg) — give to ALL even mild',
+      '2nd (stridor at rest): Nebulized racemic epinephrine 2.25% — <15 kg: 0.25 mL; ≥15 kg: 0.5 mL in 3 mL NS (PHI)',
+      'Alt 2nd: L-epinephrine 5 mL of 1 mg/mL (1:1000) neb',
+      'Adjunct: observe 2-4 hr after racemic — rebound stridor possible',
+      '3rd (impending failure): prepare for awake intubation by experienced provider — ETT 0.5-1 size SMALLER than predicted for age'
     ]
   },
   bronchio: {
     picture:'Viral lower respiratory infection in <2 yr (RSV most common). Wheezing + retractions + apnea risk in young infants.',
     plan:[
-      'Suction nares (saline drops + bulb) — significant relief',
-      'Supplemental O2 to keep SpO2 > 90% (some local protocols >92%)',
-      'High-flow nasal cannula 1-2 L/kg/min if available',
-      'Trial albuterol — STOP if no response (most do not respond)',
-      'IV fluid 10-20 mL/kg if dehydrated',
-      'Apnea monitoring critical in <3 mo, ex-prem, or with apnea history',
-      'Avoid steroids and abx unless co-existing condition'
+      '1st: Suction nares (saline drops + bulb) — significant relief',
+      '1st: Supplemental O2 to keep SpO2 > 90% (some local protocols >92%)',
+      '2nd: High-flow nasal cannula 1-2 L/kg/min if available',
+      'Trial: Albuterol — STOP if no response (most do not respond)',
+      'Adjunct: IV fluid 10-20 mL/kg if dehydrated',
+      'Adjunct: Apnea monitoring critical in <3 mo, ex-prem, or with apnea history',
+      'Avoid: steroids and abx unless co-existing condition'
     ]
   },
   sepsis: {
-    picture:'Septic shock — fever or hypothermia + altered perfusion (cold/warm). Aggressive fluid + early empiric pressor.',
+    picture:'Septic shock — fever or hypothermia + altered perfusion (cold/warm). Aggressive fluid + early empiric pressor. Cold shock (cool extremities, weak pulse, ↓ cap refill) is most common in peds; warm shock (flash cap refill, bounding pulses, vasodilation) more common in adolescents.',
     plan:[
-      'IV/IO access × 2 — large bore proximal',
-      'NS or LR 20 mL/kg bolus over 5-20 min — reassess',
-      'Repeat 20 mL/kg up to 40-60 mL/kg unless cardiogenic features',
-      'Empiric antibiotics within 1 hour per receiving facility',
-      'Refractory shock: Epinephrine infusion 0.05-1 mcg/kg/min (cold shock)',
-      'OR Norepinephrine 0.05-2 mcg/kg/min (warm shock)',
-      'Hydrocortisone 2 mg/kg IV if catecholamine-resistant',
-      'Treat hypoglycemia, hypocalcemia, electrolyte derangement'
+      '1st: IV/IO access × 2 — large-bore proximal',
+      '1st: NS or LR 20 mL/kg bolus over 5-20 min — reassess after each bolus',
+      '1st: Repeat 20 mL/kg up to 40-60 mL/kg total unless cardiogenic features (rales, hepatomegaly, gallop)',
+      '1st: Empiric antibiotics within 1 hour per receiving facility',
+      '2nd (fluid-refractory): EPINEPHRINE INFUSION 0.05-1 mcg/kg/min — preferred 1st-line pressor in peds septic shock (especially cold shock)',
+      'Alt 2nd: Norepinephrine 0.05-2 mcg/kg/min — preferred for warm shock (vasodilated, bounding pulses)',
+      '3rd (catecholamine-resistant): Hydrocortisone 2 mg/kg IV — REQUIRES MEDICAL CONTROL (no PHI standing orders)',
+      'Adjunct: treat hypoglycemia, hypocalcemia, electrolyte derangement throughout'
     ]
   },
   dka: {
     picture:'DKA: hyperglycemia + acidosis (pH <7.3 / HCO3 <15) + ketones. Cerebral edema is the lethal complication — treat slowly.',
     plan:[
-      'NS 10 mL/kg over 30-60 min (gentle — avoid 20 mL/kg unless overt shock)',
-      'NO INSULIN BOLUS — start infusion 0.05-0.1 unit/kg/hr at receiving facility',
-      'Replace deficit over 24-48 hr (not faster)',
-      'Add dextrose to fluid when glucose <300 mg/dL',
-      'Watch for cerebral edema: HA, vomiting, AMS, bradycardia',
-      'If cerebral edema: Mannitol 0.5-1 g/kg OR 3% NaCl 3-5 mL/kg, head up 30°, intubate'
+      '1st: NS 10 mL/kg over 30-60 min (gentle — AVOID 20 mL/kg unless overt shock)',
+      '1st: NO insulin bolus — start infusion 0.05-0.1 unit/kg/hr at receiving facility',
+      'Adjunct: replace deficit over 24-48 hr (not faster — cerebral edema risk)',
+      'Adjunct: add dextrose to fluid when glucose <300 mg/dL',
+      'Watch: cerebral edema (HA, vomiting, AMS, bradycardia)',
+      '2nd (cerebral edema): 3% NaCl 3-5 mL/kg (preferred) OR Mannitol 0.5-1 g/kg, head up 30°, intubate'
     ]
   },
   hypo: {
     picture:'Hypoglycemia — glucose <60 mg/dL (or <45 in neonate). AMS, seizures, focal deficits. Must treat fast.',
     plan:[
-      'Confirm with glucometer',
-      'D10W 5-10 mL/kg IV over 10-20 min (= 0.5-1 g/kg)',
-      'OR D25W 2-4 mL/kg if older child (peripheral irritation)',
-      'AVOID D50 in peds — vesicant',
-      'No IV: Glucagon 0.03 mg/kg IM (max 1 mg)',
-      'Recheck glucose q 15-30 min',
-      'Maintenance D5 or D10 fluid until oral intake'
+      '1st: Confirm with glucometer',
+      '1st: D10W 5-10 mL/kg IV over 10-20 min (= 0.5-1 g/kg) — preferred concentration in peds',
+      'Alt: D25W 2-4 mL/kg in older child (peripheral irritation; AVOID in neonates/infants)',
+      'Avoid: D50 in peds — vesicant',
+      'Alt (no IV access): Glucagon — <20 kg = 0.5 mg, ≥20 kg = 1 mg IM/IN/SC per PHI',
+      'Adjunct: recheck glucose q 15-30 min',
+      'Adjunct: maintenance D5 or D10 fluid until oral intake'
     ]
   },
   icp: {
     picture:'Increased ICP / TBI — Cushing (HTN + brady + irreg resp), unilateral pupil, posturing. Herniation is imminent.',
     plan:[
-      'Head of bed 30°, midline neutral, loose C-collar',
-      'Avoid hypoxia and hypotension — both are devastating to TBI outcome',
-      '3% NaCl 3-5 mL/kg IV over 10-20 min (preferred over mannitol if hypovolemic)',
-      'OR Mannitol 0.5-1 g/kg IV over 10-20 min (avoid if hypovolemic)',
-      'Maintain SBP at 50th percentile for age',
-      'Brief hyperventilation ONLY if signs of active herniation (EtCO2 30-35)',
-      'Treat seizures aggressively',
-      'Anticipate intubation — RSI with cerebroprotective approach'
+      '1st: Head of bed 30°, midline neutral, loose C-collar',
+      '1st: Avoid hypoxia and hypotension — both devastate TBI outcome',
+      '1st: Maintain SBP at 50th percentile for age',
+      '2nd (active herniation): 3% NaCl 3-5 mL/kg IV over 10-20 min — preferred over mannitol if hypovolemic',
+      'Alt 2nd: Mannitol 0.5-1 g/kg IV over 10-20 min (AVOID if hypovolemic)',
+      '2nd: Brief hyperventilation ONLY if active herniation signs (EtCO2 30-35) — bridge only',
+      '2nd: Treat seizures aggressively (benzo first)',
+      '3rd: Anticipate intubation — RSI with cerebroprotective approach (avoid succinylcholine if ↑ICP not controlled)'
     ]
   },
   tox: {
     picture:'Toxic ingestion / overdose — supportive care + specific antidote when known. AEIOU TIPS for AMS differential.',
     plan:[
-      'ABCs, glucose, EKG, monitor',
-      'Naloxone 0.1 mg/kg IV/IM/IN (max 2 mg) if opioid suspected',
-      'Sodium bicarb 1 mEq/kg if TCA / salicylate / wide QRS',
-      'Calcium chloride 20 mg/kg IV (max 1 g) for CCB / hyperkalemia',
-      'Glucagon 0.05-0.1 mg/kg for β-blocker / CCB OD',
-      'Activated charcoal 1 g/kg PO/NG within 1 hr (intact airway only)',
-      'Contact poison control 1-800-222-1222',
-      'Specific antidotes per agent ingested'
+      '1st: ABCs, glucose, EKG, monitor',
+      '1st (opioid suspected): Naloxone 0.1 mg/kg IV/IM/IN (max 2 mg) — repeat q 2-3 min',
+      '1st (TCA / salicylate / wide QRS): Sodium bicarb 1 mEq/kg slow push',
+      '1st (CCB / hyperK / hypoCa): Calcium chloride 20 mg/kg IV (max 1 g) — central preferred',
+      'Alt: Calcium gluconate 60 mg/kg IV (max 3 g) — peripheral-friendly',
+      '2nd (β-blocker / CCB OD refractory to Ca): Glucagon 0.05-0.1 mg/kg — REQUIRES MEDICAL CONTROL',
+      'Adjunct: Activated charcoal 1 g/kg PO/NG within 1 hr (intact airway only)',
+      'Adjunct: contact poison control 1-800-222-1222 + specific antidotes per agent'
     ]
   },
   trauma: {
     picture:'Hemorrhagic shock from trauma — Class III/IV (HR up, narrow pulse pressure, AMS). Permissive hypotension does NOT apply to peds.',
     plan:[
-      'Two large-bore IVs (or IO if delayed)',
-      'NS or LR 20 mL/kg bolus — reassess perfusion',
-      'Repeat once if needed to maximum 40-60 mL/kg crystalloid',
-      'Blood products at 10-20 mL/kg if available (1:1:1)',
-      'TXA 15 mg/kg IV over 10 min (max 1 g) within 3 hr of injury',
-      'Maintain target SBP at 50th percentile for age',
-      'Address bleeding source (TQ, pelvic binder, splinting)',
-      'Avoid hypothermia — warm fluids, blankets'
+      '1st: Two large-bore IVs (or IO if delayed)',
+      '1st: Address bleeding source — TQ, pelvic binder, splinting',
+      '1st: NS or LR 20 mL/kg bolus — reassess perfusion after each bolus',
+      '1st: Repeat once if needed to maximum 40-60 mL/kg crystalloid',
+      '2nd (refractory or massive bleed): Blood products at 10-20 mL/kg (1:1:1) if available',
+      '2nd: TXA 25 mg/kg IV over 10 min (max 2 g) within 3 hr of injury — PHI',
+      'Adjunct: maintain target SBP at 50th percentile for age',
+      'Adjunct: avoid hypothermia — warm fluids, blankets'
     ]
   },
   burn: {
     picture:'Severe burn — >10% TBSA OR airway involvement OR circumferential. Parkland formula + airway vigilance + analgesia.',
     plan:[
-      'Airway: low threshold to intubate if face/neck burns, soot in airway, hoarseness, stridor — early before edema closes airway',
-      'Cool wound with NS-soaked gauze (NOT cold water — hypothermia)',
-      'Parkland: LR 4 mL/kg/% TBSA over 24 hr — half in first 8 hr',
-      'Add 5% dextrose maintenance for <30 kg children',
-      'Pain: Fentanyl 1-2 mcg/kg IV q 1-2 hr',
-      'Wrap clean dry sheet — no creams/ointments pre-hospital',
-      'Watch for compartment syndrome of circumferential burns'
+      '1st: Airway — low threshold to intubate if face/neck burns, soot in airway, hoarseness, stridor — EARLY before edema closes airway',
+      '1st: Cool wound with NS-soaked gauze (NOT cold water — hypothermia)',
+      '1st: Parkland — LR 4 mL/kg/% TBSA over 24 hr (half in first 8 hr)',
+      '1st (<30 kg): Add 5% dextrose maintenance fluid alongside Parkland',
+      '2nd (pain): Fentanyl 1-2 mcg/kg IV q 1-2 hr (1st-line analgesic)',
+      'Adjunct: wrap clean dry sheet — NO creams/ointments pre-hospital',
+      'Adjunct: watch for compartment syndrome with circumferential burns'
     ]
   },
   hyperK: {
     picture:'Hyperkalemia with EKG changes (peaked T, wide QRS, sine wave). Cardioprotect → shift → eliminate.',
     plan:[
-      'Calcium chloride 20 mg/kg IV (max 1 g) — cardioprotection FIRST',
-      'OR Calcium gluconate 60 mg/kg IV (max 2 g) — peripheral-friendly',
-      'Sodium bicarb 1 mEq/kg IV if acidotic',
-      'Albuterol nebulized — shifts K intracellularly',
-      'Insulin + dextrose at receiving facility',
-      'Furosemide 1 mg/kg if euvolemic and renal function intact'
+      '1st (CARDIOPROTECT): Calcium chloride 20 mg/kg IV (max 1 g) — central preferred',
+      'Alt 1st: Calcium gluconate 60 mg/kg IV (max 3 g) — peripheral-friendly',
+      '2nd (SHIFT): Sodium bicarb 1 mEq/kg IV if acidotic',
+      '2nd (SHIFT): Albuterol nebulized — moves K intracellularly',
+      '2nd (SHIFT): Insulin + dextrose at receiving facility',
+      '3rd (ELIMINATE): Furosemide 1 mg/kg if euvolemic and renal function intact'
     ]
   }
 };
@@ -1145,10 +1281,89 @@ function renderPlan(){
   }
   var p = DX_PLAN[dx];
   var planLis = p.plan.map(function(s){ return '<li style="margin-bottom:5px">' + s + '</li>'; }).join('');
+  var protoBtn = renderProtocolBtn(dx);
   out.innerHTML =
     '<div style="font-size:.86rem;line-height:1.55;color:var(--tx0);margin-bottom:12px"><strong style="color:var(--purple)">Picture: </strong>' + p.picture + '</div>' +
-    '<div class="slbl" style="margin-top:10px">Plan of Action</div>' +
-    '<ol style="padding-left:18px;font-size:.83rem;line-height:1.55;color:var(--tx0)">' + planLis + '</ol>';
+    protoBtn +
+    '<div class="slbl" style="margin-top:10px">Plan of Action — Field Reference</div>' +
+    '<ol style="padding-left:18px;font-size:.83rem;line-height:1.55;color:var(--tx0)">' + planLis + '</ol>' +
+    '<div style="margin-top:14px;padding:8px 11px;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.25);border-radius:7px;font-size:.7rem;color:var(--tx2);line-height:1.5">' +
+      '<strong style="color:#c084fc">Reminder:</strong> Plan above is a field-reference summary. The PHI Clinical Care Guideline is the authoritative source — open the protocol PDF for the full physician-approved document.' +
+    '</div>';
+}
+
+// Per-file availability — populated on app load. Avoids race conditions on click.
+var PROTOCOL_AVAILABLE = {}; // { peds: true, trauma: false, ... }
+
+function getProtocolUrl(dx){
+  var ref = PROTOCOL_PAGES[dx];
+  if(!ref) return null;
+  var file = PROTOCOL_FILES[ref.src];
+  if(!file) return null;
+  return file + '#page=' + (ref.page || 1) + '&zoom=page-fit';
+}
+
+function checkProtocolPdf(){
+  // Skip in preview iframes — files aren't reachable through the proxy
+  var host = location.hostname || '';
+  var inPreview = /claudeusercontent|claude\.ai|anthropic\.com/.test(host);
+  Object.keys(PROTOCOL_FILES).forEach(function(key){
+    if(inPreview){ PROTOCOL_AVAILABLE[key] = false; return; }
+    fetch(PROTOCOL_FILES[key], {method:'HEAD'})
+      .then(function(r){ PROTOCOL_AVAILABLE[key] = !!r.ok; })
+      .catch(function(){ PROTOCOL_AVAILABLE[key] = false; });
+  });
+}
+
+function renderProtocolBtn(dx){
+  var ref = PROTOCOL_PAGES[dx];
+  if(!ref) return '';
+  var file = PROTOCOL_FILES[ref.src];
+  var url = file + '#page=' + (ref.page || 1) + '&zoom=page-fit';
+  var fileLabel = file ? file.replace(/^protocols\//,'').replace(/\.pdf$/i,'') : 'Protocol';
+  return '<a href="' + url + '" target="_blank" rel="noopener" class="proto-btn" onclick="return openProtocol(event,\'' + dx + '\')">' +
+    '<span class="proto-icon">📖</span>' +
+    '<span class="proto-text">' +
+      '<span class="proto-label">View PHI Protocol</span>' +
+      '<span class="proto-cite">' + ref.label + (ref.page > 1 ? ' — p. ' + ref.page : '') +
+        ' <span style="opacity:.6">· ' + fileLabel + '</span>' +
+      '</span>' +
+    '</span>' +
+    '<span class="proto-chev">›</span>' +
+  '</a>';
+}
+
+// Generic opener — used by buttons that aren't tied to a DX (e.g. SAFER on Intubation tab)
+function openProtocolGeneric(e, srcKey){
+  var file = PROTOCOL_FILES[srcKey];
+  if(PROTOCOL_AVAILABLE[srcKey] === false){
+    e.preventDefault();
+    var fileBare = file ? file.replace(/^protocols\//,'') : 'PHI_*.pdf';
+    alert('PHI Protocol PDF "' + fileBare + '" is not installed.\n\n' +
+      'Drop the matching chapter into protocols/ (or its subfolder) and re-run merge.py, ' +
+      'or commit the existing PHI_*.pdf and push.');
+    return false;
+  }
+  return true;
+}
+
+function openProtocol(e, dx){
+  var ref = PROTOCOL_PAGES[dx];
+  if(!ref) return false;
+  var file = PROTOCOL_FILES[ref.src];
+  // If we already know this specific PDF is missing, block + explain
+  if(PROTOCOL_AVAILABLE[ref.src] === false){
+    e.preventDefault();
+    var fileBare = file ? file.replace(/^protocols\//,'') : 'PHI_*.pdf';
+    alert('PHI Protocol PDF "' + fileBare + '" is not installed.\n\n' +
+      '1. Save the matching PHI Clinical Care Guidelines PDF as:\n' +
+      '   ' + (file || 'protocols/PHI_Peds.pdf') + '\n\n' +
+      '2. (Optional) Update the page number for this diagnosis in PROTOCOL_PAGES near the top of peds.html.\n\n' +
+      '3. Re-deploy. The service worker will cache it for offline use.');
+    return false;
+  }
+  // Unknown or available — let the browser open it
+  return true;
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1165,10 +1380,35 @@ function rcCard(opts){
   var FORM_LABELS = {premix:'Premix Bag — Ready to Hang',vial:'Vial — Draw Up',vialmix:'Vial → Mix to Bag',syringe:'Pre-filled Syringe — Ready to Push',po:'PO — Tablet / Liquid'};
   var formCls = opts.form ? ' form-' + opts.form : '';
   var badge = opts.form ? '<div class="fb fb-' + opts.form + '">' + (FORM_LABELS[opts.form] || opts.form) + '</div>' : '';
-  return '<div class="rc' + formCls + '"><div class="rc-bar" style="background:' + (opts.color || 'var(--cyan)') + '"></div>' +
+  // LINE-OF-THERAPY badge (1st / 2nd / 3rd / Alt / Adjunct)
+  var lineBadge = '';
+  if(opts.line){
+    var lbCls = 'line-' + (opts.line === '1st' ? 'first' : opts.line === '2nd' ? 'second' : opts.line === '3rd' ? 'third' : opts.line === 'alt' ? 'alt' : 'adj');
+    var lbText = opts.line === '1st' ? '1ST LINE' : opts.line === '2nd' ? '2ND LINE' : opts.line === '3rd' ? '3RD LINE' : opts.line === 'alt' ? 'ALTERNATIVE' : opts.line === 'adj' ? 'ADJUNCT' : opts.line.toUpperCase();
+    lineBadge = '<div class="line-badge ' + lbCls + '">' + lbText + '</div>';
+  }
+  // MEDICAL CONTROL banner — high visibility, sits on top of giveBox
+  var mcBanner = '';
+  if(opts.mc){
+    mcBanner = '<div class="mc-banner">⚠ NEEDS MEDICAL CONTROL — NO STANDING ORDERS</div>';
+  }
+  // GIVE BOX — prominent under-stress display of MAX recommended dose + concentration + mL to push.
+  var giveBox = '';
+  if(opts.giveBox && opts.giveBox.mL != null){
+    var g = opts.giveBox;
+    giveBox = '<div class="give-box">' +
+      '<div class="gb-label">' + (g.label || 'Give') + '</div>' +
+      '<div class="gb-vol">' + g.mL + ' mL' + (g.mg ? '<span class="gb-mg">= ' + g.mg + '</span>' : '') + '</div>' +
+      (g.conc ? '<div class="gb-conc">' + g.conc + '</div>' : '') +
+      (g.rule ? '<div class="gb-rule">' + g.rule + '</div>' : '') +
+    '</div>';
+  } else if(opts.giveBox && opts.giveBox.needsWt){
+    giveBox = '<div class="give-box" style="border-color:rgba(251,191,36,.5)"><div class="gb-label" style="color:var(--amber)">Enter weight</div><div class="gb-vol" style="color:var(--amber);font-size:.95rem">to see mL to give</div></div>';
+  }
+  return '<div class="rc' + formCls + (opts.mc ? ' rc-mc' : '') + '"><div class="rc-bar" style="background:' + (opts.color || 'var(--cyan)') + '"></div>' +
     '<div class="rc-cat">' + (opts.cat || '') + '</div>' +
-    '<div class="rc-name">' + opts.name + '</div>' +
-    sub + badge + ind + rows + note + warn + '</div>';
+    '<div class="rc-name">' + opts.name + lineBadge + '</div>' +
+    sub + badge + ind + mcBanner + giveBox + rows + note + warn + '</div>';
 }
 function noWt(){ return '<span class="rv warn">Enter weight first</span>'; }
 
@@ -1184,8 +1424,9 @@ var DRUGS = {
     var ml = w ? round(0.1*w, 2) : null;
     return rcCard({
       name:'Epinephrine — Arrest', generic:'1:10,000 (0.1 mg/mL) — pre-filled syringe', cat:'ARREST',
-      form:'syringe',
-      indication:'Pediatric cardiac arrest', color:'var(--rose)',
+      form:'syringe', line:'1st',
+      indication:'1st-line drug for pediatric cardiac arrest — give q 3-5 min during CPR', color:'var(--rose)',
+      giveBox: w ? {label:'Give IV/IO', mL:ml, mg:mg+' mg', conc:'1:10,000 (0.1 mg/mL)', rule:'0.01 mg/kg q 3-5 min'} : {needsWt:true},
       rows:[
         {k:'Dose', v:'0.01 mg/kg IV/IO q 3-5 min'},
         {k:'Wt', v:w ? round(w,2) + ' kg' : '--', cls:'calc'},
@@ -1199,32 +1440,57 @@ var DRUGS = {
   amiodaroneArrest: function(){
     var w = dosingWt();
     var mg = w ? Math.min(round(5*w, 0), 300) : null;
+    var ml = mg ? round(mg/50, 2) : null;
     return rcCard({
       name:'Amiodarone — Arrest', generic:'Stock 50 mg/mL vial', cat:'ARREST',
-      form:'vial',
-      indication:'Refractory VF / pulseless VT (after defib + epi)', color:'var(--rose)',
+      form:'vial', line:'2nd',
+      indication:'2nd-line antiarrhythmic for refractory VF/pVT (after 3rd shock + epi) — PHI Ch 5', color:'var(--rose)',
+      giveBox: w ? {label:'Give IV/IO bolus', mL:ml, mg:mg+' mg'+(mg===300?' (max)':''), conc:'50 mg/mL stock', rule:'5 mg/kg per PHI, max 300 mg single'} : {needsWt:true},
       rows:[
-        {k:'Dose', v:'5 mg/kg IV/IO bolus'},
+        {k:'PHI dose', v:'5 mg/kg IV/IO bolus'},
         {k:'Calc dose', v:mg ? mg + ' mg' + (mg === 300 ? ' (max)' : '') : '--', cls:'calc'},
-        {k:'Calc volume', v:mg ? round(mg/50, 2) + ' mL' : '--', cls:'calc'},
+        {k:'Calc volume', v:ml ? ml + ' mL' : '--', cls:'calc'},
         {k:'Max single', v:mx('300 mg'), cls:'warn'},
         {k:'Repeat', v:'May repeat 5 mg/kg × 2 (max 15 mg/kg total / 24 hr)'}
+      ]
+    });
+  },
+  lidocaineArrest: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(1*w, 0), 100) : null;
+    var ml = mg ? round(mg/20, 2) : null;
+    return rcCard({
+      name:'Lidocaine — Arrest', generic:'Stock 20 mg/mL (2%) vial', cat:'ARREST',
+      form:'vial', line:'alt',
+      indication:'Alternative to amiodarone for refractory VF/pVT — PHI Ch 5', color:'var(--rose)',
+      giveBox: w ? {label:'Give IV/IO bolus', mL:ml, mg:mg+' mg'+(mg===100?' (max)':''), conc:'20 mg/mL stock', rule:'1 mg/kg per PHI, max 100 mg single'} : {needsWt:true},
+      rows:[
+        {k:'PHI dose', v:'1 mg/kg IV/IO bolus'},
+        {k:'Calc dose', v:mg ? mg + ' mg' + (mg === 100 ? ' (max)' : '') : '--', cls:'calc'},
+        {k:'Calc volume', v:ml ? ml + ' mL' : '--', cls:'calc'},
+        {k:'Max single', v:mx('100 mg'), cls:'warn'},
+        {k:'Repeat', v:'May repeat 0.5-0.75 mg/kg q 5-10 min × 2 (max 3 mg/kg total)'},
+        {k:'Drip', v:'20-50 mcg/kg/min after ROSC'}
       ]
     });
   },
   defib: function(){
     var w = dosingWt();
     var lo = w ? round(2*w, 0) : null;
-    var hi = w ? round(4*w, 0) : null;
+    var mid = w ? round(4*w, 0) : null;
+    var hi = w ? round(6*w, 0) : null;
     return rcCard({
       name:'Defibrillation', generic:'Asynchronous shock', cat:'ARREST',
-      indication:'VF / pulseless VT', color:'var(--red)',
+      line:'1st',
+      indication:'1st-line therapy for shockable rhythm (VF / pulseless VT) — defibrillate BEFORE drugs — PHI Ch 5', color:'var(--red)',
       rows:[
         {k:'1st shock', v:'2 J/kg'},
         {k:'Calc 1st', v:lo ? lo + ' J' : '--', cls:'calc'},
-        {k:'2nd+ shock', v:'4 J/kg'},
-        {k:'Calc 2nd+', v:hi ? mx(hi + ' J') : '--', cls:'calc'},
-        {k:'Max', v:mx('Adult dose ceiling') + ' (10 J/kg or adult max)', cls:'warn'}
+        {k:'2nd shock', v:'4 J/kg'},
+        {k:'Calc 2nd', v:mid ? mid + ' J' : '--', cls:'calc'},
+        {k:'3rd+ shock', v:'6 J/kg (PHI escalation)'},
+        {k:'Calc 3rd+', v:hi ? mx(hi + ' J') : '--', cls:'calc'},
+        {k:'Ceiling', v:mx('10 J/kg or adult dose'), cls:'warn'}
       ]
     });
   },
@@ -1234,7 +1500,8 @@ var DRUGS = {
     var hi = w ? round(2*w, 0) : null;
     return rcCard({
       name:'Synchronized Cardioversion', generic:'Sync shock', cat:'DYSRHYTHMIA',
-      indication:'Unstable SVT / VT with pulse', color:'var(--red)',
+      line:'1st',
+      indication:'1st-line for UNSTABLE SVT/VT with pulse — electricity over drugs when unstable — PHI Ch 5', color:'var(--red)',
       rows:[
         {k:'1st shock', v:'0.5-1 J/kg'},
         {k:'Calc', v:lo ? lo + ' J' : '--', cls:'calc'},
@@ -1249,10 +1516,12 @@ var DRUGS = {
     var w = dosingWt();
     var mg1 = w ? Math.min(round(0.1*w, 2), 6) : null;
     var mg2 = w ? Math.min(round(0.2*w, 2), 12) : null;
+    var ml2 = mg2 ? round(mg2/3, 2) : null;
     return rcCard({
       name:'Adenosine', generic:'Stock 3 mg/mL vial', cat:'DYSRHYTHMIA',
-      form:'vial',
-      indication:'Stable narrow-complex SVT', color:'var(--cyan)',
+      form:'vial', line:'1st',
+      indication:'1st-line drug for STABLE narrow-complex SVT (after vagal maneuvers) — PHI Ch 5', color:'var(--cyan)',
+      giveBox: w ? {label:'Give 2nd dose (max)', mL:ml2, mg:mg2+' mg'+(mg2===12?' (max)':''), conc:'3 mg/mL stock', rule:'0.2 mg/kg rapid IV push, max 12 mg'} : {needsWt:true},
       rows:[
         {k:'1st dose', v:'0.1 mg/kg rapid IV push'},
         {k:'Calc 1st', v:mg1 ? mg1 + ' mg = ' + round(mg1/3, 2) + ' mL' : '--', cls:'calc'},
@@ -1267,14 +1536,16 @@ var DRUGS = {
   atropine: function(){
     var w = dosingWt();
     var mg = w ? Math.max(0.1, Math.min(round(0.02*w, 2), 0.5)) : null;
+    var ml = mg ? round(mg/0.1, 1) : null;
     return rcCard({
       name:'Atropine', generic:'Stock 0.1 mg/mL pre-filled syringe', cat:'DYSRHYTHMIA',
-      form:'syringe',
-      indication:'Vagal-mediated bradycardia, organophosphate toxicity', color:'var(--amber)',
+      form:'syringe', line:'2nd',
+      indication:'2nd-line for vagal-mediated bradycardia (after oxygen + epi) — also for organophosphate toxicity — PHI Ch 5', color:'var(--amber)',
+      giveBox: w ? {label:'Give IV/IO/IM', mL:ml, mg:mg+' mg', conc:'0.1 mg/mL syringe', rule:'0.02 mg/kg, min 0.1 mg, max 0.5 mg child'} : {needsWt:true},
       rows:[
         {k:'Dose', v:'0.02 mg/kg IV/IO/IM'},
         {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
-        {k:'Calc volume', v:mg ? round(mg/0.1, 1) + ' mL' : '--', cls:'calc'},
+        {k:'Calc volume', v:ml ? ml + ' mL' : '--', cls:'calc'},
         {k:'Min', v:'0.1 mg (lower causes paradoxical brady)', cls:'warn'},
         {k:'Max child', v:mx('0.5 mg'), cls:'warn'},
         {k:'Max adolescent', v:mx('1 mg'), cls:'warn'}
@@ -1284,33 +1555,39 @@ var DRUGS = {
   // ──── SEIZURE ────
   midazolamSeizure: function(){
     var w = dosingWt();
-    var lo = w ? round(0.1*w, 2) : null;
-    var hi = w ? Math.min(round(0.2*w, 2), 10) : null;
+    var iv = w ? Math.min(round(0.1*w, 2), 5) : null;
+    var im = w ? Math.min(round(0.2*w, 2), 10) : null;
+    var ivMl = iv ? round(iv/5, 2) : null;
+    var imMl = im ? round(im/5, 2) : null;
     return rcCard({
       name:'Midazolam — Seizure', generic:'Stock 5 mg/mL vial', cat:'SEIZURE',
-      form:'vial',
-      indication:'Status epilepticus first line', color:'var(--rose)',
+      form:'vial', line:'1st',
+      indication:'1st-line drug for status epilepticus — IM/IN preferred if no IV — PHI Ch 5', color:'var(--rose)',
+      giveBox: w ? {label:'IV/IO at 0.1 mg/kg, IM/IN at 0.2 mg/kg', mL:'IV: '+ivMl+' / IM-IN: '+imMl+' mL', mg:'IV: '+iv+' / IM-IN: '+im+' mg', conc:'5 mg/mL stock', rule:'IV 0.1 mg/kg (max 5), IM/IN 0.2 mg/kg (max 10) per PHI'} : {needsWt:true},
       rows:[
-        {k:'Dose', v:'0.1 to ' + mx('0.2') + ' mg/kg IV/IO/IM/IN'},
-        {k:'Calc dose', v:lo ? lo + ' to ' + mx(hi + ' mg') : '--', cls:'calc'},
-        {k:'Calc volume', v:lo ? round(lo/5, 2) + ' to ' + mx(round(hi/5, 2) + ' mL') : '--', cls:'calc'},
-        {k:'Max single', v:mx('10 mg'), cls:'warn'},
+        {k:'PHI dose IV/IO', v:'0.1 mg/kg (max 5 mg)'},
+        {k:'Calc IV dose', v:iv ? iv + ' mg' + (iv===5?' (max)':'') : '--', cls:'calc'},
+        {k:'Calc IV volume', v:ivMl ? ivMl + ' mL' : '--', cls:'calc'},
+        {k:'PHI dose IM/IN', v:'0.2 mg/kg (max 10 mg)'},
+        {k:'Calc IM/IN dose', v:im ? im + ' mg' + (im===10?' (max)':'') : '--', cls:'calc'},
+        {k:'Calc IM/IN volume', v:imMl ? imMl + ' mL' : '--', cls:'calc'},
         {k:'IN', v:'Use atomizer; split between nares'}
       ]
     });
   },
   lorazepamSeizure: function(){
     var w = dosingWt();
-    var lo = w ? round(0.05*w, 2) : null;
-    var hi = w ? Math.min(round(0.1*w, 2), 4) : null;
+    var mg = w ? Math.min(round(0.1*w, 2), 4) : null;
+    var ml = mg ? round(mg/2, 2) : null;
     return rcCard({
       name:'Lorazepam — Seizure', generic:'Stock 2 mg/mL vial', cat:'SEIZURE',
-      form:'vial',
-      indication:'Status epilepticus first line if IV access', color:'var(--rose)',
+      form:'vial', line:'alt',
+      indication:'Alternative 1st-line benzo for status epilepticus when IV/IO available — PHI Ch 5', color:'var(--rose)',
+      giveBox: w ? {label:'IV/IO/IM', mL:ml, mg:mg+' mg'+(mg===4?' (max)':''), conc:'2 mg/mL stock', rule:'0.1 mg/kg per PHI, max 4 mg single'} : {needsWt:true},
       rows:[
-        {k:'Dose', v:'0.05 to ' + mx('0.1') + ' mg/kg IV/IO'},
-        {k:'Calc dose', v:lo ? lo + ' to ' + mx(hi + ' mg') : '--', cls:'calc'},
-        {k:'Calc volume', v:lo ? round(lo/2, 2) + ' to ' + mx(round(hi/2, 2) + ' mL') : '--', cls:'calc'},
+        {k:'PHI dose', v:'0.1 mg/kg IV/IO/IM'},
+        {k:'Calc dose', v:mg ? mg + ' mg' + (mg===4?' (max)':'') : '--', cls:'calc'},
+        {k:'Calc volume', v:mg ? round(mg/2, 2) + ' mL' : '--', cls:'calc'},
         {k:'Max single', v:mx('4 mg'), cls:'warn'}
       ]
     });
@@ -1318,34 +1595,91 @@ var DRUGS = {
   levetiracetam: function(){
     var w = dosingWt();
     var mg = w ? Math.min(round(60*w, 0), 4500) : null;
+    var ml = mg ? round(mg/100, 1) : null;
     return rcCard({
       name:'Levetiracetam (Keppra)', generic:'Stock 100 mg/mL vial', cat:'SEIZURE',
-      form:'vialmix',
-      indication:'Refractory status epilepticus (after benzo)', color:'var(--purple)',
+      form:'vialmix', line:'2nd',
+      indication:'2nd-line for refractory status epilepticus (after 2 benzo doses) — PHI Ch 5', color:'var(--purple)',
+      giveBox: w ? {label:'Mix in 100 mL NS, infuse over 5 min', mL:ml, mg:mg+' mg'+(mg===4500?' (max)':''), conc:'100 mg/mL stock', rule:'60 mg/kg over 5 min per PHI, max 4500 mg'} : {needsWt:true},
       rows:[
-        {k:'Dose', v:'60 mg/kg IV over 5 min'},
+        {k:'PHI dose', v:'60 mg/kg IV over 5 min'},
         {k:'Calc dose', v:mg ? mg + ' mg' + (mg === 4500 ? ' (max)' : '') : '--', cls:'calc'},
         {k:'Calc volume', v:mg ? round(mg/100, 1) + ' mL' : '--', cls:'calc'},
         {k:'Max', v:mx('4500 mg'), cls:'warn'},
-        {k:'Mix', v:'Dilute in 100 mL NS, infuse over 5-15 min'}
+        {k:'Mix', v:'Dilute in 100 mL NS, infuse over 5 min'}
       ]
     });
   },
   fosphenytoin: function(){
     var w = dosingWt();
-    var mg = w ? Math.min(round(20*w, 0), 1500) : null;
+    var mg = w ? Math.min(round(15*w, 0), 1000) : null;
+    var ml = mg ? round(mg/50, 1) : null;
     return rcCard({
       name:'Fosphenytoin', generic:'Stock 50 mg PE/mL vial', cat:'SEIZURE',
-      form:'vialmix',
-      indication:'Refractory status epilepticus (alternative to Keppra)', color:'var(--purple)',
+      form:'vialmix', line:'alt',
+      indication:'Alternative 2nd-line for refractory status epilepticus (instead of Keppra) — PHI Ch 5', color:'var(--purple)',
+      giveBox: w ? {label:'Slow IV (max 3 mg PE/kg/min)', mL:ml, mg:mg+' mg PE'+(mg===1000?' (max)':''), conc:'50 mg PE/mL stock', rule:'15 mg PE/kg per PHI, max 1 g'} : {needsWt:true},
       rows:[
-        {k:'Dose', v:'20 mg PE/kg IV/IM (max 3 mg PE/kg/min)'},
-        {k:'Calc dose', v:mg ? mg + ' mg PE' + (mg === 1500 ? ' (max)' : '') : '--', cls:'calc'},
+        {k:'PHI dose', v:'15 mg PE/kg IV/IM (max 3 mg PE/kg/min)'},
+        {k:'Calc dose', v:mg ? mg + ' mg PE' + (mg === 1000 ? ' (max)' : '') : '--', cls:'calc'},
         {k:'Calc volume', v:mg ? round(mg/50, 1) + ' mL' : '--', cls:'calc'},
-        {k:'Max', v:mx('1500 mg PE'), cls:'warn'},
-        {k:'Infuse', v:'Max rate 3 mg PE/kg/min — slow infusion'}
+        {k:'Max', v:mx('1000 mg PE'), cls:'warn'},
+        {k:'Infuse rate', v:'≤ 3 mg PE/kg/min (max 50 mg PE/min) via pump'}
       ],
       warn:'Watch for hypotension and arrhythmias on infusion. Continuous EKG.'
+    });
+  },
+  phenytoin: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(15*w, 0), 1000) : null;
+    var ml = mg ? round(mg/50, 1) : null;
+    return rcCard({
+      name:'Phenytoin', generic:'Stock 50 mg/mL vial', cat:'SEIZURE',
+      form:'vialmix', line:'alt',
+      indication:'Alternative to fosphenytoin for refractory status epilepticus — PHI Ch 5', color:'var(--purple)',
+      giveBox: w ? {label:'Slow IV (≤ 1 mg/kg/min, max 50 mg/min)', mL:ml, mg:mg+' mg'+(mg===1000?' (max)':''), conc:'50 mg/mL stock', rule:'15 mg/kg per PHI, max 1 g'} : {needsWt:true},
+      rows:[
+        {k:'PHI dose', v:'15 mg/kg IV slow'},
+        {k:'Calc dose', v:mg ? mg + ' mg' + (mg === 1000 ? ' (max)' : '') : '--', cls:'calc'},
+        {k:'Calc volume', v:mg ? round(mg/50, 1) + ' mL' : '--', cls:'calc'},
+        {k:'Max', v:mx('1000 mg'), cls:'warn'},
+        {k:'Infuse rate', v:'≤ 1 mg/kg/min (max 50 mg/min) via pump'},
+        {k:'IV line', v:'NS only (precipitates in dextrose). Dedicated line preferred.'}
+      ],
+      warn:'Hypotension and arrhythmias common — continuous EKG, slow rate. Tissue extravasation = severe injury (purple glove).'
+    });
+  },
+  procainamide: function(){
+    var w = dosingWt();
+    var mg = w ? round(15*w, 0) : null;
+    var ml = mg ? round(mg/100, 1) : null;
+    return rcCard({
+      name:'Procainamide', generic:'Stock 100 mg/mL vial', cat:'CARDIAC',
+      form:'vialmix', mc:true, line:'alt',
+      indication:'Alternative to amiodarone/lidocaine for wide-complex tachycardia with pulse — PHI Ch 5', color:'var(--rose)',
+      giveBox: w ? {label:'After contacting medical control', mL:ml, mg:mg+' mg', conc:'100 mg/mL stock', rule:'15 mg/kg IBW per PHI'} : {needsWt:true},
+      rows:[
+        {k:'PHI dose', v:'15 mg/kg IBW IV/IO over 30-60 min'},
+        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Calc volume', v:mg ? round(mg/100, 1) + ' mL' : '--', cls:'calc'},
+        {k:'Stop if', v:'QRS widens > 50%, hypotension, or rhythm converts'},
+        {k:'Avoid with', v:'Amiodarone (additive QT) or 2nd/3rd degree AV block'}
+      ],
+      warn:'Hypotension and QT prolongation. Stop infusion at 50% QRS widening or BP drop.'
+    });
+  },
+  alprostadil: function(){
+    return rcCard({
+      name:'Alprostadil (PGE-1)', generic:'Stock 500 mcg/mL ampule', cat:'NEONATE',
+      form:'vialmix', mc:true, line:'1st',
+      indication:'1st-line for suspected ductal-dependent CHD (cyanotic neonate, age < 4 wk) — keeps ductus open — PHI Ch 5', color:'var(--blue)',
+      rows:[
+        {k:'PHI dose', v:'0.02-0.05 mcg/kg/min IV drip'},
+        {k:'Indication', v:'Cyanotic neonate suspected ductal-dependent lesion (preSpO2 ≠ post)'},
+        {k:'Watch', v:'Apnea (be ready to intubate), hypotension, fever, flushing'},
+        {k:'Mix', v:'Per receiving facility / pharmacy guidance — typical 0.5 mcg/mL in D5W'}
+      ],
+      warn:'High apnea risk — anticipate intubation. Hypotension common. Continuous monitoring + pre-induction airway plan.'
     });
   },
   // ──── ANAPHYLAXIS ────
@@ -1354,10 +1688,12 @@ var DRUGS = {
     var ageYr = state.ageYr;
     var maxMg = ageYr != null && ageYr >= 12 ? 0.5 : 0.3;
     var mg = w ? Math.min(round(0.01*w, 3), maxMg) : null;
+    var ml = mg ? round(mg/1, 2) : null;
     return rcCard({
       name:'Epinephrine IM — Anaphylaxis', generic:'Stock 1 mg/mL (1:1000) vial', cat:'ANAPHYLAXIS',
-      form:'vial',
-      indication:'Anaphylaxis — first line, only proven life-saver', color:'var(--rose)',
+      form:'vial', line:'1st',
+      indication:'1st-line drug for anaphylaxis — the only proven life-saver. Give IMMEDIATELY — PHI Ch 5', color:'var(--rose)',
+      giveBox: w ? {label:'Give IM (anterolateral thigh)', mL:ml, mg:mg+' mg'+(mg===maxMg?' (max)':''), conc:'1:1000 (1 mg/mL)', rule:'0.01 mg/kg, max '+maxMg+' mg ('+(ageYr>=12?'≥12 yr':'<12 yr')+')'} : {needsWt:true},
       rows:[
         {k:'Dose', v:'0.01 mg/kg IM into anterolateral thigh'},
         {k:'Calc dose', v:mg ? mg + ' mg' + (mg === maxMg ? ' (max)' : '') : '--', cls:'calc'},
@@ -1374,8 +1710,8 @@ var DRUGS = {
     var mg = w ? Math.min(round(1*w, 0), 50) : null;
     return rcCard({
       name:'Diphenhydramine', generic:'Stock 50 mg/mL vial', cat:'ANAPHYLAXIS',
-      form:'vial',
-      indication:'Allergic reaction / anaphylaxis (H1 blocker — adjunct)', color:'var(--purple)',
+      form:'vial', line:'adj',
+      indication:'Adjunct only for anaphylaxis (H1 blocker) — give AFTER epi, never instead of epi — PHI Ch 5', color:'var(--purple)',
       rows:[
         {k:'Dose', v:'1 mg/kg IV/IM/PO'},
         {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
@@ -1385,27 +1721,14 @@ var DRUGS = {
       note:'Adjunct only — NOT a substitute for epinephrine in anaphylaxis.'
     });
   },
-  famotidine: function(){
-    var w = dosingWt();
-    var mg = w ? Math.min(round(0.5*w, 1), 20) : null;
-    return rcCard({
-      name:'Famotidine', generic:'Stock 10 mg/mL vial', cat:'ANAPHYLAXIS',
-      form:'vial',
-      indication:'Anaphylaxis (H2 blocker — adjunct)', color:'var(--purple)',
-      rows:[
-        {k:'Dose', v:'0.5 mg/kg IV'},
-        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
-        {k:'Max', v:mx('20 mg'), cls:'warn'}
-      ]
-    });
-  },
   methylpred: function(){
     var w = dosingWt();
     var mg = w ? Math.min(round(2*w, 0), 125) : null;
     return rcCard({
       name:'Methylprednisolone', generic:'Solu-Medrol — Stock 125 mg vial reconstituted', cat:'ANAPHYLAXIS',
-      form:'vialmix',
-      indication:'Anaphylaxis, asthma, severe allergic reaction', color:'var(--lime)',
+      form:'vialmix', line:'adj',
+      indication:'Adjunct steroid for anaphylaxis or severe asthma — onset 4-6 hr, give AFTER epi/albuterol — PHI Ch 5', color:'var(--lime)',
+      giveBox: w ? {label:'Give IV/IM (after reconstitution)', mL:'~2', mg:mg+' mg'+(mg===125?' (max = full vial)':''), conc:'Reconstitute 125 mg vial with 2 mL diluent', rule:'2 mg/kg, max 125 mg'} : {needsWt:true},
       rows:[
         {k:'Dose', v:'2 mg/kg IV/IM'},
         {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
@@ -1417,8 +1740,8 @@ var DRUGS = {
   albuterol: function(){
     return rcCard({
       name:'Albuterol', generic:'Stock 2.5 mg / 3 mL nebule', cat:'RESPIRATORY',
-      form:'premix',
-      indication:'Bronchospasm (asthma, anaphylaxis adjunct, hyperK adjunct)', color:'var(--teal)',
+      form:'premix', line:'1st',
+      indication:'1st-line bronchodilator for asthma/bronchospasm — give continuously if severe — PHI Ch 5', color:'var(--teal)',
       rows:[
         {k:'<20 kg', v:'2.5 mg neb'},
         {k:'≥20 kg', v:mx('5 mg') + ' neb'},
@@ -1430,8 +1753,8 @@ var DRUGS = {
   ipratropium: function(){
     return rcCard({
       name:'Ipratropium', generic:'Stock 0.5 mg / 2.5 mL nebule', cat:'RESPIRATORY',
-      form:'premix',
-      indication:'Severe asthma — added to first 3 albuterol nebs', color:'var(--teal)',
+      form:'premix', line:'2nd',
+      indication:'2nd-line bronchodilator added to first 3 albuterol nebs in severe asthma — PHI Ch 5', color:'var(--teal)',
       rows:[
         {k:'<20 kg', v:'0.25 mg neb'},
         {k:'≥20 kg', v:mx('0.5 mg') + ' neb'},
@@ -1442,10 +1765,12 @@ var DRUGS = {
   magAsthma: function(){
     var w = dosingWt();
     var mg = w ? Math.min(round(50*w, 0), 2000) : null;
+    var ml = mg ? round(mg/500, 2) : null;
     return rcCard({
       name:'Magnesium Sulfate — Asthma', generic:'Stock 5 g / 10 mL vial (50%)', cat:'RESPIRATORY',
-      form:'vialmix',
-      indication:'Severe asthma refractory to nebs', color:'var(--purple)',
+      form:'vialmix', line:'3rd',
+      indication:'3rd-line for severe asthma refractory to nebs + steroids — PHI Ch 5', color:'var(--purple)',
+      giveBox: w ? {label:'Dilute in 50-100 mL NS, infuse over 20 min', mL:ml+' (of 50% mag)', mg:mg+' mg'+(mg===2000?' = 2 g (max)':''), conc:'50% = 500 mg/mL stock', rule:'50 mg/kg max IV (2 g cap). Slow over 20 min — hypotension risk.'} : {needsWt:true},
       rows:[
         {k:'Dose', v:'25 to ' + mx('50') + ' mg/kg IV over 20 min'},
         {k:'Calc dose', v:w ? round(25*w, 0) + ' to ' + mx(mg + ' mg') : '--', cls:'calc'},
@@ -1461,8 +1786,8 @@ var DRUGS = {
     var mg = w ? Math.min(round(0.6*w, 1), 16) : null;
     return rcCard({
       name:'Dexamethasone', generic:'Stock 4 mg/mL or 10 mg/mL vial', cat:'RESPIRATORY',
-      form:'vial',
-      indication:'Croup, asthma adjunct', color:'var(--lime)',
+      form:'vial', line:'1st',
+      indication:'1st-line for croup (give to ALL — even mild). Also asthma adjunct — PHI Ch 5', color:'var(--lime)',
       rows:[
         {k:'Dose', v:'0.6 mg/kg PO/IM/IV'},
         {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
@@ -1472,13 +1797,14 @@ var DRUGS = {
   },
   racEpiCroup: function(){
     var w = dosingWt();
-    var ml = w ? Math.min(round(0.05*w, 2), 0.5) : null;
+    var ml = w ? (w < 15 ? 0.25 : 0.5) : null;
     return rcCard({
       name:'Racemic Epinephrine — Croup', generic:'2.25% nebule', cat:'RESPIRATORY',
-      form:'premix',
-      indication:'Severe croup with stridor at rest', color:'var(--orange)',
+      form:'premix', line:'2nd',
+      indication:'2nd-line for moderate-severe croup (stridor at rest) — give AFTER dex — PHI Ch 5', color:'var(--orange)',
+      giveBox: w ? {label:'Nebulizer', mL:ml, mg:'2.25% solution', conc:'in 3 mL NS', rule:(w<15?'<15 kg = 0.25 mL':'≥15 kg = 0.5 mL')+' per PHI'} : {needsWt:true},
       rows:[
-        {k:'Dose', v:'0.05 mL/kg of 2.25% in 3 mL NS neb'},
+        {k:'PHI dose', v:'<15 kg: 0.25 mL of 2.25% in 3 mL NS; ≥15 kg: 0.5 mL of 2.25% in 3 mL NS'},
         {k:'Calc volume', v:ml ? ml + ' mL' : '--', cls:'calc'},
         {k:'Max', v:mx('0.5 mL'), cls:'warn'},
         {k:'Alt: L-epi', v:'5 mL of 1 mg/mL (1:1000) neb'}
@@ -1493,8 +1819,8 @@ var DRUGS = {
     var ml60 = w ? round(60*w, 0) : null;
     return rcCard({
       name:'Crystalloid Bolus', generic:'NS or LR (1000 mL bag)', cat:'SHOCK',
-      form:'premix',
-      indication:'Shock, sepsis, hypovolemia, trauma (ALL except DKA — use 10 mL/kg)', color:'var(--teal)',
+      form:'premix', line:'1st',
+      indication:'1st-line for shock, sepsis, hypovolemia, trauma — give BEFORE pressors (DKA = 10 mL/kg only) — PHI Ch 5', color:'var(--teal)',
       rows:[
         {k:'Standard', v:'20 mL/kg over 5-20 min'},
         {k:'Calc', v:ml20 ? ml20 + ' mL' : '--', cls:'calc'},
@@ -1515,13 +1841,15 @@ var DRUGS = {
     return rcCard({
       name:'Epinephrine Infusion — Shock', generic:'Mix 1 mg in 100 mL NS = 10 mcg/mL', cat:'SHOCK',
       form:'vialmix',
-      indication:'Cold shock / catecholamine-resistant sepsis', color:'var(--rose)',
+      line:'1st',
+      indication:'1st-line pressor for fluid-refractory peds septic shock — preferred for cold shock (most common in peds) — PHI Ch 5', color:'var(--rose)',
       rows:[
         {k:'Mix prep', v:'1 mg (10 mL of 1:10,000) into 100 mL NS = 10 mcg/mL', cls:'calc'},
-        {k:'Dose', v:'0.05 to ' + mx('1') + ' mcg/kg/min'},
+        {k:'PHI dose', v:'0.05 to ' + mx('1') + ' mcg/kg/min'},
         {k:'Pump rate (low)', v:lo ? lo + ' mL/hr (= 0.05 mcg/kg/min)' : '--', cls:'calc'},
         {k:'Pump rate (max)', v:hi ? mx(hi + ' mL/hr') + ' (= 1 mcg/kg/min)' : '--', cls:'calc'},
-        {k:'Titrate', v:'q 5 min to perfusion goal'}
+        {k:'Titrate', v:'q 5 min to perfusion goal'},
+        {k:'When', v:'Start AFTER 40-60 mL/kg fluid if still in shock'}
       ]
     });
   },
@@ -1533,27 +1861,33 @@ var DRUGS = {
     return rcCard({
       name:'Norepinephrine Infusion', generic:'Mix 4 mg in 250 mL NS = 16 mcg/mL', cat:'SHOCK',
       form:'vialmix',
-      indication:'Warm shock / vasodilated sepsis', color:'var(--rose)',
+      line:'alt',
+      indication:'Alternative to epi infusion — preferred for warm shock (vasodilated, bounding pulses, flash cap refill) — PHI Ch 5', color:'var(--rose)',
       rows:[
         {k:'Mix prep', v:'4 mg (4 mL of 1 mg/mL) into 250 mL NS = 16 mcg/mL', cls:'calc'},
-        {k:'Dose', v:'0.05 to ' + mx('2') + ' mcg/kg/min'},
+        {k:'PHI dose', v:'0.05 to ' + mx('2') + ' mcg/kg/min'},
         {k:'Pump rate (low)', v:lo ? lo + ' mL/hr' : '--', cls:'calc'},
-        {k:'Pump rate (max)', v:hi ? mx(hi + ' mL/hr') : '--', cls:'calc'}
+        {k:'Pump rate (max)', v:hi ? mx(hi + ' mL/hr') : '--', cls:'calc'},
+        {k:'When', v:'Warm shock (wide pulse pressure, vasodilated) OR if epi not available'}
       ]
     });
   },
   hydrocortisone: function(){
     var w = dosingWt();
     var mg = w ? Math.min(round(2*w, 0), 100) : null;
+    var ml = mg ? round(mg/50, 1) : null;
     return rcCard({
-      name:'Hydrocortisone', generic:'Stock 100 mg vial reconstituted', cat:'SHOCK',
-      form:'vialmix',
-      indication:'Catecholamine-resistant septic shock', color:'var(--lime)',
+      name:'Hydrocortisone', generic:'Stock 100 mg vial reconstituted (50 mg/mL)', cat:'SHOCK',
+      form:'vialmix', mc:true, line:'3rd',
+      indication:'3rd-line for catecholamine-resistant septic shock (after fluids + epi/norepi) — PHI Ch 5', color:'var(--lime)',
+      giveBox: w ? {label:'After contacting medical control', mL:ml, mg:mg+' mg', conc:'50 mg/mL reconstituted', rule:'2 mg/kg per PHI — no standing orders'} : {needsWt:true},
       rows:[
-        {k:'Dose', v:'2 mg/kg IV'},
+        {k:'PHI dose', v:'2 mg/kg IV'},
         {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'Calc volume', v:mg ? round(mg/50, 1) + ' mL' : '--', cls:'calc'},
         {k:'Max', v:mx('100 mg'), cls:'warn'}
-      ]
+      ],
+      warn:'No standing orders — must contact medical control before administering.'
     });
   },
   // ──── ENDOCRINE ────
@@ -1563,8 +1897,9 @@ var DRUGS = {
     var hiML = w ? round(10*w, 0) : null;
     return rcCard({
       name:'Dextrose 10%', generic:'D10W premix bag', cat:'ENDOCRINE',
-      form:'premix',
-      indication:'Hypoglycemia (BG < 60 mg/dL)', color:'var(--amber)',
+      form:'premix', line:'1st',
+      indication:'1st-line for peds hypoglycemia (BG < 60 mg/dL) — preferred concentration in infants/children — PHI Ch 5', color:'var(--amber)',
+      giveBox: w ? {label:'Give IV/IO over 5-10 min', mL:hiML, mg:'1 g/kg = '+(w?round(w,1):'')+ ' g dextrose', conc:'D10W = 100 mg/mL = 0.1 g/mL', rule:'10 mL/kg max (1 g/kg). NEVER D50 in peds.'} : {needsWt:true},
       rows:[
         {k:'Dose', v:'5 to ' + mx('10') + ' mL/kg IV (= 0.5-1 g/kg)'},
         {k:'Calc volume', v:loML ? loML + ' to ' + mx(hiML + ' mL') : '--', cls:'calc'},
@@ -1579,8 +1914,8 @@ var DRUGS = {
     var hiML = w ? round(4*w, 0) : null;
     return rcCard({
       name:'Dextrose 25%', generic:'D25W (mix D50 1:1 with NS)', cat:'ENDOCRINE',
-      form:'vialmix',
-      indication:'Hypoglycemia (older children if D10 not available)', color:'var(--amber)',
+      form:'vialmix', line:'alt',
+      indication:'Alternative for older children when D10 unavailable — peripheral irritation; AVOID in neonates/infants — PHI Ch 5', color:'var(--amber)',
       rows:[
         {k:'Dose', v:'2 to ' + mx('4') + ' mL/kg IV'},
         {k:'Calc volume', v:loML ? loML + ' to ' + mx(hiML + ' mL') : '--', cls:'calc'},
@@ -1591,15 +1926,18 @@ var DRUGS = {
   },
   glucagonHypo: function(){
     var w = dosingWt();
-    var mg = w ? Math.min(round(0.03*w, 2), 1) : null;
+    var mg = w ? (w < 20 ? 0.5 : 1) : null;
+    var ml = mg ? round(mg, 1) : null;
     return rcCard({
-      name:'Glucagon — Hypoglycemia', generic:'Stock 1 mg vial reconstituted', cat:'ENDOCRINE',
-      form:'vialmix',
-      indication:'Hypoglycemia when no IV access', color:'var(--amber)',
+      name:'Glucagon — Hypoglycemia', generic:'Stock 1 mg vial reconstituted in 1 mL', cat:'ENDOCRINE',
+      form:'vialmix', line:'alt',
+      indication:'Alternative when no IV access — IV dextrose is preferred; use only if access not available — PHI Ch 5', color:'var(--amber)',
+      giveBox: w ? {label:'IM/IN/SC', mL:ml, mg:mg+' mg', conc:'1 mg/mL reconstituted', rule:(w<20?'<20 kg = 0.5 mg':'≥20 kg = 1 mg')+' per PHI'} : {needsWt:true},
       rows:[
-        {k:'Dose', v:'0.03 mg/kg IM/SC/IN'},
+        {k:'PHI dose', v:'<20 kg: 0.5 mg IM/IN/SC; ≥20 kg: 1 mg IM/IN/SC'},
         {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
-        {k:'Max', v:mx('1 mg'), cls:'warn'}
+        {k:'Max', v:mx('1 mg'), cls:'warn'},
+        {k:'Note', v:'Use only if no IV access — preferred route is IV dextrose'}
       ]
     });
   },
@@ -1610,8 +1948,8 @@ var DRUGS = {
     var hiML = w ? round(5*w, 0) : null;
     return rcCard({
       name:'3% Sodium Chloride', generic:'Premix 250 mL bag (3% NaCl)', cat:'ICP',
-      form:'premix',
-      indication:'Increased ICP / impending herniation, severe hyponatremia w/ seizure', color:'var(--purple)',
+      form:'premix', line:'1st',
+      indication:'1st-line for ↑ICP / herniation (preferred over mannitol in shock/hypovolemia) — PHI Ch 5', color:'var(--purple)',
       rows:[
         {k:'Dose', v:'3 to ' + mx('5') + ' mL/kg IV over 10-20 min'},
         {k:'Calc volume', v:loML ? loML + ' to ' + mx(hiML + ' mL') : '--', cls:'calc'},
@@ -1626,8 +1964,8 @@ var DRUGS = {
     var hiG = w ? round(1*w, 1) : null;
     return rcCard({
       name:'Mannitol 20%', generic:'Stock 200 mg/mL bag', cat:'ICP',
-      form:'premix',
-      indication:'Increased ICP / herniation (when euvolemic)', color:'var(--purple)',
+      form:'premix', line:'alt',
+      indication:'Alternative for ↑ICP only when euvolemic — AVOID if hypovolemic or shock — PHI Ch 5', color:'var(--purple)',
       rows:[
         {k:'Dose', v:'0.5 to ' + mx('1') + ' g/kg IV over 10-20 min'},
         {k:'Calc dose', v:loG ? loG + ' to ' + mx(hiG + ' g') : '--', cls:'calc'},
@@ -1643,8 +1981,8 @@ var DRUGS = {
     var hi = w ? Math.min(round(2*w, 0), 50) : null;
     return rcCard({
       name:'Fentanyl', generic:'Stock 50 mcg/mL vial', cat:'PAIN',
-      form:'vial',
-      indication:'Pain, post-RSI analgesia', color:'var(--amber)',
+      form:'vial', line:'1st',
+      indication:'1st-line opioid for analgesia — preferred over morphine (less hypotension, faster onset) — PHI Ch 5', color:'var(--amber)',
       rows:[
         {k:'Dose', v:'1 to ' + mx('2') + ' mcg/kg IV/IM/IN'},
         {k:'Calc dose', v:lo ? lo + ' to ' + mx(hi + ' mcg') : '--', cls:'calc'},
@@ -1659,8 +1997,8 @@ var DRUGS = {
     var mg = w ? Math.min(round(0.1*w, 1), 5) : null;
     return rcCard({
       name:'Morphine', generic:'Stock 1 mg/mL or 4 mg/mL vial', cat:'PAIN',
-      form:'vial',
-      indication:'Pain', color:'var(--amber)',
+      form:'vial', line:'alt',
+      indication:'Alternative analgesic — slower onset, more histamine release. Use fentanyl preferentially — PHI Ch 5', color:'var(--amber)',
       rows:[
         {k:'Dose', v:'0.1 mg/kg IV/IM'},
         {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
@@ -1674,10 +2012,12 @@ var DRUGS = {
     var w = dosingWt();
     var lo = w ? round(1*w, 0) : null;
     var hi = w ? round(2*w, 0) : null;
+    var hiMl = hi ? round(hi/50, 2) : null;
     return rcCard({
       name:'Ketamine — Induction', generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — PHI preferred RSI', cat:'RSI',
       form:'vial',
       indication:'Peds RSI induction — preferred for asthma, hypotension, hypovolemia', color:'var(--orange)',
+      giveBox: w ? {label:'Give MAX IV push', mL:hiMl, mg:hi+' mg', conc:'50 mg/mL stock (500 mg / 10 mL vial)', rule:'2 mg/kg max IV (RSI dose)'} : {needsWt:true},
       rows:[
         {k:'PHI dose IV', v:'1 to ' + mx('2') + ' mg/kg IV push'},
         {k:'PHI dose IM', v:'4 to ' + mx('5') + ' mg/kg IM (if no IV)'},
@@ -1693,10 +2033,12 @@ var DRUGS = {
   rocPeds: function(){
     var w = dosingWt();
     var mg = w ? round(1.2*w, 0) : null;
+    var ml = mg ? round(mg/10, 2) : null;
     return rcCard({
       name:'Rocuronium — RSI', generic:'Stock 100 mg / 10 mL vial (10 mg/mL) — PHI formulary', cat:'RSI',
       form:'vial',
       indication:'Peds RSI paralysis', color:'var(--rose)',
+      giveBox: w ? {label:'Give MAX IV push', mL:ml, mg:mg+' mg', conc:'10 mg/mL stock (100 mg / 10 mL vial)', rule:'1.2 mg/kg max IV (RSI dose)'} : {needsWt:true},
       rows:[
         {k:'PHI dose', v:'1 to ' + mx('1.2') + ' mg/kg IV push'},
         {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
@@ -1782,10 +2124,12 @@ var DRUGS = {
   naloxone: function(){
     var w = dosingWt();
     var mg = w ? Math.min(round(0.1*w, 2), 2) : null;
+    var ml04 = mg ? round(mg/0.4, 2) : null;
     return rcCard({
       name:'Naloxone', generic:'Stock 0.4 mg/mL or 1 mg/mL vial', cat:'TOX',
-      form:'vial',
-      indication:'Opioid overdose with respiratory depression', color:'var(--purple)',
+      form:'vial', line:'1st',
+      indication:'1st-line for opioid OD with respiratory depression — repeat q 2-3 min until breathing — PHI Ch 5', color:'var(--purple)',
+      giveBox: w ? {label:'Give IV/IM/IN', mL:ml04, mg:mg+' mg'+(mg===2?' (max)':''), conc:'0.4 mg/mL (most common)', rule:'0.1 mg/kg, max 2 mg, repeat q 2-3 min'} : {needsWt:true},
       rows:[
         {k:'Dose', v:'0.1 mg/kg IV/IM/IN'},
         {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
@@ -1799,8 +2143,9 @@ var DRUGS = {
     var mEq = w ? round(1*w, 0) : null;
     return rcCard({
       name:'Sodium Bicarbonate', generic:'Stock 1 mEq/mL pre-filled syringe', cat:'TOX',
-      form:'syringe',
-      indication:'TCA overdose, salicylate overdose, severe acidosis, hyperK with EKG changes', color:'var(--cyan)',
+      form:'syringe', line:'2nd',
+      indication:'2nd-line: TCA OD with QRS widening, salicylate OD, severe acidosis, hyperK w/ EKG changes — PHI Ch 5', color:'var(--cyan)',
+      giveBox: w ? {label:'Slow IV push', mL:mEq, mg:mEq+' mEq', conc:'1 mEq/mL syringe (8.4%)', rule:'1 mEq/kg slow push. Repeat to narrow QRS / pH 7.5'} : {needsWt:true},
       rows:[
         {k:'Dose', v:'1 mEq/kg IV slow push'},
         {k:'Calc dose', v:mEq ? mEq + ' mEq' : '--', cls:'calc'},
@@ -1811,10 +2156,12 @@ var DRUGS = {
   caClPeds: function(){
     var w = dosingWt();
     var mg = w ? Math.min(round(20*w, 0), 1000) : null;
+    var ml = mg ? round(mg/100, 1) : null;
     return rcCard({
       name:'Calcium Chloride 10%', generic:'Stock 100 mg/mL pre-filled syringe', cat:'TOX',
-      form:'syringe',
-      indication:'Hyperkalemia w/ EKG changes, CCB OD, hypocalcemia', color:'var(--rose)',
+      form:'syringe', line:'1st',
+      indication:'1st-line for hyperK w/ EKG changes, CCB OD, hypocalcemia — CENTRAL line preferred (vesicant) — PHI Ch 5', color:'var(--rose)',
+      giveBox: w ? {label:'Slow IV push (3 min)', mL:ml, mg:mg+' mg'+(mg===1000?' (max = 1 g)':''), conc:'10% = 100 mg/mL syringe', rule:'20 mg/kg max IV. CENTRAL line preferred (vesicant).'} : {needsWt:true},
       rows:[
         {k:'Dose', v:'20 mg/kg IV slow push'},
         {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
@@ -1826,16 +2173,18 @@ var DRUGS = {
   },
   caGlucPeds: function(){
     var w = dosingWt();
-    var mg = w ? Math.min(round(60*w, 0), 2000) : null;
+    var mg = w ? Math.min(round(60*w, 0), 3000) : null;
+    var ml = mg ? round(mg/100, 1) : null;
     return rcCard({
       name:'Calcium Gluconate 10%', generic:'Stock 100 mg/mL vial', cat:'TOX',
-      form:'vial',
-      indication:'Hyperkalemia, hypocalcemia, CCB OD (peripheral-friendly)', color:'var(--rose)',
+      form:'vial', line:'alt',
+      indication:'Peripheral alternative to CaCl for hyperK/hypocalcemia/CCB OD — same clinical effect, lower phlebitis risk — PHI Ch 5', color:'var(--rose)',
+      giveBox: w ? {label:'Slow IV push', mL:ml, mg:mg+' mg'+(mg===3000?' (max)':''), conc:'100 mg/mL stock', rule:'60 mg/kg per PHI, max 3 g'} : {needsWt:true},
       rows:[
-        {k:'Dose', v:'60 mg/kg IV slow'},
-        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
+        {k:'PHI dose', v:'60 mg/kg IV slow push'},
+        {k:'Calc dose', v:mg ? mg + ' mg' + (mg===3000?' (max)':'') : '--', cls:'calc'},
         {k:'Calc volume', v:mg ? round(mg/100, 1) + ' mL' : '--', cls:'calc'},
-        {k:'Max', v:mx('2 g (20 mL)'), cls:'warn'}
+        {k:'Max', v:mx('3 g (30 mL)'), cls:'warn'}
       ]
     });
   },
@@ -1844,8 +2193,8 @@ var DRUGS = {
     var mg = w ? round(0.05*w, 2) : null;
     return rcCard({
       name:'Glucagon — CCB / β-blocker OD', generic:'Stock 1 mg vial reconstituted', cat:'TOX',
-      form:'vialmix',
-      indication:'CCB or β-blocker overdose', color:'var(--purple)',
+      form:'vialmix', mc:true, line:'2nd',
+      indication:'2nd-line for CCB / β-blocker overdose (after Ca + fluids) — PHI Ch 5', color:'var(--purple)',
       rows:[
         {k:'Dose', v:'0.05 mg/kg IV bolus'},
         {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
@@ -1856,16 +2205,18 @@ var DRUGS = {
   // ──── TRAUMA ────
   txa: function(){
     var w = dosingWt();
-    var mg = w ? Math.min(round(15*w, 0), 1000) : null;
+    var mg = w ? Math.min(round(25*w, 0), 2000) : null;
+    var ml = mg ? round(mg/100, 1) : null;
     return rcCard({
       name:'Tranexamic Acid (TXA)', generic:'Stock 100 mg/mL vial', cat:'TRAUMA',
-      form:'vialmix',
-      indication:'Hemorrhagic trauma within 3 hr of injury', color:'var(--teal)',
+      form:'vialmix', line:'2nd',
+      indication:'2nd-line for hemorrhagic trauma within 3 hr of injury (after fluids/blood) — PHI Ch 5', color:'var(--teal)',
+      giveBox: w ? {label:'Mix in 100 mL NS, infuse over 10 min', mL:ml, mg:mg+' mg'+(mg===2000?' (max)':''), conc:'100 mg/mL stock', rule:'25 mg/kg per PHI, max 2 g, within 3 hr of injury'} : {needsWt:true},
       rows:[
-        {k:'Dose', v:'15 mg/kg IV over 10 min'},
-        {k:'Calc dose', v:mg ? mg + ' mg' + (mg === 1000 ? ' (max)' : '') : '--', cls:'calc'},
+        {k:'PHI dose', v:'25 mg/kg IV over 10 min'},
+        {k:'Calc dose', v:mg ? mg + ' mg' + (mg === 2000 ? ' (max)' : '') : '--', cls:'calc'},
         {k:'Calc volume', v:mg ? round(mg/100, 1) + ' mL' : '--', cls:'calc'},
-        {k:'Max', v:mx('1 g'), cls:'warn'},
+        {k:'Max', v:mx('2 g'), cls:'warn'},
         {k:'Mix', v:'Dilute in 100 mL NS, infuse over 10 min'}
       ]
     });
@@ -1891,12 +2242,14 @@ var DRUGS = {
 // DX → DRUG MAPPING
 // ════════════════════════════════════════════════════════════════
 var DX_DRUGS = {
-  arrest:     ['epiArrest','amiodaroneArrest','defib','fluidBolus'],
+  // Order = line of therapy: 1st-line listed first, then alternatives, then adjuncts.
+  preterm:    ['fluidBolus','epiArrest','d10','alprostadil'],
+  arrest:     ['defib','epiArrest','amiodaroneArrest','lidocaineArrest','fluidBolus'],
   brady:      ['epiArrest','atropine','fluidBolus'],
   svt:        ['adenosine','cardiovert'],
-  vt:         ['amiodaroneArrest','cardiovert'],
-  seizure:    ['midazolamSeizure','lorazepamSeizure','levetiracetam','fosphenytoin','d10'],
-  anaphylaxis:['epiAnaphylaxis','diphenhydramine','famotidine','methylpred','albuterol','fluidBolus'],
+  vt:         ['cardiovert','amiodaroneArrest','lidocaineArrest','procainamide'],
+  seizure:    ['midazolamSeizure','lorazepamSeizure','levetiracetam','fosphenytoin','phenytoin','d10'],
+  anaphylaxis:['epiAnaphylaxis','fluidBolus','albuterol','diphenhydramine','methylpred'],
   asthma:     ['albuterol','ipratropium','methylpred','magAsthma','epiAnaphylaxis','ketamineInduction'],
   croup:      ['dexamethasone','racEpiCroup'],
   bronchio:   ['albuterol','fluidBolus'],
@@ -1904,9 +2257,9 @@ var DX_DRUGS = {
   dka:        ['fluidBolus'],
   hypo:       ['d10','d25','glucagonHypo'],
   icp:        ['hypertonic','mannitol','midazolamSeizure','fentanylBolus'],
-  tox:        ['naloxone','bicarbTox','caClPeds','glucagonCCB'],
+  tox:        ['naloxone','bicarbTox','caClPeds','caGlucPeds','glucagonCCB'],
   trauma:     ['fluidBolus','txa','fentanylBolus'],
-  burn:       ['fentanylBolus','fluidBolus'],
+  burn:       ['fluidBolus','fentanylBolus'],
   hyperK:     ['caClPeds','caGlucPeds','bicarbTox','albuterol']
 };
 
@@ -1930,17 +2283,20 @@ function renderDxDrugs(){
 var ALL_DRUGS = [
   {cat:'arrest',      key:'epiArrest',         form:'syringe'},
   {cat:'arrest',      key:'amiodaroneArrest',  form:'vial'},
+  {cat:'arrest',      key:'lidocaineArrest',   form:'vial'},
   {cat:'arrest',      key:'defib',             form:'vial'},
   {cat:'dysrhythmia', key:'cardiovert',        form:'vial'},
   {cat:'dysrhythmia', key:'adenosine',         form:'vial'},
   {cat:'dysrhythmia', key:'atropine',          form:'syringe'},
+  {cat:'dysrhythmia', key:'procainamide',      form:'vialmix'},
+  {cat:'neonate',     key:'alprostadil',       form:'vialmix'},
   {cat:'seizure',     key:'midazolamSeizure',  form:'vial'},
   {cat:'seizure',     key:'lorazepamSeizure',  form:'vial'},
   {cat:'seizure',     key:'levetiracetam',     form:'vialmix'},
   {cat:'seizure',     key:'fosphenytoin',      form:'vialmix'},
+  {cat:'seizure',     key:'phenytoin',         form:'vialmix'},
   {cat:'anaphylaxis', key:'epiAnaphylaxis',    form:'vial'},
   {cat:'anaphylaxis', key:'diphenhydramine',   form:'vial'},
-  {cat:'anaphylaxis', key:'famotidine',        form:'vial'},
   {cat:'anaphylaxis', key:'methylpred',        form:'vialmix'},
   {cat:'resp',        key:'albuterol',         form:'premix'},
   {cat:'resp',        key:'ipratropium',       form:'premix'},
@@ -2199,6 +2555,19 @@ function renderRsiMaxDose(){
 
 function renderIntubation(){
   renderRsiMaxDose();
+  // SAFER chapter protocol button at the top of the Intubation tab
+  var safer = document.getElementById('tubeSaferProto');
+  if(safer){
+    var url = (PROTOCOL_FILES.safer || '') + '#page=5&zoom=page-fit';
+    safer.innerHTML = '<a href="' + url + '" target="_blank" rel="noopener" class="proto-btn" onclick="return openProtocolGeneric(event,\'safer\')">' +
+      '<span class="proto-icon">📖</span>' +
+      '<span class="proto-text">' +
+        '<span class="proto-label">View PHI SAFER Protocol</span>' +
+        '<span class="proto-cite">Ch 2 — SAFER / Airway · PHI_Safer.pdf</span>' +
+      '</span>' +
+      '<span class="proto-chev">›</span>' +
+    '</a>';
+  }
   var ind = document.getElementById('tubeInduction');
   if(ind) ind.innerHTML = ['ketamineInduction'].map(function(k){ return DRUGS[k](); }).join('');
   var par = document.getElementById('tubeParalytics');
@@ -2276,7 +2645,20 @@ function safeRun(name, fn){
     if(window.console) console.error('[StatFlight Peds]', name, e);
   }
 }
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(function(e){ console.warn('SW reg failed:', e); }); }
+// Only register SW when served from a real deployment (file://, GitHub Pages, etc.)
+// Skip in preview/sandbox iframes where sw.js is not present at the host root.
+(function(){
+  if(!('serviceWorker' in navigator)) return;
+  var host = location.hostname || '';
+  // Don't try in preview/sandbox iframes that proxy through claudeusercontent or similar
+  if(/claudeusercontent|claude\.ai|anthropic\.com/.test(host)) return;
+  // Only attempt on http(s) — file:// will fail silently anyway
+  if(location.protocol !== 'http:' && location.protocol !== 'https:') return;
+  navigator.serviceWorker.register('sw.js').catch(function(e){
+    console.warn('SW reg failed:', e);
+  });
+})();
+safeRun('checkProtocolPdf', checkProtocolPdf);
 safeRun('renderColorStrip', renderColorStrip);
 safeRun('setColorSys', function(){ setColorSys(window.colorSystem); });
 safeRun('renderDxGrid', renderDxGrid);

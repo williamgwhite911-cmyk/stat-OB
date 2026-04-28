@@ -9,8 +9,11 @@
 <meta name="apple-mobile-web-app-title" content="StatFlight OB">
 <title>StatFlight OB — Maternal & Neonatal Transport</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="shortcut icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -173,6 +176,14 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 
 /* Diagnosis grid */
 .dx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:8px}
+/* PHI Protocol PDF deep-link button */
+.proto-btn{display:flex;align-items:center;gap:11px;padding:11px 14px;margin:8px 0 14px;background:linear-gradient(135deg,rgba(168,85,247,.18),rgba(34,211,238,.10));border:2px solid rgba(168,85,247,.55);border-radius:11px;text-decoration:none;color:var(--tx0);box-shadow:0 0 18px rgba(168,85,247,.18),inset 0 1px 0 rgba(255,255,255,.05);transition:transform .12s ease,box-shadow .2s ease,border-color .2s ease}
+.proto-btn:hover{transform:translateY(-1px);border-color:rgba(168,85,247,.85);box-shadow:0 0 24px rgba(168,85,247,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+.proto-icon{font-size:1.4rem;line-height:1;filter:drop-shadow(0 0 8px rgba(168,85,247,.5))}
+.proto-text{display:flex;flex-direction:column;flex:1;min-width:0}
+.proto-label{font-family:var(--mono);font-size:.7rem;font-weight:900;letter-spacing:.13em;color:#e9d5ff;text-transform:uppercase;text-shadow:0 0 6px rgba(168,85,247,.4)}
+.proto-cite{font-size:.72rem;color:var(--tx2);margin-top:2px;font-style:italic}
+.proto-chev{font-size:1.4rem;color:#c084fc;font-weight:900;opacity:.7}
 .dx-card{background:var(--bg2);border:1px solid var(--bd1);border-radius:9px;padding:10px 12px;cursor:pointer;transition:all .13s}
 .dx-card:hover{border-color:var(--bd2);transform:translateY(-1px)}
 .dx-card.on{background:rgba(244,114,182,.08);border-color:var(--rose);box-shadow:0 0 0 1px var(--rose)}
@@ -797,6 +808,101 @@ function recomputeNewborn(){
 // ════════════════════════════════════════════════════════════════
 // DIAGNOSES (PHI Chapter 10 OB)
 // ════════════════════════════════════════════════════════════════
+// ────────────────────────────────────────────────────────────────
+// PHI PROTOCOL DEEP-LINKS  (multi-chapter)
+// ────────────────────────────────────────────────────────────────
+var PROTOCOL_FILES = {
+  medical:        'protocols/PHI_Medical.pdf',
+  resusc:         'protocols/PHI_Resusc.pdf',
+  trauma:         'protocols/PHI_Trauma.pdf',
+  neuro:          'protocols/PHI_Neuro.pdf',
+  tox:            'protocols/PHI_Tox.pdf',
+  neonate:        'protocols/PHI_Neonate.pdf',
+  ob:             'protocols/PHI_Ob.pdf',
+  safer:          'protocols/PHI_Safer.pdf',
+  analgesia:      'protocols/PHI_Analgesia.pdf',
+  drugs:          'protocols/PHI_Drugs.pdf',
+  cardiovascular: 'protocols/PHI_Cardiovascular.pdf',
+  appdex:         'protocols/PHI_Appdex.pdf'
+};
+
+var PROTOCOL_PAGES = {
+  // OB Ch 10
+  ptl:           { src: 'ob',        label: 'OB 10.6 — Preterm / Active Labor',                  page: 11 },
+  prom:          { src: 'ob',        label: 'OB 10.5 — Premature Rupture of Membranes',          page: 9  },
+  bleeding:      { src: 'ob',        label: 'OB 10.3 — Vaginal Bleeding / Previa / Abruption',   page: 7  },
+  pph:           { src: 'ob',        label: 'OB 10.4 — Postpartum Hemorrhage',                   page: 8  },
+  postpartum:    { src: 'ob',        label: 'OB 10.2 — Postpartum Patient',                      page: 6  },
+  pih:           { src: 'ob',        label: 'OB 10.7.3 — Pregnancy-Induced Hypertension',        page: 14 },
+  severe_pre:    { src: 'ob',        label: 'OB 10.7 — Severe Preeclampsia',                     page: 13 },
+  eclampsia:     { src: 'ob',        label: 'OB 10.7 — Eclampsia (also Neuro 7.1 Seizures)',     page: 13 },
+  thyroid:       { src: 'ob',        label: 'OB 10.8 — Thyroid Storm',                           page: 17 },
+  cord_prolapse: { src: 'ob',        label: 'OB 10.1 — Standard OB Transport (Cord Prolapse)',   page: 1  },
+  precipitous:   { src: 'ob',        label: 'OB 10.1.3 — During Patient Transport',              page: 3  },
+  // Newborn / Neonate Ch 11
+  newborn:       { src: 'neonate',   label: 'Neonate 11.1 — Care Guidelines & NRP',              page: 1  },
+  // Pain / sedation / anxiety -> Analgesia Ch 5
+  pain:          { src: 'analgesia', label: 'Analgesia 5.1.2 — Analgesia',                       page: 4  },
+  anxiety:       { src: 'analgesia', label: 'Analgesia 5.1.4 — Anxiolysis',                      page: 6  },
+  // Mag tox -> Drugs Ch 1 (calcium rescue) / OB special considerations
+  mag_tox:       { src: 'drugs',     label: 'Drugs 1.12 — Calcium Chloride (Mag rescue)',        page: 15 },
+  // Nausea -> Medical 6.14
+  nv:            { src: 'medical',   label: 'Medical 6.14 — Nausea & Vomiting',                  page: 38 }
+};
+
+// Per-file availability check (avoids click-time race conditions)
+var PROTOCOL_AVAILABLE = {};
+function checkProtocolPdf(){
+  var host = location.hostname || '';
+  var inPreview = /claudeusercontent|claude\.ai|anthropic\.com/.test(host);
+  Object.keys(PROTOCOL_FILES).forEach(function(key){
+    if(inPreview){ PROTOCOL_AVAILABLE[key] = false; return; }
+    fetch(PROTOCOL_FILES[key], {method:'HEAD'})
+      .then(function(r){ PROTOCOL_AVAILABLE[key] = !!r.ok; })
+      .catch(function(){ PROTOCOL_AVAILABLE[key] = false; });
+  });
+}
+function renderProtocolBtn(dx){
+  var ref = PROTOCOL_PAGES[dx];
+  if(!ref) return '';
+  var file = PROTOCOL_FILES[ref.src];
+  var url = file + '#page=' + (ref.page || 1) + '&zoom=page-fit';
+  var fileLabel = file ? file.replace(/^protocols\//,'').replace(/\.pdf$/i,'') : 'Protocol';
+  return '<a href="' + url + '" target="_blank" rel="noopener" class="proto-btn" onclick="return openProtocol(event,\'' + dx + '\')">' +
+    '<span class="proto-icon">📖</span>' +
+    '<span class="proto-text">' +
+      '<span class="proto-label">View PHI Protocol</span>' +
+      '<span class="proto-cite">' + ref.label + (ref.page > 1 ? ' — p. ' + ref.page : '') +
+        ' <span style="opacity:.6">· ' + fileLabel + '</span>' +
+      '</span>' +
+    '</span>' +
+    '<span class="proto-chev">›</span>' +
+  '</a>';
+}
+function openProtocol(e, dx){
+  var ref = PROTOCOL_PAGES[dx];
+  if(!ref) return false;
+  var file = PROTOCOL_FILES[ref.src];
+  if(PROTOCOL_AVAILABLE[ref.src] === false){
+    e.preventDefault();
+    var fileBare = file ? file.replace(/^protocols\//,'') : 'PHI_*.pdf';
+    alert('PHI Protocol PDF "' + fileBare + '" is not installed.\n\n' +
+      'Drop the matching chapter into protocols/<chapter>/ and re-run merge.py.');
+    return false;
+  }
+  return true;
+}
+function openProtocolGeneric(e, srcKey){
+  var file = PROTOCOL_FILES[srcKey];
+  if(PROTOCOL_AVAILABLE[srcKey] === false){
+    e.preventDefault();
+    var fileBare = file ? file.replace(/^protocols\//,'') : 'PHI_*.pdf';
+    alert('PHI Protocol PDF "' + fileBare + '" is not installed.');
+    return false;
+  }
+  return true;
+}
+
 var DIAGNOSES = [
   {id:'ptl', name:'Preterm / Active Labor', sub:'Tocolysis indicated'},
   {id:'prom', name:'PROM', sub:'Premature ROM'},
@@ -1732,10 +1838,15 @@ function renderPlan(){
   } else {
     var p = DX_PLAN[dx];
     var planLis = p.plan.map(function(s){ return '<li style="margin-bottom:5px">' + s + '</li>'; }).join('');
+    var protoBtn = renderProtocolBtn(dx);
     html =
       '<div style="font-size:.86rem;line-height:1.55;color:var(--tx0);margin-bottom:12px"><strong style="color:var(--rose)">Picture: </strong>' + p.picture + '</div>' +
-      '<div class="slbl" style="margin-top:10px">Plan of Action</div>' +
-      '<ol style="padding-left:18px;font-size:.83rem;line-height:1.55;color:var(--tx0)">' + planLis + '</ol>';
+      protoBtn +
+      '<div class="slbl" style="margin-top:10px">Plan of Action — Field Reference</div>' +
+      '<ol style="padding-left:18px;font-size:.83rem;line-height:1.55;color:var(--tx0)">' + planLis + '</ol>' +
+      '<div style="margin-top:14px;padding:8px 11px;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.25);border-radius:7px;font-size:.7rem;color:var(--tx2);line-height:1.5">' +
+        '<strong style="color:#c084fc">Reminder:</strong> The PHI Clinical Care Guideline is the authoritative source — open the protocol PDF for the full physician-approved document.' +
+      '</div>';
   }
   if(ventOut) ventOut.innerHTML = html;
   if(motherOut) motherOut.innerHTML = html;
@@ -2123,6 +2234,7 @@ function safeRun(name, fn){
 }
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(function(e){ console.warn('SW reg failed:', e); }); }
 safeRun('refreshMHeight',  function(){ refreshMHeight(); });
+safeRun('checkProtocolPdf',function(){ checkProtocolPdf(); });
 safeRun('renderDxGrid',    function(){ renderDxGrid(); });
 safeRun('recomputeMother', function(){ recomputeMother(); });
 safeRun('renderColorStrip',function(){ renderColorStrip(); });
