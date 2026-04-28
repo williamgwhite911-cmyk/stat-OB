@@ -1,18 +1,43 @@
 // StatFlight Service Worker — offline cache
-const CACHE_NAME = 'statflight-v1';
+const CACHE_NAME = 'statflight-v12';
 const ASSETS = [
   './',
   './index.html',
+  './adult.html',
   './ob.html',
   './peds.html',
   './manifest.json',
-  './icon.svg'
+  './icon.svg',
+  './icon-180.png',
+  './icon-192.png',
+  './icon-512.png'
+];
+// Optional precache (won't block install if missing) — any PHI protocol PDFs the user has dropped in
+const OPTIONAL_ASSETS = [
+  './protocols/PHI_Medical.pdf',
+  './protocols/PHI_Resusc.pdf',
+  './protocols/PHI_Trauma.pdf',
+  './protocols/PHI_Neuro.pdf',
+  './protocols/PHI_Tox.pdf',
+  './protocols/PHI_Neonate.pdf',
+  './protocols/PHI_Ob.pdf',
+  './protocols/PHI_Safer.pdf',
+  './protocols/PHI_Analgesia.pdf',
+  './protocols/PHI_Drugs.pdf',
+  './protocols/PHI_Cardiovascular.pdf',
+  './protocols/PHI_Operations.pdf',
+  './protocols/PHI_Appdex.pdf'
 ];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(ASSETS))
+      .then((cache) => cache.addAll(ASSETS).then(() => {
+        // Try to precache optional assets (PDF), don't fail install if missing
+        return Promise.all(OPTIONAL_ASSETS.map((url) =>
+          fetch(url).then((r) => r.ok ? cache.put(url, r.clone()) : null).catch(() => null)
+        ));
+      }))
       .then(() => self.skipWaiting())
   );
 });
