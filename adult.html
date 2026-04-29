@@ -128,6 +128,11 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .rv.calc .max,.rv.calc .mx{color:#ff7e87 !important}
 .rc-note{margin-top:8px;padding:7px 10px;background:rgba(0,212,245,.05);border:1px solid rgba(0,212,245,.18);border-radius:7px;font-size:.68rem;color:var(--tx1);line-height:1.5}
 .rc-warn{margin-top:8px;padding:7px 10px;background:rgba(255,95,109,.07);border:1px solid rgba(255,95,109,.28);border-radius:7px;font-size:.68rem;color:var(--rose);line-height:1.5;font-weight:600}
+.rc-targets{background:rgba(34,211,238,.08);border:1px solid var(--cyan);border-radius:8px;padding:10px 12px;margin:10px 0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;align-items:center}
+.rc-targets-label{font-family:var(--mono);font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);white-space:nowrap}
+.rc-targets-label.stop{color:var(--rose)}
+.rc-targets-val{font-size:1.05rem;font-weight:800;color:var(--tx0);line-height:1.2}
+.rc-targets-val.lg{font-size:1.15rem}
 .rc-mdctrl{background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.45);color:var(--rose);font-family:var(--mono);font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 9px;border-radius:6px;margin:8px 0 4px;display:flex;align-items:center;gap:6px}
 .fb{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.13em;padding:4px 9px;border-radius:5px;margin-bottom:10px}
 .fb-premix{background:rgba(0,232,176,.12);color:var(--teal);border:1px solid rgba(0,232,176,.4)}
@@ -241,7 +246,10 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .pdf-page-input{width:42px;background:var(--bg0);border:1px solid var(--bd1);color:var(--tx0);font-family:var(--mono);font-size:.72rem;text-align:center;padding:5px 4px;border-radius:5px;-moz-appearance:textfield;appearance:textfield}
 .pdf-page-input::-webkit-outer-spin-button,.pdf-page-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .pdf-frame-wrap{flex:1;background:#1a1a1a;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:8px;position:relative}
-.pdf-canvas{background:#fff;display:block;max-width:100%;height:auto;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.pdf-page-container{position:relative;line-height:initial}
+.pdf-canvas{background:#fff;display:block;max-width:100%;height:auto;box-shadow:0 4px 16px rgba(0,0,0,.5);image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges}
+.pdf-text-layer{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;opacity:.25;line-height:1;-webkit-user-select:text;user-select:text;pointer-events:none}
+.pdf-text-layer > span{position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%;color:transparent}
 .pdf-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--tx1);font-family:var(--mono);font-size:.78rem;letter-spacing:.05em;text-transform:uppercase}
 .pdf-loading.hidden{display:none}
 </style>
@@ -526,7 +534,8 @@ function openPdfOverlay(url, title){
   });
 }
 
-var __pdfZoom = 1.4;  // default zoom (1.0 = fit to width, 1.4 = ~140% of fit width)
+var __pdfZoom = 1.6;  // default zoom (1.0 = fit to width, 1.6 = ~160% of fit width)
+var MAX_CANVAS_DIM = 4096; // mobile GPU safe limit
 
 function renderPdfPage(num){
   var loading = document.getElementById('pdfLoading');
@@ -535,22 +544,45 @@ function renderPdfPage(num){
   return __pdfDoc.getPage(num).then(function(page){
     var canvas = document.getElementById('pdfCanvas');
     var wrap = document.getElementById('pdfFrameWrap');
+    var textLayer = document.getElementById('pdfTextLayer');
     if(!canvas || !wrap) return;
     var availW = wrap.clientWidth - 16;
     var rawViewport = page.getViewport({scale: 1});
     var fitScale = (availW / rawViewport.width) * __pdfZoom;
     var dpr = window.devicePixelRatio || 1;
-    var viewport = page.getViewport({scale: fitScale * dpr});
+    // Cap render scale so canvas stays ≤ MAX_CANVAS_DIM on either dimension
+    var requestedScale = fitScale * dpr;
+    var maxByWidth = MAX_CANVAS_DIM / rawViewport.width;
+    var maxByHeight = MAX_CANVAS_DIM / rawViewport.height;
+    var renderScale = Math.min(requestedScale, maxByWidth, maxByHeight);
+    var viewport = page.getViewport({scale: renderScale});
+    var displayW = rawViewport.width * fitScale;
+    var displayH = rawViewport.height * fitScale;
     canvas.width = Math.floor(viewport.width);
     canvas.height = Math.floor(viewport.height);
-    canvas.style.width = Math.floor(viewport.width / dpr) + 'px';
-    canvas.style.height = Math.floor(viewport.height / dpr) + 'px';
+    canvas.style.width = Math.floor(displayW) + 'px';
+    canvas.style.height = Math.floor(displayH) + 'px';
     var ctx = canvas.getContext('2d');
     __pdfRenderTask = page.render({canvasContext: ctx, viewport: viewport});
     return __pdfRenderTask.promise.then(function(){
       __pdfRenderTask = null;
       if(loading) loading.classList.add('hidden');
       updatePdfNavButtons();
+      // Render text layer for crisp text
+      if(textLayer && pdfjsLib.renderTextLayer){
+        textLayer.innerHTML = '';
+        textLayer.style.width = Math.floor(displayW) + 'px';
+        textLayer.style.height = Math.floor(displayH) + 'px';
+        var textViewport = page.getViewport({scale: fitScale});
+        return page.getTextContent().then(function(textContent){
+          var task = pdfjsLib.renderTextLayer({
+            textContentSource: textContent,
+            container: textLayer,
+            viewport: textViewport
+          });
+          if(task && task.promise) return task.promise;
+        }).catch(function(){ /* text layer optional */ });
+      }
     });
   }).catch(function(err){
     if(err && err.name === 'RenderingCancelledException') return;
@@ -612,7 +644,7 @@ function closePdfOverlay(){
   if(__pdfRenderTask){ try{ __pdfRenderTask.cancel(); }catch(e){} __pdfRenderTask = null; }
   if(__pdfDoc){ try{ __pdfDoc.destroy(); }catch(e){} __pdfDoc = null; }
   __pdfCurrentPage = 1;
-  __pdfZoom = 1.4;
+  __pdfZoom = 1.6;
   if(loading){ loading.classList.remove('hidden'); loading.textContent = 'Loading…'; }
   document.documentElement.style.overflow='';
   document.body.style.overflow='';
@@ -845,7 +877,9 @@ var PROTOCOL_PAGES = {
   tox:         { src: 'tox',     label: 'Tox 9.1 — Poisoning (Opioid OD, TCA, Cyanide)',         page: 1  },
   cyanide:     { src: 'tox',     label: 'Tox 9.1.2 — Cyanide Poisoning',                         page: 3  },
   tca:         { src: 'tox',     label: 'Tox 9.1.3 — Tricyclic Antidepressant (TCA) Overdose',   page: 4  },
-  snake:       { src: 'tox',     label: 'Tox 9.2 — Envenomation',                                page: 5  }
+  snake:       { src: 'tox',     label: 'Tox 9.2 — Envenomation',                                page: 5  },
+  post_rosc:   { src: 'resusc',  label: 'Resusc 4.x — Post-ROSC Care',                            page: 1  },
+  post_lytics: { src: 'medical', label: 'Medical 6.x — Post-Thrombolytic Care',                  page: 1  }
 };
 
 // Per-file availability check (avoids click-time race conditions)
@@ -964,7 +998,9 @@ var DIAGNOSES = [
   {id:'heat_illness',   cat:'ENVIRONMENTAL', name:'Heat Illness / Heat Stroke', sub:'Cool aggressively'},
   {id:'agitation',  cat:'SEDATION / BEHAVIORAL', name:'Dangerous Agitation',    sub:'Excited delirium'},
   {id:'anxiolysis', cat:'SEDATION / BEHAVIORAL', name:'Anxiolysis',             sub:'Treat early · prevent escalation'},
-  {id:'post_intubation',cat:'SEDATION / BEHAVIORAL', name:'Post-Intubation Sedation',sub:'Analgesia-first · paralytic outlives sedative'}
+  {id:'post_intubation',cat:'SEDATION / BEHAVIORAL', name:'Post-Intubation Sedation',sub:'Analgesia-first · paralytic outlives sedative'},
+  {id:'post_rosc', cat:'CARDIAC', name:'Post-ROSC Care', sub:'After return of circulation'},
+  {id:'post_lytics', cat:'CARDIAC', name:'Post-Thrombolytics', sub:'BP control + ICH watch'}
 ];
 
 function renderDxGrid(){
@@ -1088,7 +1124,11 @@ var DX_PLAN = {
   frostbite:{picture:'Frostbite — superficial (frostnip) to deep tissue freezing. Most common: fingers, toes, ears, nose (PHI Trauma 8-19).',
     plan:['Gentle handling — frozen tissue is fragile','Loose sterile dressing over affected areas','Pad and protect — avoid friction','DO NOT thaw if any chance of refreezing (partial thaw + refreeze = worse damage)','If definitive thawing: warm-water bath 37-39°C (99-102°F) for 15-30 min','Pain control during/after thawing','Treat associated hypothermia first','Pre-alert receiving for definitive care']},
   heat_illness:{picture:'Heat-related illness — heat exhaustion (sweating, normal/mildly elevated temp, AMS rare) vs heat stroke (high temp >40°C/104°F, AMS, often anhidrotic). Heat stroke = life-threatening (PHI Trauma 8-19).',
-    plan:['Move to cool environment','Remove excess clothing','Cold packs to chest, groin, axilla','Mist + fan for evaporative cooling','Cold IV fluids if heat stroke','Continuous core temp monitoring','Stop active cooling at 38-39°C to avoid overshoot hypothermia','Treat seizures (cooling first)','Pre-alert receiving for severe cases']}
+    plan:['Move to cool environment','Remove excess clothing','Cold packs to chest, groin, axilla','Mist + fan for evaporative cooling','Cold IV fluids if heat stroke','Continuous core temp monitoring','Stop active cooling at 38-39°C to avoid overshoot hypothermia','Treat seizures (cooling first)','Pre-alert receiving for severe cases']},
+  post_rosc:{picture:'After Return of Spontaneous Circulation (ROSC) — patient is at high risk of re-arrest. Optimize perfusion, ventilation, and identify cause.',
+    plan:['12-lead EKG within 10 min — look for STEMI (cath lab activation if present)','SBP target ≥ 90 mmHg, MAP ≥ 65 mmHg — fluid bolus + norepi if needed','SpO2 target 92-98% — AVOID hyperoxia (titrate FiO2 down)','EtCO2 target 35-40 mmHg — AVOID hyperventilation (worsens cerebral perfusion)','HR target 60-100 — treat re-arrest rhythms per ACLS','Glucose check — treat hypoglycemia, avoid hyperglycemia','Treat reversible causes (Hs and Ts)','Targeted Temperature Management 32-36°C if comatose (do not actively warm hyperthermic patients)','Sedation/analgesia: fentanyl + propofol or ketamine; avoid hypotension','Continuous reassessment q5 min — recheck pulse, BP, rhythm, EtCO2','Pre-alert receiving cath-lab/ICU']},
+  post_lytics:{picture:'After fibrinolytic therapy (TNK/tPA for STEMI or stroke). Strict BP control + bleeding precautions + ICH surveillance.',
+    plan:['BP target: SBP < 180 AND DBP < 105 for first 24 hr','Treat hypertension exceeding target: labetalol 10-20 mg IV q10 min, or nicardipine 5 mg/hr titrated','VS q15 min × 2 hr, then q30 min × 6 hr, then q1 hr','Neuro checks q15 min × 2 hr — watch for ICH (sudden HA, vomiting, AMS, BP spike)','HR target 60-100 — treat new arrhythmias per ACLS','NO antiplatelets/anticoagulants for 24 hr unless directed','AVOID if possible: NG tube, urinary catheter, arterial line, IM injections × 24 hr','If ICH suspected: STOP antithrombotics, reverse anticoagulation per protocol, emergent CT, neurosurgery consult','Pre-alert receiving — confirm transfer to lytic-capable center']}
 };
 
 function renderPlan(){
@@ -1125,13 +1165,20 @@ function rcCard(opts){
   var mdctrl=opts.mdControl?'<div class="rc-mdctrl">⚠ MEDICAL DIRECTION REQUIRED</div>':'';
   var ind=opts.indication?'<div class="rc-ind">'+opts.indication+'</div>':'';
   var sub=opts.generic?'<div class="rc-names">'+opts.generic+'</div>':'';
+  var targets=(opts.targets ? '<div class="rc-targets">' +
+    '<div class="rc-targets-label">START</div>' +
+    '<div class="rc-targets-val lg">' + (opts.targets.start || '—') + '</div>' +
+    '<div class="rc-targets-label stop">STOP</div>' +
+    '<div class="rc-targets-val lg">' + (opts.targets.stop || '—') + '</div>' +
+    ((opts.targets.note) ? '<div class="rc-targets-label">NOTE</div><div class="rc-targets-val" style="font-size:.78rem;font-weight:600">' + opts.targets.note + '</div>' : '') +
+  '</div>' : '');
   var FORM_LABELS={premix:'Premix Bag — Ready to Hang',vial:'Vial — Draw Up',vialmix:'Vial → Mix to Bag',syringe:'Pre-filled Syringe — Ready to Push',po:'PO — Tablet / Liquid'};
   var formCls=opts.form?' form-'+opts.form:'';
   var badge=opts.form?'<div class="fb fb-'+opts.form+'">'+(FORM_LABELS[opts.form]||opts.form)+'</div>':'';
   return '<div class="rc'+formCls+'"><div class="rc-bar" style="background:'+(opts.color||'var(--cyan)')+'"></div>'+
     '<div class="rc-cat">'+(opts.cat||'')+'</div>'+
     '<div class="rc-name">'+opts.name+'</div>'+
-    sub+badge+ind+mdctrl+rows+note+warn+'</div>';
+    sub+badge+ind+mdctrl+targets+rows+note+warn+'</div>';
 }
 
 var DRUGS = {
@@ -1180,12 +1227,14 @@ var DRUGS = {
     var w=dosingWt(); var dose=round(0.25*w,0);
     return rcCard({name:'Diltiazem',generic:'Stock 5 mg/mL vial',cat:'DYSRHYTHMIA',form:'vial',line:'2nd line',
       indication:'A-fib / A-flutter with RVR (rate control)',color:'var(--cyan)',
+      targets:{ start:'HR > 110 (Afib RVR) · narrow QRS SVT not converted by adenosine', stop:'HR < 100 OR SBP < 90', note:'Hold if hypotensive' },
       rows:[{k:'1st dose',v:'0.25 mg/kg IV over 2 min'},{k:'Calc',v:dose+' mg = '+round(dose/5,1)+' mL',cls:'calc'},{k:'2nd dose',v:'0.35 mg/kg IV in 15 min if needed'},{k:'2nd calc',v:round(0.35*w,0)+' mg',cls:'calc'},{k:'Drip',v:'5-15 mg/hr'}],
       warn:'AVOID in WPW with A-fib (preexcited). Caution in CHF, hypotension. Hold for SBP < 90.'});
   },
   metop: function(){
     return rcCard({name:'Metoprolol',generic:'Stock 1 mg/mL vial',cat:'DYSRHYTHMIA',form:'vial',line:'2nd line',
       indication:'A-fib / A-flutter with RVR (alternative)',color:'var(--cyan)',
+      targets:{ start:'HR > 100 · SBP > 110', stop:'HR < 60 · SBP < 100', note:'Avoid in active CHF, asthma' },
       rows:[{k:'Dose',v:'5 mg slow IV q 5 min × 3'},{k:'Volume',v:'5 mL × 3',cls:'calc'},{k:'Max',v:mx('15 mg'),cls:'warn'}],
       warn:'Caution in asthma, decompensated CHF, hypotension.'});
   },
@@ -1199,6 +1248,7 @@ var DRUGS = {
   ntg: function(){
     return rcCard({name:'Nitroglycerin',generic:'0.4 mg SL tab',cat:'ACS',form:'po',line:'1st line',
       indication:'ACS chest pain, pulmonary edema',color:'var(--rose)',
+      targets:{ start:'SBP > 90 AND chest pain or pulm edema', stop:'Hold if SBP < 90 or symptoms resolved', note:'Do NOT use if RV infarct or recent PDE-5 inhibitor' },
       rows:[{k:'SL dose',v:'0.4 mg q 5 min × 3'},{k:'Spray',v:'0.4 mg metered dose'},{k:'IV drip',v:'10-20 mcg/min, titrate by 5-10 mcg/min q 3-5 min'},{k:'Max',v:mx('200 mcg/min'),cls:'warn'}],
       warn:'HOLD if SBP < 90, RV infarct (inferior MI with R-sided EKG changes), recent PDE-5 inhibitor (sildenafil 24 hr, tadalafil 48 hr).'});
   },
@@ -1266,23 +1316,27 @@ var DRUGS = {
     var w=dosingWt(); var lo=round(0.05*w*60/16,2); var hi=round(2*w*60/16,1);
     return rcCard({name:'Norepinephrine',generic:'Mix 4 mg in 250 mL NS = 16 mcg/mL',cat:'SHOCK',form:'vialmix',line:'1st line',
       indication:'Septic shock (1st line), cardiogenic, hypotension',color:'var(--rose)',
+      targets:{ start:'MAP < 65 despite fluid', stop:'MAP ≥ 65 sustained', note:'1st-line pressor in septic shock' },
       rows:[{k:'Mix',v:'4 mg (4 mL of 1 mg/mL) into 250 mL NS = 16 mcg/mL',cls:'calc'},{k:'Dose',v:'0.05 to '+mx('2')+' mcg/kg/min'},{k:'Pump rate (low)',v:lo+' mL/hr',cls:'calc'},{k:'Pump rate (max)',v:mx(hi+' mL/hr'),cls:'calc'},{k:'Titrate',v:'q 5 min to MAP > 65'}]});
   },
   epiInfusion: function(){
     var w=dosingWt(); var lo=round(0.05*w*60/10,2); var hi=round(1*w*60/10,1);
     return rcCard({name:'Epinephrine Infusion',generic:'Mix 1 mg in 100 mL NS = 10 mcg/mL',cat:'SHOCK',form:'vialmix',line:'2nd line',
       indication:'Refractory septic / cardiogenic shock, severe brady',color:'var(--rose)',
+      targets:{ start:'MAP < 65 in cardiogenic/anaphylactic shock', stop:'MAP ≥ 65 sustained', note:'May worsen tachyarrhythmias' },
       rows:[{k:'Mix',v:'1 mg (10 mL of 1:10,000) into 100 mL NS = 10 mcg/mL',cls:'calc'},{k:'Dose',v:'0.05 to '+mx('1')+' mcg/kg/min'},{k:'Pump rate (low)',v:lo+' mL/hr',cls:'calc'},{k:'Pump rate (max)',v:mx(hi+' mL/hr'),cls:'calc'}]});
   },
   vaso: function(){
     return rcCard({name:'Vasopressin',generic:'Stock 20 u/mL vial',cat:'SHOCK',form:'vialmix',line:'2nd line',
       indication:'Refractory septic shock (add-on to norepi)',color:'var(--rose)',
+      targets:{ start:'MAP < 65 on max norepi', stop:'MAP ≥ 65 sustained', note:'Adjunct to norepi · fixed dose, no titration' },
       rows:[{k:'Dose',v:'0.04 u/min IV (fixed)'},{k:'Mix',v:'40 u in 250 mL NS = 0.16 u/mL → run at 15 mL/hr',cls:'calc'}]});
   },
   dobutamine: function(){
     var w=dosingWt(); var lo=round(2*w*60/250,1); var hi=round(20*w*60/250,1);
     return rcCard({name:'Dobutamine',generic:'Mix 250 mg in 250 mL NS = 1 mg/mL',cat:'SHOCK',form:'vialmix',line:'2nd line',
       indication:'Cardiogenic shock with normal BP, low CO',color:'var(--rose)',
+      targets:{ start:'Cardiogenic shock, low cardiac output', stop:'Improved perfusion · CI > 2.2', note:'May worsen hypotension via vasodilation' },
       rows:[{k:'Mix',v:'250 mg into 250 mL NS = 1 mg/mL = 1000 mcg/mL',cls:'calc'},{k:'Dose',v:'2 to '+mx('20')+' mcg/kg/min'},{k:'Pump rate (low)',v:lo+' mL/hr',cls:'calc'},{k:'Pump rate (max)',v:mx(hi+' mL/hr'),cls:'calc'}],
       warn:'Causes vasodilation — may drop BP. Don\'t use as sole agent in hypotensive cardiogenic shock.'});
   },
@@ -1351,6 +1405,7 @@ var DRUGS = {
   nicardipine: function(){
     return rcCard({name:'Nicardipine',generic:'Mix 25 mg in 250 mL = 0.1 mg/mL (100 mcg/mL)',cat:'BP CONTROL',form:'vialmix',line:'1st line',
       indication:'Hypertensive emergency, stroke BP control. Adult & Pediatric.',color:'var(--cyan)',
+      targets:{ start:'SBP > 185 (stroke) · > 160 (ICH)', stop:'SBP 130-160 (ICH) · < 185 (stroke)', note:'Reduce to 3 mg/hr after target' },
       rows:[
         {k:'Mix prep',v:'25 mg (25 mL of 1 mg/mL) into 250 mL NS = 0.1 mg/mL',cls:'calc'},
         {k:'Initial',v:'5 mg/hr IV infusion'},
@@ -1366,6 +1421,7 @@ var DRUGS = {
   clevidipine: function(){
     return rcCard({name:'Clevidipine',generic:'Stock 0.5 mg/mL premix bag (Cleviprex)',cat:'BP CONTROL',form:'premix',line:'1st line',
       indication:'Hypertensive emergency (alternative to Nicardipine). Adult & Pediatric.',color:'var(--cyan)',
+      targets:{ start:'SBP > 185 (stroke) · > 160 (ICH)', stop:'SBP 130-160 (ICH) · < 185 (stroke)', note:'Double q90 sec initially; slow as you approach goal' },
       rows:[
         {k:'Initial',v:'1-2 mg/hr IV infusion'},
         {k:'Pump rate (1-2 mg/hr)',v:'2 to 4 mL/hr',cls:'calc'},
@@ -1380,6 +1436,7 @@ var DRUGS = {
   labetalol: function(){
     return rcCard({name:'Labetalol',generic:'Stock 100 mg / 20 mL vial (5 mg/mL) — combined α/β blocker',cat:'BP CONTROL',form:'vial',line:'1st line',
       indication:'Hypertensive emergency, stroke BP control. Adult & Pediatric.',color:'var(--cyan)',
+      targets:{ start:'SBP > 185 · or HR > 100 in dissection', stop:'SBP 130-160 · HR 60-80 (dissection: HR < 60)', note:'Max total 300 mg' },
       rows:[
         {k:'Dose 1',v:'20 mg IV over 2 min'},
         {k:'Dose 1 vol',v:'4 mL',cls:'calc'},
@@ -1402,6 +1459,7 @@ var DRUGS = {
     var maxRate=round(300*w,0);
     return rcCard({name:'Esmolol',generic:'Stock 10 mg/mL vial OR 2.5 g / 250 mL premix (10 mg/mL)',cat:'BP CONTROL',form:'vialmix',line:'1st line',
       indication:'Hypertensive emergency, A-fib rate control, refractory tachycardia. Adult & Pediatric.',color:'var(--cyan)',
+      targets:{ start:'HR > 100 (dissection: rate first)', stop:'HR < 60 (dissection) · 60-100 (other)', note:'Beta-block FIRST in dissection, then vasodilate' },
       rows:[
         {k:'Initial load',v:'500 mcg/kg IV over 1 min'},
         {k:'Calc load',v:loadMcg+' mcg ('+loadMg+' mg)',cls:'calc'},
@@ -1651,7 +1709,9 @@ var DX_DRUGS = {
   chemical_burn:['fentanylBolus','fluidBolus'],
   hypothermia:['fluidBolus'],
   frostbite:['fentanylBolus'],
-  heat_illness:['fluidBolus']
+  heat_illness:['fluidBolus'],
+  post_rosc:['fluidBolus','norepi','epiInfusion','fentanylBolus','asa'],
+  post_lytics:['labetalol','nicardipine','clevidipine']
 };
 
 function renderDxDrugs(){
@@ -1961,7 +2021,10 @@ safeRun('renderBurnMap',renderBurnMap);
     </div>
   </div>
   <div class="pdf-frame-wrap" id="pdfFrameWrap">
-    <canvas class="pdf-canvas" id="pdfCanvas"></canvas>
+    <div class="pdf-page-container" id="pdfPageContainer">
+      <canvas class="pdf-canvas" id="pdfCanvas"></canvas>
+      <div class="pdf-text-layer" id="pdfTextLayer"></div>
+    </div>
     <div class="pdf-loading hidden" id="pdfLoading">Loading…</div>
   </div>
 </div>

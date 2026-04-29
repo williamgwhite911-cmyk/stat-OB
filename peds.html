@@ -262,9 +262,17 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .pdf-page-input{width:42px;background:var(--bg0);border:1px solid var(--bd1);color:var(--tx0);font-family:var(--mono);font-size:.72rem;text-align:center;padding:5px 4px;border-radius:5px;-moz-appearance:textfield;appearance:textfield}
 .pdf-page-input::-webkit-outer-spin-button,.pdf-page-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .pdf-frame-wrap{flex:1;background:#1a1a1a;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:8px;position:relative}
-.pdf-canvas{background:#fff;display:block;max-width:100%;height:auto;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.pdf-page-container{position:relative;line-height:initial}
+.pdf-canvas{background:#fff;display:block;max-width:100%;height:auto;box-shadow:0 4px 16px rgba(0,0,0,.5);image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges}
+.pdf-text-layer{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;opacity:.25;line-height:1;-webkit-user-select:text;user-select:text;pointer-events:none}
+.pdf-text-layer > span{position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%;color:transparent}
 .pdf-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--tx1);font-family:var(--mono);font-size:.78rem;letter-spacing:.05em;text-transform:uppercase}
 .pdf-loading.hidden{display:none}
+.rc-targets{background:rgba(34,211,238,.08);border:1px solid var(--cyan);border-radius:8px;padding:10px 12px;margin:10px 0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;align-items:center}
+.rc-targets-label{font-family:var(--mono);font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);white-space:nowrap}
+.rc-targets-label.stop{color:var(--rose)}
+.rc-targets-val{font-size:1.05rem;font-weight:800;color:var(--tx0);line-height:1.2}
+.rc-targets-val.lg{font-size:1.15rem}
 </style>
 </head>
 <body>
@@ -547,7 +555,9 @@ function openPdfOverlay(url, title){
   });
 }
 
-var __pdfZoom = 1.4;  // default zoom (1.0 = fit to width, 1.4 = ~140% of fit width)
+var __pdfZoom = 1.6;  // default zoom (1.0 = fit to width, 1.6 = ~160% of fit width)
+
+var MAX_CANVAS_DIM = 4096;
 
 function renderPdfPage(num){
   var loading = document.getElementById('pdfLoading');
@@ -556,22 +566,43 @@ function renderPdfPage(num){
   return __pdfDoc.getPage(num).then(function(page){
     var canvas = document.getElementById('pdfCanvas');
     var wrap = document.getElementById('pdfFrameWrap');
+    var textLayer = document.getElementById('pdfTextLayer');
     if(!canvas || !wrap) return;
     var availW = wrap.clientWidth - 16;
     var rawViewport = page.getViewport({scale: 1});
     var fitScale = (availW / rawViewport.width) * __pdfZoom;
     var dpr = window.devicePixelRatio || 1;
-    var viewport = page.getViewport({scale: fitScale * dpr});
+    var requestedScale = fitScale * dpr;
+    var maxByWidth = MAX_CANVAS_DIM / rawViewport.width;
+    var maxByHeight = MAX_CANVAS_DIM / rawViewport.height;
+    var renderScale = Math.min(requestedScale, maxByWidth, maxByHeight);
+    var viewport = page.getViewport({scale: renderScale});
+    var displayW = rawViewport.width * fitScale;
+    var displayH = rawViewport.height * fitScale;
     canvas.width = Math.floor(viewport.width);
     canvas.height = Math.floor(viewport.height);
-    canvas.style.width = Math.floor(viewport.width / dpr) + 'px';
-    canvas.style.height = Math.floor(viewport.height / dpr) + 'px';
+    canvas.style.width = Math.floor(displayW) + 'px';
+    canvas.style.height = Math.floor(displayH) + 'px';
     var ctx = canvas.getContext('2d');
     __pdfRenderTask = page.render({canvasContext: ctx, viewport: viewport});
     return __pdfRenderTask.promise.then(function(){
       __pdfRenderTask = null;
       if(loading) loading.classList.add('hidden');
       updatePdfNavButtons();
+      if(textLayer && pdfjsLib.renderTextLayer){
+        textLayer.innerHTML = '';
+        textLayer.style.width = Math.floor(displayW) + 'px';
+        textLayer.style.height = Math.floor(displayH) + 'px';
+        var textViewport = page.getViewport({scale: fitScale});
+        return page.getTextContent().then(function(textContent){
+          var task = pdfjsLib.renderTextLayer({
+            textContentSource: textContent,
+            container: textLayer,
+            viewport: textViewport
+          });
+          if(task && task.promise) return task.promise;
+        }).catch(function(){});
+      }
     });
   }).catch(function(err){
     if(err && err.name === 'RenderingCancelledException') return;
@@ -633,7 +664,7 @@ function closePdfOverlay(){
   if(__pdfRenderTask){ try{ __pdfRenderTask.cancel(); }catch(e){} __pdfRenderTask = null; }
   if(__pdfDoc){ try{ __pdfDoc.destroy(); }catch(e){} __pdfDoc = null; }
   __pdfCurrentPage = 1;
-  __pdfZoom = 1.4;
+  __pdfZoom = 1.6;
   if(loading){ loading.classList.remove('hidden'); loading.textContent = 'Loading…'; }
   document.documentElement.style.overflow='';
   document.body.style.overflow='';
@@ -968,6 +999,8 @@ var PROTOCOL_FILES = {
 var PROTOCOL_PAGES = {
   // ── RESUSCITATION (Ch 4) — cardiac arrest, brady, tachy, shock ──
   arrest:     { src: 'resusc',  label: 'Resusc 4.1 — Cardiac Arrest',                          page: 1  },
+  post_rosc:  { src: 'resusc',  label: 'Resusc 4.x — Post-ROSC Care (Peds)',                   page: 1  },
+  post_lytics:{ src: 'medical', label: 'Medical 6.x — Post-Thrombolytic Care (Peds)',          page: 1  },
   brady:      { src: 'resusc',  label: 'Resusc 4.2 — Bradycardia (Peds on p.10)',              page: 9  },
   svt:        { src: 'resusc',  label: 'Resusc 4.3 — Tachycardia',                             page: 11 },
   vt:         { src: 'resusc',  label: 'Resusc 4.3 — Tachycardia (Wide-Complex)',              page: 11 },
@@ -1009,6 +1042,8 @@ var PROTOCOL_PAGES = {
 var DIAGNOSES = [
   {id:'preterm',    cat:'CARDIAC', name:'Preterm / NRP',          sub:'Prematurity / unattended birth / NICU transport'},
   {id:'arrest',     cat:'CARDIAC', name:'Cardiac Arrest',         sub:'PALS — VF/VT/PEA/asystole'},
+  {id:'post_rosc',  cat:'CARDIAC', name:'Post-ROSC Care (Peds)',   sub:'After return of circulation'},
+  {id:'post_lytics', cat:'CARDIAC', name:'Post-Thrombolytics (Peds)', sub:'Rare in peds — MD direction'},
   {id:'brady',      cat:'CARDIAC', name:'Symptomatic Brady',      sub:'HR low for age + poor perfusion'},
   {id:'svt',        cat:'CARDIAC', name:'SVT',                    sub:'Narrow tachy — stable / unstable'},
   {id:'vt',         cat:'CARDIAC', name:'VT (with pulse)',        sub:'Wide complex tachy'},
@@ -1113,6 +1148,37 @@ var DX_PLAN = {
       '2nd: Advanced airway — ETT or BIAD — 1 breath q 2-3 sec when in place',
       '2nd (shockable, after 3rd shock + epi): Amiodarone 5 mg/kg IV/IO — OR Lidocaine 1 mg/kg per PHI',
       'Throughout: search for and treat reversible causes (Hs/Ts)'
+    ]
+  },
+  post_rosc: {
+    picture:'Pediatric Post-ROSC care — high re-arrest risk in kids. Optimize perfusion, ventilation, identify cause.',
+    plan:[
+      '12-lead EKG within 10 min',
+      'SBP target ≥ 5th percentile for age (infant ≥ 70+age×2 mmHg)',
+      'MAP target ≥ 50 (infant) · ≥ 60 (child) · ≥ 65 (adolescent)',
+      'SpO2 target 94-99% — AVOID hyperoxia (peds particularly sensitive)',
+      'EtCO2 target 35-40 mmHg — AVOID hyperventilation',
+      'HR target age-appropriate (infant 100-160, toddler 90-150, child 70-120, adolescent 60-100)',
+      'Glucose check — treat hypo/hyperglycemia',
+      'Treat reversible causes (Hs and Ts)',
+      'Targeted Temperature Management — 36°C if comatose (avoid hyperthermia)',
+      'Sedation: fentanyl + ketamine (ketamine preferred if unstable)',
+      'Reassess q5 min',
+      'Pre-alert peds ICU/cath lab'
+    ]
+  },
+  post_lytics: {
+    picture:'Pediatric post-thrombolytic care — RARE indication. Most peds protocols require MD direction for both administration and post-care management.',
+    plan:[
+      'CONTACT MEDICAL DIRECTION — pediatric thrombolytics are rare and individualized',
+      'BP target: keep below 95th percentile for age',
+      'VS q15 min × 2 hr, then q30 min × 6 hr',
+      'Neuro checks q15 min × 2 hr',
+      'Watch for ICH (sudden HA, vomiting, AMS, BP spike)',
+      'NO antiplatelets/anticoagulants for 24 hr unless directed',
+      'AVOID NG tube, urinary catheter, arterial line, IM injections × 24 hr',
+      'If ICH suspected: STOP antithrombotics, emergent CT, neurosurgery',
+      'Pre-alert peds receiving'
     ]
   },
   brady: {
@@ -1935,10 +2001,17 @@ function rcCard(opts){
   } else if(opts.giveBox && opts.giveBox.needsWt){
     giveBox = '<div class="give-box" style="border-color:rgba(251,191,36,.5)"><div class="gb-label" style="color:var(--amber)">Enter weight</div><div class="gb-vol" style="color:var(--amber);font-size:.95rem">to see mL to give</div></div>';
   }
+  var targets = (opts.targets ? '<div class="rc-targets">' +
+    '<div class="rc-targets-label">START</div>' +
+    '<div class="rc-targets-val lg">' + (opts.targets.start || '—') + '</div>' +
+    '<div class="rc-targets-label stop">STOP</div>' +
+    '<div class="rc-targets-val lg">' + (opts.targets.stop || '—') + '</div>' +
+    ((opts.targets.note) ? '<div class="rc-targets-label">NOTE</div><div class="rc-targets-val" style="font-size:.78rem;font-weight:600">' + opts.targets.note + '</div>' : '') +
+  '</div>' : '');
   return '<div class="rc' + formCls + (opts.mc ? ' rc-mc' : '') + '"><div class="rc-bar" style="background:' + (opts.color || 'var(--cyan)') + '"></div>' +
     '<div class="rc-cat">' + (opts.cat || '') + '</div>' +
     '<div class="rc-name">' + opts.name + lineBadge + '</div>' +
-    sub + badge + ind + mdCtrlBadge + mcBanner + giveBox + rows + note + warn + '</div>';
+    sub + badge + ind + mdCtrlBadge + mcBanner + giveBox + targets + rows + note + warn + '</div>';
 }
 function noWt(){ return '<span class="rv warn">Enter weight first</span>'; }
 
@@ -2051,6 +2124,7 @@ var DRUGS = {
       name:'Adenosine', generic:'Stock 3 mg/mL vial', cat:'DYSRHYTHMIA',
       form:'vial', line:'1st',
       indication:'1st-line drug for STABLE narrow-complex SVT (after vagal maneuvers) — PHI Ch 5', color:'var(--cyan)',
+      targets:{start:'Stable narrow-complex SVT', stop:'Sinus rhythm restored', note:'Brief asystole expected after dose - have defib ready'},
       giveBox: w ? {label:'Give 2nd dose (max)', mL:ml2, mg:mg2+' mg'+(mg2===12?' (max)':''), conc:'3 mg/mL stock', rule:'0.2 mg/kg rapid IV push, max 12 mg'} : {needsWt:true},
       rows:[
         {k:'1st dose', v:'0.1 mg/kg rapid IV push'},
@@ -2071,6 +2145,7 @@ var DRUGS = {
       name:'Atropine', generic:'Stock 0.1 mg/mL pre-filled syringe', cat:'DYSRHYTHMIA',
       form:'syringe', line:'2nd',
       indication:'2nd-line for vagal-mediated bradycardia (after oxygen + epi) — also for organophosphate toxicity — PHI Ch 5', color:'var(--amber)',
+      targets:{start:'Vagal-mediated bradycardia · OR pre-intubation in young infants', stop:'HR > 60 with adequate perfusion', note:'PALS: epi BEFORE atropine for hypoxic bradycardia'},
       giveBox: w ? {label:'Give IV/IO/IM', mL:ml, mg:mg+' mg', conc:'0.1 mg/mL syringe', rule:'0.02 mg/kg, min 0.1 mg, max 0.5 mg child'} : {needsWt:true},
       rows:[
         {k:'Dose', v:'0.02 mg/kg IV/IO/IM'},
@@ -2187,6 +2262,7 @@ var DRUGS = {
       name:'Procainamide', generic:'Stock 100 mg/mL vial', cat:'CARDIAC',
       form:'vialmix', line:'2nd', mdControl:true,
       indication:'Alternative to amiodarone/lidocaine for wide-complex tachycardia with pulse — PHI Ch 5', color:'var(--rose)',
+      targets:{start:'Stable VT / SVT not converted by adenosine', stop:'QRS widens >50% baseline · hypotension · arrhythmia controlled', note:'Discontinue for QRS widening'},
       giveBox: w ? {label:'After contacting medical control', mL:ml, mg:mg+' mg', conc:'100 mg/mL stock', rule:'15 mg/kg IBW per PHI'} : {needsWt:true},
       rows:[
         {k:'PHI dose', v:'15 mg/kg IBW IV/IO over 30-60 min'},
@@ -2373,6 +2449,7 @@ var DRUGS = {
       form:'vialmix',
       line:'1st',
       indication:'1st-line pressor for fluid-refractory peds septic shock — preferred for cold shock (most common in peds) — PHI Ch 5', color:'var(--rose)',
+      targets:{start:'Cold shock with hypotension · MAP below age threshold despite fluid', stop:'Age-appropriate MAP achieved', note:'Peds prefer epi over norepi for cold shock'},
       rows:[
         {k:'Mix prep', v:'1 mg (10 mL of 1:10,000) into 100 mL NS = 10 mcg/mL', cls:'calc'},
         {k:'PHI dose', v:'0.05 to ' + mx('1') + ' mcg/kg/min'},
@@ -2393,6 +2470,7 @@ var DRUGS = {
       form:'vialmix',
       line:'2nd',
       indication:'Alternative to epi infusion — preferred for warm shock (vasodilated, bounding pulses, flash cap refill) — PHI Ch 5', color:'var(--rose)',
+      targets:{start:'MAP below age threshold despite fluid', stop:'Age-appropriate MAP achieved', note:'Push-dose epi may be alternative'},
       rows:[
         {k:'Mix prep', v:'4 mg (4 mL of 1 mg/mL) into 250 mL NS = 16 mcg/mL', cls:'calc'},
         {k:'PHI dose', v:'0.05 to ' + mx('2') + ' mcg/kg/min'},
@@ -2725,6 +2803,7 @@ var DRUGS = {
       name:'Glucagon — CCB / β-blocker OD', generic:'Stock 1 mg vial reconstituted', cat:'TOX',
       form:'vialmix', mdControl:true, line:'2nd',
       indication:'2nd-line for CCB / β-blocker overdose (after Ca + fluids) — PHI Ch 5', color:'var(--purple)',
+      targets:{start:'Hypotension/bradycardia from CCB or β-blocker OD', stop:'HR/BP improved · perfusion restored', note:'Contact MD direction'},
       rows:[
         {k:'Dose', v:'0.05 mg/kg IV bolus'},
         {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
@@ -2825,6 +2904,8 @@ var DX_DRUGS = {
   // Order = line of therapy: 1st-line listed first, then alternatives, then adjuncts.
   preterm:    ['fluidBolus','epiArrest','d10','alprostadil'],
   arrest:     ['defib','epiArrest','amiodaroneArrest','lidocaineArrest','fluidBolus'],
+  post_rosc:  ['fluidBolus','epiInfusionShock','fentanyl','epiArrest'],
+  post_lytics:['labetalol'],
   brady:      ['epiArrest','atropine','fluidBolus'],
   svt:        ['adenosine','cardiovert'],
   vt:         ['cardiovert','amiodaroneArrest','lidocaineArrest','procainamide'],
@@ -3293,7 +3374,10 @@ safeRun('renderBurnMap', renderBurnMap);
     </div>
   </div>
   <div class="pdf-frame-wrap" id="pdfFrameWrap">
-    <canvas class="pdf-canvas" id="pdfCanvas"></canvas>
+    <div class="pdf-page-container" id="pdfPageContainer">
+      <canvas class="pdf-canvas" id="pdfCanvas"></canvas>
+      <div class="pdf-text-layer" id="pdfTextLayer"></div>
+    </div>
     <div class="pdf-loading hidden" id="pdfLoading">Loading…</div>
   </div>
 </div>
