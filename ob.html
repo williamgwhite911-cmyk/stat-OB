@@ -295,8 +295,8 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .img-back:hover,.img-back:active{background:var(--s2);border-color:var(--cyan);color:var(--cyan)}
 .img-back-icon{font-size:1.1rem;line-height:1}
 .img-title{flex:1;min-width:0;font-family:var(--mono);font-size:.7rem;color:var(--tx1);letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
-.img-frame-wrap{flex:1;background:#1a1a1a;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:8px}
-.img-frame{max-width:100%;height:auto;display:block;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.img-frame-wrap{flex:1;background:#1a1a1a;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:8px;position:relative;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch}
+.img-frame{display:block;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.5);transform-origin:top left;transition:none}
 .img-missing{color:var(--rose);font-family:var(--mono);font-size:.85rem;text-align:center;padding:40px 20px;line-height:1.6}
 .img-missing strong{display:block;color:var(--tx0);font-size:1.05rem;margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase}
 
@@ -1353,7 +1353,11 @@ var PROTOCOL_PAGES = {
   frostbite:     { src: 'trauma',    label: 'Trauma 8-19 — Frostbite (Maternal)',                page: 19 },
   heat_illness:  { src: 'trauma',    label: 'Trauma 8-19 — Heat-Related Illness (Maternal)',     page: 19 },
   safer_checklist:{ src: 'safer',    label: 'SAFER 2.2.3 — Airway Checklist', page: 6 },
-  safer_diagram:{ src: 'safer', label: 'SAFER 2.2.3 — Smooth Matters Diagram', page: 6 }
+  safer_diagram:{ src: 'safer', label: 'SAFER 2.2.3 — Smooth Matters Diagram', page: 6 },
+  hemshock:{ src: 'resusc', label: 'Resusc 4.9 — Hemorrhagic Shock (Maternal)', page: 25 },
+  transfusion:{ src: 'resusc', label: 'Resusc 4.9.2 — Blood Transfusion (Maternal)', page: 26 },
+  push_pressor:{ src: 'resusc', label: 'Resusc 4-32/33 — IV Push Pressor Therapy', page: 32 },
+  cat_resistant_shock:{ src: 'resusc', label: 'Resusc 4.9.3 — Catecholamine-Resistant Shock (Maternal)', page: 34 }
 };
 
 // Per-file availability check (avoids click-time race conditions)
@@ -1449,6 +1453,9 @@ var DIAGNOSES = [
   {id:'frostbite', cat:'ENVIRONMENTAL', name:'Frostbite (Maternal)', sub:'No partial thaw'},
   {id:'heat_illness', cat:'ENVIRONMENTAL', name:'Heat Illness (Maternal)', sub:'Cool aggressively · fetal HR'},
   {id:'hemshock', cat:'CRITICAL CARE', name:'Hemorrhagic Shock (Maternal)', sub:'Pregnancy compensates · then crashes'},
+  {id:'transfusion', cat:'CRITICAL CARE', name:'Blood Transfusion (Maternal)', sub:'PHI 4.9.2 · L lateral · 1:1 · Ca after 2 units'},
+  {id:'push_pressor', cat:'CRITICAL CARE', name:'Push Dose Pressors (Maternal)', sub:'PHI 4-32/33 · EPI 10 mcg/mL · PHENYL 100 mcg/mL · L lateral'},
+  {id:'cat_resistant_shock', cat:'CRITICAL CARE', name:'Catecholamine-Resistant Shock (Maternal)', sub:'PHI 4.9.3 · MD CONTROL · L lateral · DDx amniotic fluid embolism'},
   {id:'post_intubation', cat:'CRITICAL CARE', name:'Post-Intubation Sedation (Maternal)', sub:'Analgesia first · pregnancy-safe agents'},
   {id:'agitation', cat:'CRITICAL CARE', name:'Dangerous Agitation (Maternal)', sub:'Pregnancy-safe sedation'},
   {id:'safer_checklist', cat:'AIRWAY / INTUBATION', name:'SAFER Airway Checklist', sub:'PHI 2-6 · Crew 1 + Crew 2 walkthrough'},
@@ -1630,6 +1637,22 @@ var DRUGS_MATERNAL = {
         {k:'Max total', v:mx('300 mg (= 3 vials / 60 mL)'), cls:'warn'}
       ],
       note:'Push slowly with patient supine. Use ONE agent through full protocol before switching. Treat within 10-20 min of severe-range BP. For drip: 100 mg in 100 mL NS = 1 mg/mL, titrate.'
+    });
+  },
+  nicardipine: function(){
+    return rcCard({
+      name:'Nicardipine', generic:'Stock 25 mg vial. Mix 25 mg in 250 mL = 0.1 mg/mL', cat:'BP CONTROL',
+      form:'vialmix', line:'1st (BP) — labetalol preferred in pregnancy',
+      indication:'BP control for stroke / dissection / hypertensive emergency. NOTE: PHI generally prefers LABETALOL in pregnancy (better fetal safety profile).', color:'var(--cyan)',
+      targets:{ start:'SBP > 185 (stroke) · > 160 (severe pre/AAA)', stop:'SBP 130-160 (lower if severe pre)', note:'Pregnancy: labetalol is generally preferred — use nicardipine if labetalol contraindicated/ineffective' },
+      rows:[
+        {k:'Mix prep', v:'25 mg into 250 mL NS = 0.1 mg/mL'},
+        {k:'Initial', v:'5 mg/hr IV infusion'},
+        {k:'Pump rate (5 mg/hr)', v:'50 mL/hr', cls:'calc'},
+        {k:'Titrate', v:'↑ by 2.5 mg/hr q 5-15 min PRN, max 15 mg/hr'},
+        {k:'Pregnancy note', v:'Labetalol is generally preferred 1st-line in pregnancy', cls:'warn'},
+        {k:'After target', v:'May reduce to 3 mg/hr'}
+      ]
     });
   },
   hydralazine: function(){
@@ -2171,6 +2194,37 @@ var DRUGS_MATERNAL = {
       ],
       warn:'D50/D25 NOT for neonates. D10 is the only safe concentration.'
     });
+  },
+  epiPushMaternal: function(){
+    return rcCard({
+      name:'Epinephrine — Push Dose (Maternal)', generic:'Mix 0.1 mg in 10 mL NS = 10 mcg/mL (PHI standard)', cat:'PUSH PRESSOR',
+      form:'syringe', line:'1st (push)',
+      indication:'IV push pressor — temporary support during volume / pressor prep. Vasoconstrictor + inotrope + chronotrope. NOT for tachyarrhythmia-induced shock. Pregnancy-acceptable. (PHI Resusc 4-33)', color:'var(--rose)',
+      targets:{ start:'MAP < 65 / SBP < 90 while preparing infusion', stop:'MAP ≥ 65 OR after 3 doses', note:'Limited to 3 doses · then infusion · L lateral tilt' },
+      rows:[
+        {k:'PHI prep (syringe)', v:'0.1 mg (1 mL of 0.1 mg/mL prefilled) into 9 mL NS = 10 mcg/mL'},
+        {k:'PHI prep (bag)', v:'1 mg in 100 mL NS = 10 mcg/mL (also for infusion)'},
+        {k:'Adult push dose', v:'10-20 mcg IV q2-5 min PRN'},
+        {k:'Max', v:'3 doses total — then start infusion'},
+        {k:'⚠ Segregate', v:'Keep prefilled syringe SEPARATE from push-dose syringe'},
+        {k:'Source', v:'PHI Resusc 4-33 (Rev 23, 23Jan2025)'}
+      ]
+    });
+  },
+  phenylephrinePushMaternal: function(){
+    return rcCard({
+      name:'Phenylephrine — Push Dose (Maternal)', generic:'Mix 10 mg in 100 mL NS = 100 mcg/mL (PHI standard)', cat:'PUSH PRESSOR',
+      form:'vialmix', line:'1st (push, vasodilatory / post-spinal)',
+      indication:'IV push pressor — pure alpha. Anesthetic-induced hypotension (post-spinal in OB) or vasodilatory shock. (PHI Resusc 4-32)', color:'var(--cyan)',
+      targets:{ start:'MAP < 65 from vasodilation / post-spinal hypotension', stop:'MAP ≥ 65 sustained · max 3 doses', note:'Limited to 3 doses · then infusion · L lateral tilt' },
+      rows:[
+        {k:'PHI prep', v:'10 mg (1 mL vial) into 100 mL NS bag = 100 mcg/mL'},
+        {k:'Adult push dose', v:'50-200 mcg IV q2-5 min PRN'},
+        {k:'Max', v:'3 doses total — then start infusion'},
+        {k:'⚠ Label', v:'LABEL bag AND syringe (med safety)'},
+        {k:'Source', v:'PHI Resusc 4-32 (Rev 22.1, 28May2024)'}
+      ]
+    });
   }
 };
 
@@ -2184,7 +2238,7 @@ var DX_DRUG_MAP = {
   pph: ['oxytocin','txa','fluidBolus'],
   postpartum: ['oxytocin','acetaminophen','fentanyl'],
   pih: ['magPreeclampsia'],
-  severe_pre: ['magPreeclampsia','labetalol','hydralazine','nifedipine','fentanyl','acetaminophen'],
+  severe_pre: ['magPreeclampsia','labetalol','nicardipine','hydralazine','nifedipine','fentanyl','acetaminophen'],
   eclampsia: ['lorazepamSeizure','midazolamSeizure','magEclampsia','labetalol','hydralazine','fentanyl'],
   thyroid: ['ptu','acetaminophen'],
   pain: ['fentanyl','acetaminophen'],
@@ -2196,11 +2250,14 @@ var DX_DRUG_MAP = {
   newborn: ['epiNeo','nsBolusNeo','d10Neo','naloxoneNeo'],
   pelvic_fracture: ['fluidBolus','txa','fentanyl'],
   open_fracture: ['fentanyl','fluidBolus','txa'],
-  aaa: ['fluidBolus','fentanyl','txa'],
-  dissection: ['labetalol','fentanyl'],
+  aaa: ['nicardipine','labetalol','fluidBolus','fentanyl','txa'],
+  dissection: ['nicardipine','labetalol','fentanyl'],
   herniation: ['magEclampsia','lorazepamSeizure','fentanyl'],
-  undif_stroke:['labetalol','magEclampsia'],
-  hemshock: ['fluidBolus','txa','oxytocin'],
+  undif_stroke:['nicardipine','labetalol','magEclampsia'],
+  hemshock:['txa','fluidBolus','oxytocin','caCl','caGluc'],
+  transfusion:['caCl','caGluc','txa','fluidBolus','oxytocin'],
+  push_pressor:['epiPushMaternal','phenylephrinePushMaternal'],
+  cat_resistant_shock:['fluidBolus','epiPushMaternal','txa'],
   post_intubation: ['fentanyl','ketamineDrip'],
   anxiolysis_extra: ['fentanyl'],
   agitation: ['magEclampsia','fentanyl'],
@@ -2504,20 +2561,17 @@ var DX_PLAN = {
   },
   undif_stroke:{picture:'Maternal stroke symptoms without head CT — could also be eclampsia/PRES. Manage BP per PHI Neuro 7.4 + maternal considerations.',
     plan:['LEFT LATERAL TILT >20 wk','Check glucose FIRST — hypoglycemia mimics stroke','Consider eclampsia — magnesium 4-6 g IV load if BP HTN + neurologic + pregnant','BP treatment criteria (PHI Neuro 7.4): positive stroke + glucose ≥60 + SBP target <185','Manage with online medical direction when practicable','Labetalol 20 mg IV over 2 min, repeat 40 mg in 10-20, then 80 mg q10-20 min, max 300 mg (preferred in pregnancy)','Nicardipine 5 mg/hr IV alt, max 15 mg/hr','Avoid acute BP lowering unless meets PHI criteria','Fetal HR check after maternal stabilization','Pre-alert OB + neuro/stroke at receiving']},
-  hemshock: {
-    picture:'Maternal hemorrhagic shock — pregnancy increases blood volume 30-50%, so vital sign changes appear LATE. By the time SBP drops, blood loss is substantial. Sources: PPH, placental abruption, uterine rupture, ectopic, trauma.',
-    plan:[
-      'LEFT LATERAL TILT >20 wk',
-      'External hemorrhage control; uterine massage if PPH',
-      'Two large-bore IVs/IO',
-      'Crystalloid 250-500 mL aliquots; blood products preferred (1:1:1)',
-      'TXA 1 g IV (pregnancy-safe; can repeat in 30 min if PPH ongoing)',
-      'Calcium 1 g IV per unit blood',
-      'Oxytocin 20 units in 1 L IV wide open if PPH',
-      'WARM patient; monitor lactate, base deficit',
-      'If maternal arrest >20 wk: perimortem c-section within 4 min',
-      'Pre-alert OB, blood bank for MTP'
-    ]
+  hemshock:{picture:'Maternal Hemorrhagic Shock — pregnancy increases blood volume 30-50% so VS changes appear LATE. PPH, abruption, uterine rupture, ectopic, trauma. LEFT LATERAL TILT >20 wk (PHI Resusc 4.9, p. 4-25).',
+    plan:['LEFT LATERAL TILT (15° wedge under right hip) >20 wk gestation','Hemorrhage control + uterine massage if PPH','TXA 2 g IV over 1 min — for SBP < 90 OR HR > 110, within 3 hr of bleeding (PHI). Pregnancy-safe.','Crystalloid: LR or NS 250-500 mL boluses · bolus → assess → repeat','Therapeutic goals: UNCONTROLLED → radial pulse + normal mentation; CONTROLLED → minimally normalized vitals','Blood transfusion if criteria met (Adult): SBP < 90 OR Shock Index ≥ 1 + suspected uncontrolled bleeding/AMS — see Blood Transfusion','Oxytocin 20 units in 1 L IV wide open if PPH','Calcium after 2 units PRBC: CaGluc 3 g IV over 2-10 min OR CaCl 1 g IV over 2-10 min (citrate binding)','Prevent lethal triad: WARM, monitor labs','Maternal arrest >20 wk gestation: PERIMORTEM C-SECTION within 4 min','Pre-alert OB + blood bank for MTP']
+  },
+  transfusion:{picture:'Maternal blood transfusion criteria & administration (PHI Resusc 4.9.2, p. 4-26 to 4-28). Pregnancy increases blood volume — by the time criteria met, loss is significant.',
+    plan:['LEFT LATERAL TILT >20 wk','ADULT criteria: SBP < 90 mmHg, OR Shock Index ≥ 1 + suspected uncontrolled bleeding OR hemorrhage with AMS','PRODUCT preference: physician-ordered ABO/RH compatible if available; otherwise LTOWB > O-neg PRBC > Type O uncrossmatched PRBC + AB/A plasma','MATERNAL dose: 1 unit at a time. PRBC + plasma → alternate 1:1','LTOWB does NOT require additional plasma','Standard blood filtration tubing. Blood + NS may share IV line.','WARM blood with approved fluid warmer','Reassess after each unit','Calcium after 2 units (no improvement): CaGluc 3 g IV over 2-10 min OR CaCl 1 g IV over 2-10 min. Repeat each 2 units. Flush line after.','TRANSFUSION REACTION: stop, NS to keep open, monitor, document, notify receiving + blood bank','Continuous fetal monitoring','If ongoing PPH: continue oxytocin/methergine/hemabate per OB protocol','Maternal arrest >20 wk: PERIMORTEM C-SECTION within 4 min']
+  },
+  push_pressor:{picture:'IV Push Pressor Therapy in maternal patient (PHI Resusc p. 4-32 & 4-33). Temporary support during volume / preparing infusion. Limited to 3 total doses. LEFT LATERAL TILT >20 wk.',
+    plan:['LEFT LATERAL TILT >20 wk','EPINEPHrine push: vasoconstrictor + inotrope + chronotrope. NOT for tachyarrhythmia-induced shock.','Phenylephrine push: pure alpha vasoconstrictor — preferred for anesthetic-induced hypotension (e.g., post-spinal in OB)','EPI prep (10 mcg/mL): Add 0.1 mg (1 mL of 0.1 mg/mL prefilled) to 9 mL NS = 10 mcg/mL. SEGREGATE prefilled syringe.','EPI alt prep: 1 mg in 100 mL NS = 10 mcg/mL — bag also for infusion','PHENYL prep (100 mcg/mL): 10 mg (1 mL) into 100 mL NS = 100 mcg/mL','Adult phenyl push: 50-200 mcg IV q2-5 min PRN, max 3 doses','Adult epi push: 10-20 mcg IV q2-5 min PRN, max 3 doses','LABEL bag AND syringe. NEVER use prefilled NS flush for med dilution.','Continuous fetal monitoring','Transition to continuous infusion if ongoing pressor need','See Non-Hemorrhagic Shock for definitive selection (norepi 1st-line)']
+  },
+  cat_resistant_shock:{picture:'Maternal shock not responding to fluids + pressors (PHI Resusc 4.9.3, p. 4-34). Pregnancy-specific DDx: amniotic fluid embolism, abruption with DIC, peripartum cardiomyopathy. Most adjuncts REQUIRE ONLINE MEDICAL CONTROL.',
+    plan:['LEFT LATERAL TILT >20 wk','Evaluate for unrecognized: tension PTX, tamponade, ongoing blood loss, AMNIOTIC FLUID EMBOLISM, abruption with DIC, peripartum CM','Stress dose steroids: CONSULT MD. Hydrocortisone 100 mg IV (adult) for adrenal crisis.','Continue volume + pressor support per Non-Hemorrhagic Shock guideline','Continuous fetal monitoring','Maternal arrest >20 wk gestation: PERIMORTEM C-SECTION within 4 min','Notify OB + receiving + medical control EARLY']
   },
   post_intubation: {
     picture:'Post-intubation sedation in maternal patient. Pregnancy-acceptable: fentanyl, ketamine, propofol (short-term), midazolam (sparingly). AVOID prolonged benzodiazepine if delivery imminent (neonatal depression).',
@@ -3170,7 +3224,17 @@ function renderAllDrugs(cat){
   out.innerHTML = banner + legend + grouped;
 }
 
-/* Image overlay viewer */
+/* Image overlay viewer — pinch + button zoom */
+var __imgZoom = 1.0;
+var __imgMinZoom = 0.5;
+var __imgMaxZoom = 6.0;
+var __imgNaturalW = 0;
+var __imgNaturalH = 0;
+var __imgFitWidth = 0; // px width that equals fit-to-width (for ratios)
+var __imgPinchActive = false;
+var __imgPinchStartDist = 0;
+var __imgPinchStartZoom = 1.0;
+
 function openImgOverlay(url, title){
   var ov = document.getElementById('imgOverlay');
   var img = document.getElementById('imgOverlayImg');
@@ -3181,21 +3245,107 @@ function openImgOverlay(url, title){
   var missing = wrap ? wrap.querySelector('.img-missing') : null;
   if(missing) missing.remove();
   img.style.display = '';
+  __imgZoom = 1.0;
+  __imgNaturalW = 0;
+  __imgNaturalH = 0;
+  img.style.width = '';
+  img.style.height = '';
+  img.onload = function(){
+    __imgNaturalW = img.naturalWidth || 0;
+    __imgNaturalH = img.naturalHeight || 0;
+    applyImgZoom();
+    attachImgPinchHandlers();
+  };
   img.src = url;
   if(tt) tt.textContent = title || 'Image';
   ov.classList.add('show');
   document.documentElement.style.overflow='hidden';
   document.body.style.overflow='hidden';
 }
+
+function applyImgZoom(){
+  var img = document.getElementById('imgOverlayImg');
+  var wrap = document.getElementById('imgFrameWrap');
+  if(!img || !wrap || !__imgNaturalW) return;
+  var availW = wrap.clientWidth - 16;
+  __imgFitWidth = Math.min(availW, __imgNaturalW);
+  var displayW = __imgFitWidth * __imgZoom;
+  var aspect = __imgNaturalH / __imgNaturalW;
+  img.style.width = Math.floor(displayW) + 'px';
+  img.style.height = Math.floor(displayW * aspect) + 'px';
+  updateImgZoomButtons();
+}
+
+function updateImgZoomButtons(){
+  var zin = document.getElementById('imgZoomIn');
+  var zout = document.getElementById('imgZoomOut');
+  if(zin) zin.disabled = __imgZoom >= __imgMaxZoom;
+  if(zout) zout.disabled = __imgZoom <= __imgMinZoom;
+}
+
+function imgZoomIn(){
+  __imgZoom = Math.min(__imgMaxZoom, __imgZoom + 0.4);
+  applyImgZoom();
+}
+function imgZoomOut(){
+  __imgZoom = Math.max(__imgMinZoom, __imgZoom - 0.4);
+  applyImgZoom();
+}
+function imgZoomFit(){
+  __imgZoom = 1.0;
+  applyImgZoom();
+}
+
+function attachImgPinchHandlers(){
+  var wrap = document.getElementById('imgFrameWrap');
+  if(!wrap || wrap.__imgPinchAttached) return;
+  wrap.__imgPinchAttached = true;
+  function distance(t1, t2){
+    var dx = t1.clientX - t2.clientX;
+    var dy = t1.clientY - t2.clientY;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
+  wrap.addEventListener('touchstart', function(e){
+    if(e.touches.length === 2){
+      __imgPinchActive = true;
+      __imgPinchStartDist = distance(e.touches[0], e.touches[1]);
+      __imgPinchStartZoom = __imgZoom;
+      e.preventDefault();
+    }
+  }, {passive: false});
+  wrap.addEventListener('touchmove', function(e){
+    if(__imgPinchActive && e.touches.length === 2){
+      e.preventDefault();
+      var d = distance(e.touches[0], e.touches[1]);
+      if(__imgPinchStartDist <= 0) return;
+      var ratio = d / __imgPinchStartDist;
+      __imgZoom = Math.max(__imgMinZoom, Math.min(__imgMaxZoom, __imgPinchStartZoom * ratio));
+      applyImgZoom();
+    }
+  }, {passive: false});
+  wrap.addEventListener('touchend', function(e){
+    if(__imgPinchActive && e.touches.length < 2){
+      __imgPinchActive = false;
+    }
+  }, {passive: false});
+  wrap.addEventListener('touchcancel', function(){
+    __imgPinchActive = false;
+  });
+}
+
 function closeImgOverlay(){
   var ov = document.getElementById('imgOverlay');
   var img = document.getElementById('imgOverlayImg');
   if(!ov) return;
   ov.classList.remove('show');
-  if(img){ img.src = ''; img.style.display = ''; }
+  if(img){ img.src = ''; img.style.display = ''; img.style.width = ''; img.style.height = ''; img.onload = null; }
+  __imgZoom = 1.0;
+  __imgNaturalW = 0;
+  __imgNaturalH = 0;
   document.documentElement.style.overflow='';
   document.body.style.overflow='';
 }
+
 function showImgMissing(imgEl){
   var wrap = imgEl && imgEl.parentNode;
   if(!wrap) return;
@@ -3206,9 +3356,21 @@ function showImgMissing(imgEl){
   div.innerHTML = '<strong>Image not found</strong>Add <code>safer-smooth-matters.jpg</code> to the <code>images/</code> folder of your repo and reload.';
   wrap.appendChild(div);
 }
+
 document.addEventListener('keydown', function(e){
   var ov = document.getElementById('imgOverlay');
-  if(ov && ov.classList.contains('show') && e.key === 'Escape') closeImgOverlay();
+  if(!ov || !ov.classList.contains('show')) return;
+  if(e.key === 'Escape'){ closeImgOverlay(); }
+  else if(e.key === '+' || e.key === '='){ e.preventDefault(); imgZoomIn(); }
+  else if(e.key === '-' || e.key === '_'){ e.preventDefault(); imgZoomOut(); }
+  else if(e.key === '0'){ e.preventDefault(); imgZoomFit(); }
+});
+
+window.addEventListener('resize', function(){
+  if(document.getElementById('imgOverlay').classList.contains('show')){
+    clearTimeout(window.__imgResizeTimer);
+    window.__imgResizeTimer = setTimeout(applyImgZoom, 200);
+  }
 });
 
 // ════════════════════════════════════════════════════════════════
@@ -3315,6 +3477,11 @@ safeRun('renderIntubation',function(){ renderIntubation(); });
       <span class="img-back-icon">‹</span>BACK TO APP
     </button>
     <div class="img-title" id="imgOverlayTitle">Image</div>
+    <div class="pdf-nav">
+      <button class="pdf-nav-btn" id="imgZoomOut" type="button" onclick="imgZoomOut()" aria-label="Zoom out">−</button>
+      <button class="pdf-nav-btn" id="imgZoomFit" type="button" onclick="imgZoomFit()" aria-label="Fit to width" title="Fit to width" style="font-size:.7rem;letter-spacing:.04em;width:auto;padding:0 8px">FIT</button>
+      <button class="pdf-nav-btn" id="imgZoomIn" type="button" onclick="imgZoomIn()" aria-label="Zoom in">+</button>
+    </div>
   </div>
   <div class="img-frame-wrap" id="imgFrameWrap">
     <img class="img-frame" id="imgOverlayImg" alt="" src="" onerror="showImgMissing(this)" />

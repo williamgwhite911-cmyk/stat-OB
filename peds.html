@@ -322,8 +322,8 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .img-back:hover,.img-back:active{background:var(--s2);border-color:var(--cyan);color:var(--cyan)}
 .img-back-icon{font-size:1.1rem;line-height:1}
 .img-title{flex:1;min-width:0;font-family:var(--mono);font-size:.7rem;color:var(--tx1);letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
-.img-frame-wrap{flex:1;background:#1a1a1a;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:8px}
-.img-frame{max-width:100%;height:auto;display:block;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.img-frame-wrap{flex:1;background:#1a1a1a;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:8px;position:relative;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch}
+.img-frame{display:block;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.5);transform-origin:top left;transition:none}
 .img-missing{color:var(--rose);font-family:var(--mono);font-size:.85rem;text-align:center;padding:40px 20px;line-height:1.6}
 .img-missing strong{display:block;color:var(--tx0);font-size:1.05rem;margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase}
 
@@ -1298,6 +1298,9 @@ var PROTOCOL_PAGES = {
   hypothermia:{ src: 'trauma', label: 'Trauma 8-19 — Hypothermia', page: 19 },
   frostbite:{ src: 'trauma', label: 'Trauma 8-19 — Frostbite', page: 19 },
   heat_illness:{ src: 'trauma', label: 'Trauma 8-19 — Heat-Related Illness', page: 19 },
+  transfusion:{ src: 'resusc', label: 'Resusc 4.9.2 — Blood Transfusion (Peds)', page: 26 },
+  push_pressor:{ src: 'resusc', label: 'Resusc 4-32/33 — IV Push Pressor Therapy', page: 32 },
+  cat_resistant_shock:{ src: 'resusc', label: 'Resusc 4.9.3 — Catecholamine-Resistant Shock', page: 34 },
   // ── TOXICOLOGY (Ch 9) ──
   tox:        { src: 'tox',     label: 'Tox 9.1 — Poisoning (Opioid OD, TCA, Cyanide)',        page: 1  },
   // ── NEONATE (Ch 11) ──
@@ -1335,6 +1338,9 @@ var DIAGNOSES = [
   {id:'dissection', cat:'VASCULAR', name:'Aortic Dissection (rare)', sub:'Connective tissue disease association'},
   {id:'herniation', cat:'NEURO', name:'Brain Herniation',        sub:'Cushing · pupil · posturing'},
   {id:'hemshock',   cat:'ALLERGIC / SHOCK', name:'Hemorrhagic Shock',       sub:'Damage-control · 1:1:1'},
+  {id:'transfusion', cat:'ALLERGIC / SHOCK', name:'Blood Transfusion (Peds)', sub:'PHI 4.9.2 · 10 mL/kg · 1:1 · Ca after 20 mL/kg'},
+  {id:'push_pressor', cat:'ALLERGIC / SHOCK', name:'Push Dose Pressors (Peds)', sub:'PHI 4-32/33 · EPI 10 mcg/mL · PHENYL 100 mcg/mL'},
+  {id:'cat_resistant_shock', cat:'ALLERGIC / SHOCK', name:'Catecholamine-Resistant Shock', sub:'PHI 4.9.3 · MD CONTROL · ductal-dependent CHD'},
   {id:'stroke_ich', cat:'NEURO', name:'Hemorrhagic Stroke',      sub:'BP control · neuro q15'},
   {id:'post_intubation', cat:'SEDATION / BEHAVIORAL', name:'Post-Intubation Sedation', sub:'Analgesia first · paralytic outlives sedative'},
   {id:'agitation',  cat:'SEDATION / BEHAVIORAL', name:'Dangerous Agitation',     sub:'In-flight safety · airway ready'},
@@ -1858,18 +1864,59 @@ var DX_PLAN = {
     ]
   },
   hemshock: {
-    picture:'Pediatric hemorrhagic shock — children compensate via tachycardia until late, then crash. Hypotension is a LATE finding in kids. Manage: hemorrhage control + balanced blood products + permissive hypotension.',
+    picture:'Pediatric Hemorrhagic Shock — children compensate via tachycardia until late then crash. Hypotension is LATE. Manage per PHI Resusc 4.9 (p. 4-25).',
     plan:[
-      'External hemorrhage: direct pressure → tourniquet (extremity) → hemostatic',
-      'Pelvic binder for suspected pelvic fx',
-      'IO if IV access delayed — do NOT delay resuscitation for IV',
-      'Crystalloid 10-20 mL/kg LR/NS aliquot, reassess; minimize crystalloid',
-      'BLOOD PRODUCTS preferred: 10-20 mL/kg PRBC; balanced 1:1:1 if MTP available',
-      'Permissive hypotension EXCEPT TBI (need normotension)',
-      'TXA 15 mg/kg IV within 3 hr (max 2 g)',
-      'Calcium gluconate 60 mg/kg IV per unit blood (citrate binding)',
-      'Prevent lethal triad: WARM, monitor acidosis/coag',
-      'Reassess q5 min — tourniquet, dressings, mental status, perfusion'
+      'Hemorrhage control: direct pressure → pressure dressing → hemostatic → tourniquet (mark time)',
+      'Pelvic compression for pelvic injuries · align/splint long bones',
+      'TXA 25 mg/kg IV over 1 min, max 2 g — for SBP < 90 OR HR > 110, within 3 hr of injury (PHI). Use ADULT dose for 16-17 yo. NOT in GI bleed.',
+      'Crystalloid: LR or NS — Pediatric 10-20 mL/kg; Newborn 10 mL/kg. Bolus → assess → repeat.',
+      'Therapeutic goals: UNCONTROLLED → titrate to radial pulse + normal mentation; CONTROLLED → minimally normalized vitals',
+      'Blood transfusion if criteria met: SBP < 70 + (2 × age in yr) — see Blood Transfusion protocol',
+      'Calcium after 20 mL/kg blood: CaGluc 60 mg/kg IV over 2-10 min (max 3 g) OR CaCl 20 mg/kg IV over 2-10 min (max 1 g). Repeat each 20 mL/kg.',
+      'Prevent lethal triad: WARM, monitor lactate, base deficit',
+      'Pre-alert peds trauma — activate MTP if available'
+    ]
+  },
+  transfusion: {
+    picture:'Pediatric blood transfusion criteria & administration (PHI Resusc 4.9.2, p. 4-26 to 4-28).',
+    plan:[
+      'PEDIATRIC criteria: Uncompensated hypotensive shock (SBP < 70 mmHg + 2 × age in yrs)',
+      'PRODUCT preference: physician-ordered ABO/RH compatible if available; otherwise LTOWB > O-neg PRBC > Type O uncrossmatched PRBC + AB/A plasma',
+      'PEDIATRIC dose (≤ 40 kg): 10 mL/kg per administration',
+      '> 40 kg: use adult dose (1 unit at a time)',
+      'If using PRBC + plasma → alternate 1:1 ratio',
+      'LTOWB does NOT require additional plasma',
+      'Use standard blood filtration tubing. Blood + NS may share IV line.',
+      'WARM blood with approved fluid warmer',
+      'Reassess after each transfusion · slow as VS improve · repeat after 5-10 min if no improvement',
+      'Calcium after 20 mL/kg blood (no improvement): CaGluc 60 mg/kg IV (max 3 g) over 2-10 min OR CaCl 20 mg/kg IV (max 1 g) over 2-10 min. Repeat each 20 mL/kg. Flush line after.',
+      'TRANSFUSION REACTION: stop transfusion, NS to maintain IV, monitor VS, identify type, document, notify receiving + blood bank'
+    ]
+  },
+  push_pressor: {
+    picture:'IV Push Pressor Therapy in pediatric patient (PHI Resusc p. 4-32 & 4-33). Temporary support during volume / preparing infusion. Limited to 3 total doses.',
+    plan:[
+      'EPINEPHrine push: vasoconstrictor + inotrope + chronotrope. Use for ALL shock states EXCEPT tachyarrhythmia-induced.',
+      'Phenylephrine push: pure alpha vasoconstrictor. Use for anesthetic-induced hypotension OR vasodilatory shock.',
+      'EPI prep (10 mcg/mL): Add 0.1 mg (1 mL of 0.1 mg/mL prefilled) to 9 mL NS in 10 cc syringe = 10 mcg/mL. SEGREGATE prefilled syringe.',
+      'EPI alt prep: 1 mg in 100 mL NS bag = 10 mcg/mL — bag also serves as infusion mix',
+      'PHENYL prep (100 mcg/mL): Add 10 mg (1 mL) to 100 mL NS bag = 100 mcg/mL — bag also serves as infusion mix',
+      'PEDS phenylephrine push: 5-20 mcg/kg IV q2-5 min PRN, max single dose 200 mcg, max 3 doses total',
+      'PEDS EPI push: typically 1 mcg/kg IV q3-5 min PRN, max 3 doses (PALS dose ranges; per MD)',
+      'LABEL bag AND syringe. NEVER use prefilled NS flush syringes for medication dilution.',
+      'Transition to continuous infusion if ongoing pressor need',
+      'See Non-Hemorrhagic Shock for definitive vasopressor selection (PEDS preferred: epi over norepi for cold shock)'
+    ]
+  },
+  cat_resistant_shock: {
+    picture:'Pediatric shock not responding to fluids + pressors (PHI Resusc 4.9.3, p. 4-34). Search for unrecognized cause; ALL pediatric adjuncts REQUIRE ONLINE MEDICAL CONTROL.',
+    plan:[
+      'Evaluate for unrecognized: tension PTX, pericardial effusion (tamponade), ongoing occult blood loss',
+      'Stress dose steroids: PEDS = NO standing orders. Hydrocortisone requires ONLINE PHYSICIAN ORDER if adrenal crisis suspected.',
+      'ILL INFANT refractory shock → suspect ductal-dependent congenital heart defect: CONSULT MD for Alprostadil 0.02-0.05 mcg/kg/min',
+      'Persistent shock + suspected hypocalcemia (ionized Ca < 1.1 mmol/L / 4.8 mg/dL): CONSULT MD for Calcium Gluconate',
+      'Continue volume + pressor support per Non-Hemorrhagic Shock guideline (PEDS: epi-shock preferred for cold shock)',
+      'Notify receiving + medical control EARLY'
     ]
   },
   stroke_ich: {
@@ -2845,6 +2892,47 @@ var DRUGS = {
       ]
     });
   },
+  epiPushPeds: function(){
+    var w = dosingWt();
+    var mcg = w ? round(1*w, 0) : null;
+    var ml = mcg ? round(mcg/10, 2) : null;
+    return rcCard({
+      name:'Epinephrine — Push Dose (Peds)', generic:'Mix 0.1 mg in 10 mL NS = 10 mcg/mL (PHI standard)', cat:'PUSH PRESSOR',
+      form:'syringe', line:'1st (push)',
+      indication:'IV push pressor — temporary support during volume / pressor prep. Vasoconstrictor + inotrope + chronotrope. NOT for tachyarrhythmia-induced shock. (PHI Resusc 4-33)', color:'var(--rose)',
+      giveBox: w ? {label:'Push dose IV', mL:ml, mg:mcg+' mcg', conc:'10 mcg/mL', rule:'~1 mcg/kg per dose · max 3 doses'} : {needsWt:true},
+      rows:[
+        {k:'PHI prep (syringe)', v:'0.1 mg (1 mL of 0.1 mg/mL prefilled) into 9 mL NS = 10 mcg/mL'},
+        {k:'PHI prep (bag)', v:'1 mg in 100 mL NS = 10 mcg/mL (also for follow-on infusion)'},
+        {k:'PEDS push dose', v:'~1 mcg/kg IV q3-5 min (per MD direction)'},
+        {k:'Calc dose', v:mcg ? mcg + ' mcg = ' + ml + ' mL' : '--', cls:'calc'},
+        {k:'Max', v:'3 doses total — then start infusion'},
+        {k:'⚠ Segregate', v:'Keep prefilled syringe SEPARATE from push-dose syringe'},
+        {k:'Source', v:'PHI Resusc 4-33 (Rev 23, 23Jan2025)'}
+      ]
+    });
+  },
+  phenylephrinePushPeds: function(){
+    var w = dosingWt();
+    var mcgLow = w ? round(5*w, 0) : null;
+    var mcgHigh = w ? Math.min(round(20*w, 0), 200) : null;
+    var mlLow = mcgLow ? round(mcgLow/100, 2) : null;
+    var mlHigh = mcgHigh ? round(mcgHigh/100, 2) : null;
+    return rcCard({
+      name:'Phenylephrine — Push Dose (Peds)', generic:'Mix 10 mg in 100 mL NS = 100 mcg/mL (PHI standard)', cat:'PUSH PRESSOR',
+      form:'vialmix', line:'1st (push, vasodilatory)',
+      indication:'IV push pressor — pure alpha. Anesthetic-induced hypotension or vasodilatory shock. (PHI Resusc 4-32)', color:'var(--cyan)',
+      giveBox: w ? {label:'Push dose IV', mL:mlLow + '-' + mlHigh, mg:mcgLow + '-' + mcgHigh + ' mcg (max 200)', conc:'100 mcg/mL', rule:'5-20 mcg/kg · max single 200 mcg · max 3 doses'} : {needsWt:true},
+      rows:[
+        {k:'PHI prep', v:'10 mg (1 mL vial) into 100 mL NS bag = 100 mcg/mL'},
+        {k:'PEDS dose', v:'5-20 mcg/kg IV q2-5 min PRN, max single 200 mcg'},
+        {k:'Calc range', v:mcgLow ? mcgLow + '-' + mcgHigh + ' mcg' : '--', cls:'calc'},
+        {k:'Max', v:'3 doses total — then start infusion'},
+        {k:'⚠ Label', v:'LABEL bag AND syringe (med safety)'},
+        {k:'Source', v:'PHI Resusc 4-32 (Rev 22.1, 28May2024)'}
+      ]
+    });
+  },
   hydrocortisone: function(){
     var w = dosingWt();
     var mg = w ? Math.min(round(2*w, 0), 100) : null;
@@ -2980,6 +3068,23 @@ var DRUGS = {
       ]
     });
   },
+  nicardipine: function(){
+    var w = dosingWt();
+    return rcCard({
+      name:'Nicardipine', generic:'Stock 25 mg vial. Mix 25 mg in 250 mL = 0.1 mg/mL', cat:'BP CONTROL',
+      form:'vialmix', line:'1st (BP) — MD CONTROL for peds',
+      indication:'BP control for stroke / dissection / hypertensive emergency. PHI: NO peds standing orders — requires medical direction.', color:'var(--cyan)',
+      mdControl: true,
+      warn:'PHI Neuro 7.4 explicitly states "No PHI Standing Orders or Indications" for pediatric nicardipine. Online medical direction REQUIRED.',
+      targets:{ start:'SBP > 95th percentile for age (per MD direction)', stop:'SBP at upper end of normal-for-age', note:'Peds dosing not on PHI standing order — confirm with online medical control' },
+      rows:[
+        {k:'Mix prep', v:'25 mg into 250 mL NS = 0.1 mg/mL'},
+        {k:'Pediatric dose (per MD)', v:'0.5-1 mcg/kg/min titrated; max ~5 mcg/kg/min'},
+        {k:'Adult ref', v:'5 mg/hr → titrate q5-15 min, max 15 mg/hr'},
+        {k:'PHI status', v:'Adult standing order; PEDS = MD control required', cls:'warn'}
+      ]
+    });
+  },
   // ──── RSI ────
   ketamineInduction: function(){
     var w = dosingWt();
@@ -3005,18 +3110,21 @@ var DRUGS = {
   },
   rocPeds: function(){
     var w = dosingWt();
-    var mg = w ? round(1.2*w, 0) : null;
+    var mg = w ? round(1.5*w, 0) : null;
     var ml = mg ? round(mg/10, 2) : null;
+    var mgIM = w ? round(2*w, 0) : null;
+    var mlIM = mgIM ? round(mgIM/10, 2) : null;
     return rcCard({
       name:'Rocuronium — RSI', generic:'Stock 100 mg / 10 mL vial (10 mg/mL) — PHI formulary', cat:'RSI',
-      form:'vial', line:'adj',
-      indication:'Peds RSI paralysis', color:'var(--rose)',
-      giveBox: w ? {label:'Give MAX IV push', mL:ml, mg:mg+' mg', conc:'10 mg/mL stock (100 mg / 10 mL vial)', rule:'1.2 mg/kg max IV (RSI dose)'} : {needsWt:true},
+      form:'vial', line:'1st line',
+      indication:'Peds RSI paralysis — PHI dose 1.5 mg/kg IV (or 2 mg/kg IM)', color:'var(--rose)',
+      giveBox: w ? {label:'Give IV push', mL:ml, mg:mg+' mg', conc:'10 mg/mL stock (100 mg / 10 mL vial)', rule:'1.5 mg/kg IV (PHI standing order)'} : {needsWt:true},
       rows:[
-        {k:'PHI dose', v:'1 to ' + mx('1.2') + ' mg/kg IV push'},
-        {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
-        {k:'Calc volume', v:mg ? round(mg/10, 2) + ' mL' : '--', cls:'calc'},
-        {k:'Onset', v:'60-90 sec'},
+        {k:'PHI IV', v:'1.5 mg/kg IV push'},
+        {k:'PHI IM', v:'2 mg/kg IM (onset ~5 min)'},
+        {k:'Calc IV', v:mg ? mg + ' mg = ' + ml + ' mL' : '--', cls:'calc'},
+        {k:'Calc IM', v:mgIM ? mgIM + ' mg = ' + mlIM + ' mL' : '--', cls:'calc'},
+        {k:'Onset', v:'60-90 sec IV'},
         {k:'Duration', v:'30-60 min'}
       ],
       warn:'Ensure post-RSI sedation drip running BEFORE paralytic wears off — locked-in awake patient is a critical event.'
@@ -3290,12 +3398,15 @@ var DX_DRUGS = {
   pelvic_fracture: ['fluidBolus','txa','fentanylBolus','cefazolin','clindamycin'],
   open_fracture: ['cefazolin','clindamycin','fentanylBolus','fluidBolus','txa'],
   laceration: ['fentanylBolus','midazolamSeizure','fluidBolus'],
-  aaa:        ['fluidBolus','fentanylBolus','txa'],
-  dissection: ['fentanylBolus'],
+  aaa:        ['nicardipine','fluidBolus','fentanylBolus','txa'],
+  dissection: ['nicardipine','fentanylBolus'],
   herniation: ['fentanylBolus','ketamineInduction','mannitol','hypertonic'],
-  hemshock:   ['fluidBolus','txa','caGlucPeds'],
-  stroke_ich: ['lorazepamSeizure','d10'],
-  undif_stroke:['d10'],
+  hemshock:   ['txa','fluidBolus','caGlucPeds','caClPeds','epiInfusionShock'],
+  transfusion:['caGlucPeds','caClPeds','txa','fluidBolus'],
+  push_pressor:['epiPushPeds','phenylephrinePushPeds','epiInfusionShock'],
+  cat_resistant_shock:['hydrocortisone','alprostadil','caGlucPeds','epiInfusionShock'],
+  stroke_ich: ['nicardipine','lorazepamSeizure','d10'],
+  undif_stroke:['nicardipine','d10'],
   post_intubation: ['fentanylBolus','ketamineDripPeds','midazolamDripPeds'],
   agitation:  ['ketamineInduction','midazolamSeizure'],
   safer_checklist:['ketamineInduction','rocPeds','succPeds','fentanylBolus'],
@@ -3688,7 +3799,17 @@ document.querySelectorAll('#medTabs .tab').forEach(function(t){
   if(el) el.addEventListener('change', recompute);
 });
 
-/* Image overlay viewer */
+/* Image overlay viewer — pinch + button zoom */
+var __imgZoom = 1.0;
+var __imgMinZoom = 0.5;
+var __imgMaxZoom = 6.0;
+var __imgNaturalW = 0;
+var __imgNaturalH = 0;
+var __imgFitWidth = 0; // px width that equals fit-to-width (for ratios)
+var __imgPinchActive = false;
+var __imgPinchStartDist = 0;
+var __imgPinchStartZoom = 1.0;
+
 function openImgOverlay(url, title){
   var ov = document.getElementById('imgOverlay');
   var img = document.getElementById('imgOverlayImg');
@@ -3699,21 +3820,107 @@ function openImgOverlay(url, title){
   var missing = wrap ? wrap.querySelector('.img-missing') : null;
   if(missing) missing.remove();
   img.style.display = '';
+  __imgZoom = 1.0;
+  __imgNaturalW = 0;
+  __imgNaturalH = 0;
+  img.style.width = '';
+  img.style.height = '';
+  img.onload = function(){
+    __imgNaturalW = img.naturalWidth || 0;
+    __imgNaturalH = img.naturalHeight || 0;
+    applyImgZoom();
+    attachImgPinchHandlers();
+  };
   img.src = url;
   if(tt) tt.textContent = title || 'Image';
   ov.classList.add('show');
   document.documentElement.style.overflow='hidden';
   document.body.style.overflow='hidden';
 }
+
+function applyImgZoom(){
+  var img = document.getElementById('imgOverlayImg');
+  var wrap = document.getElementById('imgFrameWrap');
+  if(!img || !wrap || !__imgNaturalW) return;
+  var availW = wrap.clientWidth - 16;
+  __imgFitWidth = Math.min(availW, __imgNaturalW);
+  var displayW = __imgFitWidth * __imgZoom;
+  var aspect = __imgNaturalH / __imgNaturalW;
+  img.style.width = Math.floor(displayW) + 'px';
+  img.style.height = Math.floor(displayW * aspect) + 'px';
+  updateImgZoomButtons();
+}
+
+function updateImgZoomButtons(){
+  var zin = document.getElementById('imgZoomIn');
+  var zout = document.getElementById('imgZoomOut');
+  if(zin) zin.disabled = __imgZoom >= __imgMaxZoom;
+  if(zout) zout.disabled = __imgZoom <= __imgMinZoom;
+}
+
+function imgZoomIn(){
+  __imgZoom = Math.min(__imgMaxZoom, __imgZoom + 0.4);
+  applyImgZoom();
+}
+function imgZoomOut(){
+  __imgZoom = Math.max(__imgMinZoom, __imgZoom - 0.4);
+  applyImgZoom();
+}
+function imgZoomFit(){
+  __imgZoom = 1.0;
+  applyImgZoom();
+}
+
+function attachImgPinchHandlers(){
+  var wrap = document.getElementById('imgFrameWrap');
+  if(!wrap || wrap.__imgPinchAttached) return;
+  wrap.__imgPinchAttached = true;
+  function distance(t1, t2){
+    var dx = t1.clientX - t2.clientX;
+    var dy = t1.clientY - t2.clientY;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
+  wrap.addEventListener('touchstart', function(e){
+    if(e.touches.length === 2){
+      __imgPinchActive = true;
+      __imgPinchStartDist = distance(e.touches[0], e.touches[1]);
+      __imgPinchStartZoom = __imgZoom;
+      e.preventDefault();
+    }
+  }, {passive: false});
+  wrap.addEventListener('touchmove', function(e){
+    if(__imgPinchActive && e.touches.length === 2){
+      e.preventDefault();
+      var d = distance(e.touches[0], e.touches[1]);
+      if(__imgPinchStartDist <= 0) return;
+      var ratio = d / __imgPinchStartDist;
+      __imgZoom = Math.max(__imgMinZoom, Math.min(__imgMaxZoom, __imgPinchStartZoom * ratio));
+      applyImgZoom();
+    }
+  }, {passive: false});
+  wrap.addEventListener('touchend', function(e){
+    if(__imgPinchActive && e.touches.length < 2){
+      __imgPinchActive = false;
+    }
+  }, {passive: false});
+  wrap.addEventListener('touchcancel', function(){
+    __imgPinchActive = false;
+  });
+}
+
 function closeImgOverlay(){
   var ov = document.getElementById('imgOverlay');
   var img = document.getElementById('imgOverlayImg');
   if(!ov) return;
   ov.classList.remove('show');
-  if(img){ img.src = ''; img.style.display = ''; }
+  if(img){ img.src = ''; img.style.display = ''; img.style.width = ''; img.style.height = ''; img.onload = null; }
+  __imgZoom = 1.0;
+  __imgNaturalW = 0;
+  __imgNaturalH = 0;
   document.documentElement.style.overflow='';
   document.body.style.overflow='';
 }
+
 function showImgMissing(imgEl){
   var wrap = imgEl && imgEl.parentNode;
   if(!wrap) return;
@@ -3724,9 +3931,21 @@ function showImgMissing(imgEl){
   div.innerHTML = '<strong>Image not found</strong>Add <code>safer-smooth-matters.jpg</code> to the <code>images/</code> folder of your repo and reload.';
   wrap.appendChild(div);
 }
+
 document.addEventListener('keydown', function(e){
   var ov = document.getElementById('imgOverlay');
-  if(ov && ov.classList.contains('show') && e.key === 'Escape') closeImgOverlay();
+  if(!ov || !ov.classList.contains('show')) return;
+  if(e.key === 'Escape'){ closeImgOverlay(); }
+  else if(e.key === '+' || e.key === '='){ e.preventDefault(); imgZoomIn(); }
+  else if(e.key === '-' || e.key === '_'){ e.preventDefault(); imgZoomOut(); }
+  else if(e.key === '0'){ e.preventDefault(); imgZoomFit(); }
+});
+
+window.addEventListener('resize', function(){
+  if(document.getElementById('imgOverlay').classList.contains('show')){
+    clearTimeout(window.__imgResizeTimer);
+    window.__imgResizeTimer = setTimeout(applyImgZoom, 200);
+  }
 });
 
 // Init with safe wrapper
@@ -3804,6 +4023,11 @@ safeRun('renderBurnMap', renderBurnMap);
       <span class="img-back-icon">‹</span>BACK TO APP
     </button>
     <div class="img-title" id="imgOverlayTitle">Image</div>
+    <div class="pdf-nav">
+      <button class="pdf-nav-btn" id="imgZoomOut" type="button" onclick="imgZoomOut()" aria-label="Zoom out">−</button>
+      <button class="pdf-nav-btn" id="imgZoomFit" type="button" onclick="imgZoomFit()" aria-label="Fit to width" title="Fit to width" style="font-size:.7rem;letter-spacing:.04em;width:auto;padding:0 8px">FIT</button>
+      <button class="pdf-nav-btn" id="imgZoomIn" type="button" onclick="imgZoomIn()" aria-label="Zoom in">+</button>
+    </div>
   </div>
   <div class="img-frame-wrap" id="imgFrameWrap">
     <img class="img-frame" id="imgOverlayImg" alt="" src="" onerror="showImgMissing(this)" />
