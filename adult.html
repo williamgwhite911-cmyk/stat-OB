@@ -128,6 +128,7 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .rv.calc .max,.rv.calc .mx{color:#ff7e87 !important}
 .rc-note{margin-top:8px;padding:7px 10px;background:rgba(0,212,245,.05);border:1px solid rgba(0,212,245,.18);border-radius:7px;font-size:.68rem;color:var(--tx1);line-height:1.5}
 .rc-warn{margin-top:8px;padding:7px 10px;background:rgba(255,95,109,.07);border:1px solid rgba(255,95,109,.28);border-radius:7px;font-size:.68rem;color:var(--rose);line-height:1.5;font-weight:600}
+.rc-mdctrl{background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.45);color:var(--rose);font-family:var(--mono);font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 9px;border-radius:6px;margin:8px 0 4px;display:flex;align-items:center;gap:6px}
 .fb{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.13em;padding:4px 9px;border-radius:5px;margin-bottom:10px}
 .fb-premix{background:rgba(0,232,176,.12);color:var(--teal);border:1px solid rgba(0,232,176,.4)}
 .fb-vial{background:rgba(251,191,36,.12);color:var(--amber);border:1px solid rgba(251,191,36,.4)}
@@ -152,6 +153,8 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .proto-label{font-family:var(--mono);font-size:.7rem;font-weight:900;letter-spacing:.13em;color:#e9d5ff;text-transform:uppercase;text-shadow:0 0 6px rgba(168,85,247,.4)}
 .proto-cite{font-size:.72rem;color:var(--tx2);margin-top:2px;font-style:italic}
 .proto-chev{font-size:1.4rem;color:#c084fc;font-weight:900;opacity:.7}
+.dx-cat-header{grid-column:1/-1;font-family:var(--mono);font-size:.62rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);padding:14px 4px 6px;border-bottom:1px solid var(--bd0);margin-top:10px}
+.dx-cat-header:first-child{margin-top:0}
 .dx-card{background:var(--bg2);border:1px solid var(--bd1);border-radius:9px;padding:10px 12px;cursor:pointer;transition:all .13s}
 .dx-card:hover{border-color:var(--bd2);transform:translateY(-1px)}
 .dx-card.on{background:rgba(167,139,250,.08);border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
@@ -523,6 +526,8 @@ function openPdfOverlay(url, title){
   });
 }
 
+var __pdfZoom = 1.4;  // default zoom (1.0 = fit to width, 1.4 = ~140% of fit width)
+
 function renderPdfPage(num){
   var loading = document.getElementById('pdfLoading');
   if(!__pdfDoc) return Promise.resolve();
@@ -533,7 +538,7 @@ function renderPdfPage(num){
     if(!canvas || !wrap) return;
     var availW = wrap.clientWidth - 16;
     var rawViewport = page.getViewport({scale: 1});
-    var fitScale = availW / rawViewport.width;
+    var fitScale = (availW / rawViewport.width) * __pdfZoom;
     var dpr = window.devicePixelRatio || 1;
     var viewport = page.getViewport({scale: fitScale * dpr});
     canvas.width = Math.floor(viewport.width);
@@ -551,6 +556,16 @@ function renderPdfPage(num){
     if(err && err.name === 'RenderingCancelledException') return;
     console.error('PDF render failed:', err);
   });
+}
+
+function pdfZoomIn(){
+  __pdfZoom = Math.min(4.0, __pdfZoom + 0.25);
+  if(__pdfDoc) renderPdfPage(__pdfCurrentPage);
+}
+
+function pdfZoomOut(){
+  __pdfZoom = Math.max(0.6, __pdfZoom - 0.25);
+  if(__pdfDoc) renderPdfPage(__pdfCurrentPage);
 }
 
 function updatePdfNavButtons(){
@@ -597,6 +612,7 @@ function closePdfOverlay(){
   if(__pdfRenderTask){ try{ __pdfRenderTask.cancel(); }catch(e){} __pdfRenderTask = null; }
   if(__pdfDoc){ try{ __pdfDoc.destroy(); }catch(e){} __pdfDoc = null; }
   __pdfCurrentPage = 1;
+  __pdfZoom = 1.4;
   if(loading){ loading.classList.remove('hidden'); loading.textContent = 'Loading…'; }
   document.documentElement.style.overflow='';
   document.body.style.overflow='';
@@ -799,18 +815,32 @@ var PROTOCOL_PAGES = {
   seizure:     { src: 'neuro',   label: 'Neuro 7.1 — Seizures & Status Epilepticus',             page: 1  },
   stroke_ais:  { src: 'neuro',   label: 'Neuro 7.2 — Acute Ischemic Stroke',                     page: 3  },
   stroke_ich:  { src: 'neuro',   label: 'Neuro 7.3 — Hemorrhagic Stroke',                        page: 6  },
+  undif_stroke:{ src: 'neuro',   label: 'Neuro 7.4 — Undifferentiated Stroke',                   page: 8  },
   icp:         { src: 'neuro',   label: 'Neuro 7.5 — Brain Herniation Syndrome',                 page: 8  },
   // Trauma Ch 8
   trauma:      { src: 'trauma',  label: 'Trauma 8.1 — Trauma Assessment',                        page: 1  },
   burn:        { src: 'trauma',  label: 'Trauma 8.1.5 — Thermal Injuries',                       page: 14 },
   hemshock:    { src: 'trauma',  label: 'Trauma 8.2 — Hemorrhagic Shock',                        page: 1  },
-  open_fracture:{ src: 'trauma', label: 'Trauma 8.3 — Open Fracture / Extremity Injury',         page: 1  },
+  open_fracture:{ src: 'trauma', label: 'Trauma 8-11 — Open Fractures',                          page: 11 },
   // Cardiovascular
   aaa:         { src: 'cardiovascular', label: 'Cardiovascular — AAA / Ruptured AAA',            page: 1  },
   dissection:  { src: 'cardiovascular', label: 'Cardiovascular — Aortic Dissection',             page: 1  },
   // Analgesia / Sedation Ch 5
   post_intubation:{ src: 'analgesia', label: 'Analgesia 5.x — Post-Intubation Sedation',         page: 1  },
   anxiolysis:  { src: 'analgesia', label: 'Analgesia 5.x — Anxiolysis',                          page: 1  },
+  // Trauma Ch 8
+  pelvic_fracture:{ src: 'trauma',  label: 'Trauma 8-10 — Pelvic Fracture',                       page: 10 },
+  amputation:  { src: 'trauma',  label: 'Trauma 8-9 — Amputation',                               page: 9  },
+  impaled:     { src: 'trauma',  label: 'Trauma 8-9 — Impaled Object',                           page: 9  },
+  femur_fracture:{ src: 'trauma', label: 'Trauma 8-10 — Femur Fracture',                         page: 10 },
+  ocular:      { src: 'trauma',  label: 'Trauma 8-11 — Ocular Injuries',                         page: 11 },
+  crush:       { src: 'trauma',  label: 'Trauma 8-12 — Crush Injury',                            page: 12 },
+  co_poison:   { src: 'trauma',  label: 'Trauma 8-15 — CO & Cyanide Poisoning',                  page: 15 },
+  electrical_burn:{ src: 'trauma', label: 'Trauma 8-16 — Electrical Burns',                      page: 16 },
+  chemical_burn:{ src: 'trauma',  label: 'Trauma 8-17 — Chemical Burns',                         page: 17 },
+  hypothermia: { src: 'trauma',  label: 'Trauma 8-19 — Hypothermia',                            page: 19 },
+  frostbite:   { src: 'trauma',  label: 'Trauma 8-19 — Frostbite',                              page: 19 },
+  heat_illness:{ src: 'trauma',  label: 'Trauma 8-19 — Heat-Related Illness',                    page: 19 },
   // Toxicology Ch 9
   tox:         { src: 'tox',     label: 'Tox 9.1 — Poisoning (Opioid OD, TCA, Cyanide)',         page: 1  },
   cyanide:     { src: 'tox',     label: 'Tox 9.1.2 — Cyanide Poisoning',                         page: 3  },
@@ -891,44 +921,77 @@ function openProtocolGeneric(e, srcKey){
 }
 
 var DIAGNOSES = [
-  {id:'arrest',     name:'Cardiac Arrest',         sub:'ACLS — VF/VT/PEA/asystole'},
-  {id:'brady',      name:'Symptomatic Brady',      sub:'HR < 50 + poor perfusion'},
-  {id:'svt',        name:'SVT / A-fib RVR',        sub:'Narrow tachy'},
-  {id:'vt',         name:'VT (with pulse)',        sub:'Wide complex tachy'},
-  {id:'acs',        name:'ACS / STEMI',            sub:'Chest pain, ischemia'},
-  {id:'pulm_edema', name:'Pulmonary Edema / CHF',  sub:'Cardiogenic'},
-  {id:'asthma',     name:'Asthma / COPD',          sub:'Severe bronchospasm'},
-  {id:'anaphylaxis',name:'Anaphylaxis',            sub:'Multisystem allergic'},
-  {id:'sepsis',     name:'Sepsis / Septic Shock',  sub:'Infection + organ dysfunction'},
-  {id:'cardiogenic',name:'Cardiogenic Shock',      sub:'Pump failure'},
-  {id:'dka',        name:'DKA / HHS',              sub:'Hyperglycemic crisis'},
-  {id:'hypo',       name:'Hypoglycemia',           sub:'Glucose < 70'},
-  {id:'seizure',    name:'Status Epilepticus',     sub:'>5 min seizure'},
-  {id:'stroke_ich', name:'Hemorrhagic Stroke',     sub:'ICH / SAH'},
-  {id:'stroke_ais', name:'Ischemic Stroke',        sub:'AIS / LVO'},
-  {id:'icp',        name:'TBI / ↑ ICP',            sub:'Cushing triad / herniation'},
-  {id:'tox',        name:'Toxic Ingestion',        sub:'Suspected overdose'},
-  {id:'cyanide',    name:'Cyanide Toxicity',       sub:'Smoke inhalation'},
-  {id:'tca',        name:'TCA Overdose',           sub:'Wide QRS, AMS'},
-  {id:'snake',      name:'Snake Bite (envenomation)',sub:'Pit viper / coral'},
-  {id:'trauma',     name:'Hemorrhagic Trauma',     sub:'Class III/IV shock'},
-  {id:'burn',       name:'Severe Burn',            sub:'>20% TBSA / airway'},
-  {id:'hyperK',     name:'Hyperkalemia',           sub:'Peaked T, wide QRS'},
-  {id:'agitation',  name:'Dangerous Agitation',    sub:'Excited delirium'},
-  {id:'pe',         name:'Pulmonary Embolism',     sub:'Massive / submassive'},
-  {id:'open_fracture',name:'Open Fracture',        sub:'Compound fracture · hemorrhage + infection risk'},
-  {id:'aaa',        name:'AAA / Ruptured AAA',     sub:'Catastrophic vascular emergency'},
-  {id:'dissection', name:'Aortic Dissection',      sub:'Type A surgical · Type B medical'},
-  {id:'hemshock',   name:'Hemorrhagic Shock',      sub:'Damage control resuscitation'},
-  {id:'post_intubation',name:'Post-Intubation Sedation',sub:'Analgesia-first · paralytic outlives sedative'},
-  {id:'anxiolysis', name:'Anxiolysis',             sub:'Treat early · prevent escalation'}
+  {id:'arrest',     cat:'CARDIAC', name:'Cardiac Arrest',         sub:'ACLS — VF/VT/PEA/asystole'},
+  {id:'brady',      cat:'CARDIAC', name:'Symptomatic Brady',      sub:'HR < 50 + poor perfusion'},
+  {id:'svt',        cat:'CARDIAC', name:'SVT / A-fib RVR',        sub:'Narrow tachy'},
+  {id:'vt',         cat:'CARDIAC', name:'VT (with pulse)',        sub:'Wide complex tachy'},
+  {id:'acs',        cat:'CARDIAC', name:'ACS / STEMI',            sub:'Chest pain, ischemia'},
+  {id:'pulm_edema', cat:'CARDIAC', name:'Pulmonary Edema / CHF',  sub:'Cardiogenic'},
+  {id:'cardiogenic',cat:'CARDIAC', name:'Cardiogenic Shock',      sub:'Pump failure'},
+  {id:'pe',         cat:'CARDIAC', name:'Pulmonary Embolism',     sub:'Massive / submassive'},
+  {id:'aaa',        cat:'VASCULAR', name:'AAA / Ruptured AAA',     sub:'Catastrophic vascular emergency'},
+  {id:'dissection', cat:'VASCULAR', name:'Aortic Dissection',      sub:'Type A surgical · Type B medical'},
+  {id:'asthma',     cat:'RESPIRATORY', name:'Asthma / COPD',          sub:'Severe bronchospasm'},
+  {id:'seizure',    cat:'NEURO', name:'Status Epilepticus',     sub:'>5 min seizure'},
+  {id:'stroke_ich', cat:'NEURO', name:'Hemorrhagic Stroke',     sub:'ICH / SAH'},
+  {id:'stroke_ais', cat:'NEURO', name:'Ischemic Stroke',        sub:'AIS / LVO'},
+  {id:'undif_stroke', cat:'NEURO', name:'Undifferentiated Stroke', sub:'BP control before head CT'},
+  {id:'icp',        cat:'NEURO', name:'TBI / ↑ ICP',            sub:'Cushing triad / herniation'},
+  {id:'dka',        cat:'METABOLIC', name:'DKA / HHS',              sub:'Hyperglycemic crisis'},
+  {id:'hypo',       cat:'METABOLIC', name:'Hypoglycemia',           sub:'Glucose < 70'},
+  {id:'hyperK',     cat:'METABOLIC', name:'Hyperkalemia',           sub:'Peaked T, wide QRS'},
+  {id:'anaphylaxis',cat:'ALLERGIC / SHOCK', name:'Anaphylaxis',            sub:'Multisystem allergic'},
+  {id:'sepsis',     cat:'ALLERGIC / SHOCK', name:'Sepsis / Septic Shock',  sub:'Infection + organ dysfunction'},
+  {id:'hemshock',   cat:'ALLERGIC / SHOCK', name:'Hemorrhagic Shock',      sub:'Damage control resuscitation'},
+  {id:'tox',        cat:'TOXICOLOGY', name:'Toxic Ingestion',        sub:'Suspected overdose'},
+  {id:'cyanide',    cat:'TOXICOLOGY', name:'Cyanide Toxicity',       sub:'Smoke inhalation'},
+  {id:'tca',        cat:'TOXICOLOGY', name:'TCA Overdose',           sub:'Wide QRS, AMS'},
+  {id:'snake',      cat:'TOXICOLOGY', name:'Snake Bite (envenomation)',sub:'Pit viper / coral'},
+  {id:'co_poison',      cat:'TOXICOLOGY', name:'Carbon Monoxide Poisoning', sub:'100% O2 · suspect in fire victims'},
+  {id:'trauma',     cat:'TRAUMA', name:'Hemorrhagic Trauma',     sub:'Class III/IV shock'},
+  {id:'burn',       cat:'TRAUMA', name:'Severe Burn',            sub:'>20% TBSA / airway'},
+  {id:'open_fracture',cat:'TRAUMA', name:'Open Fracture',        sub:'Compound fracture · hemorrhage + infection risk'},
+  {id:'pelvic_fracture', cat:'TRAUMA', name:'Pelvic Fracture',     sub:'Hemorrhage control · binder · permissive hypotension'},
+  {id:'amputation',     cat:'TRAUMA', name:'Amputation',           sub:'Hemorrhage control · part care'},
+  {id:'impaled',        cat:'TRAUMA', name:'Impaled Object',       sub:'Stabilize in place · do not remove'},
+  {id:'femur_fracture', cat:'TRAUMA', name:'Femur Fracture',      sub:'Traction splint · NV check'},
+  {id:'ocular',         cat:'TRAUMA', name:'Ocular Injury',       sub:'Eye shield · cover both eyes'},
+  {id:'crush',          cat:'TRAUMA', name:'Crush Injury',        sub:'Aggressive fluid · prevent hyperK'},
+  {id:'electrical_burn',cat:'TRAUMA', name:'Electrical Burn',     sub:'EKG · myoglobinuria · compartment'},
+  {id:'chemical_burn',  cat:'TRAUMA', name:'Chemical Burn',       sub:'PPE · irrigate 20+ min'},
+  {id:'hypothermia',    cat:'ENVIRONMENTAL', name:'Hypothermia',         sub:'Mild → severe · active rewarming'},
+  {id:'frostbite',      cat:'ENVIRONMENTAL', name:'Frostbite',           sub:'No partial thaw · loose dressing'},
+  {id:'heat_illness',   cat:'ENVIRONMENTAL', name:'Heat Illness / Heat Stroke', sub:'Cool aggressively'},
+  {id:'agitation',  cat:'SEDATION / BEHAVIORAL', name:'Dangerous Agitation',    sub:'Excited delirium'},
+  {id:'anxiolysis', cat:'SEDATION / BEHAVIORAL', name:'Anxiolysis',             sub:'Treat early · prevent escalation'},
+  {id:'post_intubation',cat:'SEDATION / BEHAVIORAL', name:'Post-Intubation Sedation',sub:'Analgesia-first · paralytic outlives sedative'}
 ];
 
 function renderDxGrid(){
+  var CAT_ORDER = ['CARDIAC','VASCULAR','RESPIRATORY','NEURO','METABOLIC','ALLERGIC / SHOCK','TOXICOLOGY','TRAUMA','ENVIRONMENTAL','SEDATION / BEHAVIORAL'];
+  var groups = {};
+  DIAGNOSES.forEach(function(dx){
+    var cat = dx.cat || 'OTHER';
+    if(!groups[cat]) groups[cat] = [];
+    groups[cat].push(dx);
+  });
   var grid=document.getElementById('dxGrid');
-  grid.innerHTML = DIAGNOSES.map(function(d){
-    return '<div class="dx-card'+(state.dx===d.id?' on':'')+'" data-id="'+d.id+'"><div class="dx-name">'+d.name+'</div><div class="dx-sub">'+d.sub+'</div></div>';
-  }).join('');
+  var html = '';
+  CAT_ORDER.forEach(function(cat){
+    if(!groups[cat] || !groups[cat].length) return;
+    html += '<div class="dx-cat-header">' + cat + '</div>';
+    groups[cat].forEach(function(d){
+      html += '<div class="dx-card'+(state.dx===d.id?' on':'')+'" data-id="'+d.id+'"><div class="dx-name">'+d.name+'</div><div class="dx-sub">'+d.sub+'</div></div>';
+    });
+  });
+  Object.keys(groups).forEach(function(cat){
+    if(CAT_ORDER.indexOf(cat) !== -1) return;
+    html += '<div class="dx-cat-header">' + cat + '</div>';
+    groups[cat].forEach(function(d){
+      html += '<div class="dx-card'+(state.dx===d.id?' on':'')+'" data-id="'+d.id+'"><div class="dx-name">'+d.name+'</div><div class="dx-sub">'+d.sub+'</div></div>';
+    });
+  });
+  grid.innerHTML = html;
   grid.querySelectorAll('.dx-card').forEach(function(el){
     el.onclick=function(){
       state.dx = el.dataset.id===state.dx ? '' : el.dataset.id;
@@ -968,6 +1031,8 @@ var DX_PLAN = {
     plan:['Time of onset critical — document last known well','HOB 30°, midline neutral','BP control: Labetalol 10-20 mg IV or Nicardipine drip 5-15 mg/hr','Avoid sudden BP drop (auto-regulation)','Reverse anticoagulation per receiving','Glucose, EKG, neuro exam q 15 min']},
   stroke_ais:{picture:'Ischemic stroke / LVO: focal deficit, NIHSS scoring, time-critical for tPA / thrombectomy.',
     plan:['Time of onset critical — last known well','NIHSS','BP: only treat if SBP > 220 or DBP > 120 (not eligible) OR if eligible for tPA: SBP < 185 / DBP < 110','HOB flat (improves perfusion)','Glucose, EKG','Notify receiving stroke center — bypass non-stroke hospitals if LVO']},
+  undif_stroke:{picture:'Stroke symptoms but no head CT yet — etiology unknown (ischemic vs hemorrhagic). Manage BP cautiously per PHI Neuro 7.4.',
+    plan:['Check finger-stick glucose FIRST — hypoglycemia mimics stroke','BP treatment criteria (PHI Neuro 7.4): positive stroke assessment + glucose ≥60 mg/dL + SBP target <185 mmHg','If practicable, manage BP collaboratively with online medical direction','Nicardipine 5 mg/hr IV, increase 2.5 mg/hr q5-15 min PRN, max 15 mg/hr; reduce to 3 mg/hr after target','OR Clevidipine 1-2 mg/hr, may double q90 sec initially; max 32 mg/hr','OR Labetalol 20 mg IV over 2 min, repeat 40 mg in 10-20 min, then 80 mg q10-20 min ×3 PRN, max 300 mg','Avoid acute lowering of BP unless meets PHI criteria — acute HTN may be protective for brain perfusion','Notify receiving stroke center']},
   icp:{picture:'TBI with elevated ICP / herniation signs (Cushing: HTN + brady + irreg resp; unilateral pupil; posturing).',
     plan:['HOB 30°, midline neutral, loose c-collar','Avoid hypoxia and hypotension (devastating to TBI)','3% NaCl 250 mL IV over 10 min OR Mannitol 0.5-1 g/kg','Maintain MAP > 80, CPP > 60','Brief hyperventilation ONLY if active herniation (EtCO2 30-35)','Anticipate intubation — ketamine OK in TBI per current evidence']},
   tox:{picture:'Toxic ingestion / overdose. Supportive + specific antidote.',
@@ -988,8 +1053,8 @@ var DX_PLAN = {
     plan:['Safety first — minimum staff, restraints if needed','Ketamine 3 mg/kg IBW IV/IO push OR 4 mg/kg IBW IM (PHI standing order)','Most concentrated formulation','Follow with ketamine infusion 4 mg/kg/hr (PHI adult)','Prepare for airway management — ketamine often → respiratory depression in dangerous-agitation doses','Sux 4 mg/kg IM available for refractory airway','Cardiac monitor, SpO2, EtCO2, frequent reassessment']},
   pe:{picture:'Pulmonary embolism — acute SOB, chest pain, tachycardia, hypoxia. Massive PE = hypotension, RV strain.',
     plan:['Anticoagulation per receiving (heparin bolus + drip)','Hypotension → fluid bolus 500 mL (cautious — RV failure)','If massive PE with hypotension: thrombolytics at receiving (tPA 100 mg over 2 hr)','Vasopressor: Norepinephrine 1st line','Avoid intubation if possible — RV death','High-flow O2','ECMO consideration at receiving']},
-  open_fracture:{picture:'Open (compound) fracture — bone exposed through skin. High risk of hemorrhage, neurovascular injury, compartment syndrome, and infection. Gustilo-Anderson grading I (<1 cm clean) → III (>10 cm or vascular/contamination).',
-    plan:['Control hemorrhage: direct pressure, pressure dressing, tourniquet for extremity bleed not controlled by pressure','Assess neurovascular status distal to injury — pulses, cap refill, motor, sensation; document before AND after splinting','Irrigate gross contamination with sterile saline; do NOT scrub bone or attempt reduction in field','Cover with sterile saline-moistened gauze; splint in position found unless distal pulse absent','Pain control — fentanyl 0.5-1 mcg/kg IV titrated','Early IV antibiotics per receiving facility (cefazolin 2 g IV is typical for I-II; add gentamicin for III)','Tetanus status — note for receiving','TXA 2 g IV if significant hemorrhage and within 3 hr of injury','Reassess neurovascular status q15 min en route']},
+  open_fracture:{picture:'Open fracture — any skin opening near a suspected fracture (PHI Trauma 8-11). Early antibiotics greatly reduce morbidity.',
+    plan:['Control bleeding, realign, and splint as indicated','Cover wound with saline-soaked gauze','Give ONE antibiotic — Cefazolin (1st line) OR Clindamycin (if cephalosporin/PCN allergy)','Cefazolin: ≥50 kg → 2 g IV/IM over 3-5 min; <50 kg → 1 g IV/IM over 3-5 min','Clindamycin (allergy alt): 900 mg IV over 30 min, rate ≤30 mg/min','Pain control per protocol','Document neurovascular status before AND after splinting']},
   aaa:{picture:'Abdominal aortic aneurysm — pulsatile mass, abdominal/flank/back pain, hypotension. Rupture is immediately life-threatening; outcome hinges on time to surgical repair.',
     plan:['Two large-bore IVs — DO NOT delay transport for access','Permissive hypotension: target SBP 80-100 mmHg / palpable radial pulse / normal mentation','Cautious crystalloid 250 mL boluses; AVOID over-resuscitation','Blood products preferred over crystalloid if available','Pain control — fentanyl small aliquots; avoid morphine (histamine release)','Type & cross sent ahead; activate massive transfusion at receiving','Transport to vascular-capable center; pre-alert OR','Avoid HTN (worsens rupture); avoid profound hypotension (organ ischemia)']},
   dissection:{picture:'Acute aortic dissection — tearing chest/back pain, pulse deficit, BP differential between arms. Type A (ascending) = surgical emergency. Type B (descending) = aggressive medical management.',
@@ -999,7 +1064,31 @@ var DX_PLAN = {
   post_intubation:{picture:'Post-RSI/intubation analgesia and sedation. ALWAYS treat pain first. Paralytic outlasts induction agent — patient is paralyzed but AWARE without sedation. Stratify: assessable vs paralyzed (RASS not valid) vs hemodynamically unstable.',
     plan:['ANALGESIA FIRST: fentanyl 0.5-2 mcg/kg IV q10 min PRN, then 1-2 mcg/kg/hr infusion','Then sedation: ketamine 1-2 mg/kg IV bolus → 1-4 mg/kg/hr infusion (preferred if unstable)','If paralyzed and non-assessable: ketamine monotherapy OR fentanyl + sedative DUAL agent','NEVER use RASS/CPOT/BPS on paralyzed patients — they cannot exhibit measurable behavior','If using ketamine infusion, ALWAYS bolus first to avoid dysphoria/under-sedation','Reassess every 10-15 min: HR, BP, pupils, lacrimation, ventilator synchrony','Goal: RASS -2 to 0 if assessable; deeper if paralyzed']},
   anxiolysis:{picture:'Anxious patient pre-loading or in-flight. Untreated anxiety can escalate to dangerous agitation. Treat anxiety AFTER pain control (treat pain with opioid first).',
-    plan:['Address pain first — fentanyl titrated','Verbal de-escalation, environment control (calm, quiet, dim cabin)','Midazolam 0.5-2 mg IV/IM/IN q5 min PRN to effect (max ~5 mg single dose)','Or lorazepam 0.5-2 mg IV/IM/IN q10-20 min PRN','CAUTION: benzo + opioid combo — monitor closely for respiratory depression','Have BVM, I-gel, suction at head of bed','If escalates to dangerous agitation, switch to droperidol/ketamine pathway','Consider pilot notification for at-risk patients']}
+    plan:['Address pain first — fentanyl titrated','Verbal de-escalation, environment control (calm, quiet, dim cabin)','Midazolam 0.5-2 mg IV/IM/IN q5 min PRN to effect (max ~5 mg single dose)','Or lorazepam 0.5-2 mg IV/IM/IN q10-20 min PRN','CAUTION: benzo + opioid combo — monitor closely for respiratory depression','Have BVM, I-gel, suction at head of bed','If escalates to dangerous agitation, switch to droperidol/ketamine pathway','Consider pilot notification for at-risk patients']},
+  pelvic_fracture:{picture:'Suspected pelvic fracture — high risk of occult hemorrhage from pelvic vascular plexus. Stabilize with SAM sling/binder (PHI Trauma 8-10).',
+    plan:['Stabilize pelvis with SAM sling at level of greater trochanters','Neurovascular exam BEFORE and AFTER stabilization','DO NOT insert urinary catheter if pelvic fracture suspected','Two large-bore IVs/IO; minimize crystalloid, prefer blood products','Permissive hypotension (radial pulse / normal mentation) UNLESS concomitant TBI','TXA per protocol if within 3 hr of injury','Pain control','Pre-alert receiving trauma center']},
+  amputation:{picture:'Traumatic amputation. Priorities: hemorrhage control of stump, care of amputated part for re-implantation (PHI Trauma 8-9).',
+    plan:['Control stump hemorrhage: direct pressure → tourniquet (mark time)','Amputated part: rinse off gross debris with sterile saline (do NOT scrub)','Wrap part in saline-moistened sterile gauze','Place wrapped part in sealed plastic bag, then in cool water with ice (do NOT freeze, do NOT pack directly in ice)','Transport part with patient','Pain control per protocol','Antibiotics for open injury per PHI (cefazolin or clindamycin if PCN allergy)','Pre-alert receiving — re-implantation centers required']},
+  impaled:{picture:'Impaled object — stabilize in place; removal can cause catastrophic hemorrhage. Exception: object obstructs airway or compromises CPR (PHI Trauma 8-9).',
+    plan:['Do NOT remove the impaled object','Stabilize in position with bulky dressings or improvised supports','Control surrounding hemorrhage with direct pressure','Shorten object only if necessary for transport (and only with stabilization)','Pain control per protocol','Distal NV check before/after stabilization','Pre-alert receiving — likely OR for removal']},
+  femur_fracture:{picture:'Midshaft femur fracture — significant blood loss possible (1-2 units per side). Apply traction splint per PHI Trauma 8-10.',
+    plan:['Neurovascular exam (CMS) before AND after manipulation','Apply femoral traction device (KTD/STS/OTD) for midshaft femur fractures','CONTRAINDICATED for elbow / hip / lower leg injuries','Severe angulation or absent distal pulse: realign — up to 2 attempts','If realignment unsuccessful, splint in position found','Pain control per protocol','Reassess CMS q15 min en route']},
+  ocular:{picture:'Eye injury — penetrating, chemical, or blunt. Apply protective covering, avoid pressure (PHI Trauma 8-11).',
+    plan:['Remove contact lenses PRN','Apply LOOSE sterile dressing to affected eye — NO pressure','Cover with rigid eye shield PRN','Cover BOTH eyes PRN to prevent sympathetic eye movement','Do NOT remove impaled objects','For chemical exposure: irrigate copiously per chemical burn protocol','Pain control as needed (avoid eye-pressure-increasing maneuvers)','Pre-alert ophthalmology / trauma']},
+  crush:{picture:'Crush injury — torso/proximal extremity crushed >1 hour. High risk of hyperkalemic VF on extrication from K+ release (PHI Trauma 8-12, 8-13).',
+    plan:['BEFORE extrication if possible: aggressive IV fluids to prevent hyperK','NS 0.9% — 40 mL/kg IBW initial bolus, then 20 mL/kg/hr (1.5× maintenance)','Calcium gluconate 3 g IV over 2-10 min (or CaCl 1 g IV) — repeat q10 min up to 3× as bridge against hyperK','Faster calcium infusion if cardiac instability or arrest','Cardiac monitor — watch for peaked T waves, wide QRS','Tourniquet only if unable to fluid-resuscitate prior to extrication','Pain control per protocol','Pre-alert receiving — anticipate dialysis']},
+  co_poison:{picture:'Carbon monoxide poisoning — suspect in any fire victim or enclosed-space exposure. Symptoms: HA, AMS, syncope, cherry-red skin (late). Pulse-ox unreliable; use rainbow sensor if available (PHI Trauma 8-15).',
+    plan:['100% FiO2 via NRB at 15-25 L/min','If decreased LOC or signs of severe toxicity: intubate','Use SpCO via rainbow sensor (Zoll X) — standard pulse-ox is FALSELY NORMAL','Consider concurrent cyanide poisoning in fire victims — see cyanide protocol','Pre-alert hyperbaric O2 capable facility for severe cases (LOC change, pregnancy, cardiac sx)','Continue 100% O2 throughout transport']},
+  electrical_burn:{picture:'Electrical burn — entrance/exit wounds, deep tissue injury, arrhythmia risk, rhabdomyolysis (PHI Trauma 8-16).',
+    plan:['12-lead EKG — assess for arrhythmias','TBSA >20%: LR resuscitation 4 mL/kg/TBSA','Place urinary catheter if available','Assess for compartment syndrome — circumferential burns, swelling, pain','Urine output target: 30-50 mL/hr (1 mL/kg/hr peds)','Myoglobinuria present: increase target to 75-100 mL/hr (1.5-2× maintenance peds)','Pain control per protocol','Pre-alert burn center']},
+  chemical_burn:{picture:'Chemical burn — protect crew with PPE, decontaminate before transport, avoid spreading contaminant (PHI Trauma 8-17).',
+    plan:['DON PPE before patient contact','Remove ALL clothing, jewelry, contact lenses','Brush off DRY chemicals first (do NOT wet)','Irrigate with shower/hose for 20+ minutes (running water, NOT soaking)','Do NOT transport an undecontaminated patient','Identify chemical and notify receiving','Pain control after decontamination','Eye involvement: continuous saline irrigation en route']},
+  hypothermia:{picture:'Hypothermia — Mild 32-35°C, Moderate 28-32°C, Severe <28°C. Severe risk of arrhythmia from rough handling (PHI Trauma 8-19).',
+    plan:['Remove wet clothing, dry patient, insulate','Mild (32-35°C): warm IV fluids (104°F / 40°C)','Moderate (28-32°C): minimize stimulation, thermal blanket, warm humidified O2','Severe (<28°C): active rewarming — heated O2, warm IV, gastric lavage; ECMO is not field option','Handle gently — VF risk in severe hypothermia','Cardiac arrest in hypothermia: continue CPR — \'not dead until warm and dead\' (>30°C)','Withhold meds/defib if core <30°C; defib ×1 if shockable, then warm to 30°C before further drugs']},
+  frostbite:{picture:'Frostbite — superficial (frostnip) to deep tissue freezing. Most common: fingers, toes, ears, nose (PHI Trauma 8-19).',
+    plan:['Gentle handling — frozen tissue is fragile','Loose sterile dressing over affected areas','Pad and protect — avoid friction','DO NOT thaw if any chance of refreezing (partial thaw + refreeze = worse damage)','If definitive thawing: warm-water bath 37-39°C (99-102°F) for 15-30 min','Pain control during/after thawing','Treat associated hypothermia first','Pre-alert receiving for definitive care']},
+  heat_illness:{picture:'Heat-related illness — heat exhaustion (sweating, normal/mildly elevated temp, AMS rare) vs heat stroke (high temp >40°C/104°F, AMS, often anhidrotic). Heat stroke = life-threatening (PHI Trauma 8-19).',
+    plan:['Move to cool environment','Remove excess clothing','Cold packs to chest, groin, axilla','Mist + fan for evaporative cooling','Cold IV fluids if heat stroke','Continuous core temp monitoring','Stop active cooling at 38-39°C to avoid overshoot hypothermia','Treat seizures (cooling first)','Pre-alert receiving for severe cases']}
 };
 
 function renderPlan(){
@@ -1033,6 +1122,7 @@ function rcCard(opts){
   var rows=(opts.rows||[]).map(function(r){return '<div class="rr"><span class="rk">'+r.k+'</span><span class="rv '+(r.cls||'dose')+'">'+r.v+'</span></div>';}).join('');
   var note=opts.note?'<div class="rc-note">'+opts.note+'</div>':'';
   var warn=opts.warn?'<div class="rc-warn">'+opts.warn+'</div>':'';
+  var mdctrl=opts.mdControl?'<div class="rc-mdctrl">⚠ MEDICAL DIRECTION REQUIRED</div>':'';
   var ind=opts.indication?'<div class="rc-ind">'+opts.indication+'</div>':'';
   var sub=opts.generic?'<div class="rc-names">'+opts.generic+'</div>':'';
   var FORM_LABELS={premix:'Premix Bag — Ready to Hang',vial:'Vial — Draw Up',vialmix:'Vial → Mix to Bag',syringe:'Pre-filled Syringe — Ready to Push',po:'PO — Tablet / Liquid'};
@@ -1041,225 +1131,225 @@ function rcCard(opts){
   return '<div class="rc'+formCls+'"><div class="rc-bar" style="background:'+(opts.color||'var(--cyan)')+'"></div>'+
     '<div class="rc-cat">'+(opts.cat||'')+'</div>'+
     '<div class="rc-name">'+opts.name+'</div>'+
-    sub+badge+ind+rows+note+warn+'</div>';
+    sub+badge+ind+mdctrl+rows+note+warn+'</div>';
 }
 
 var DRUGS = {
   // ARREST
   epiArrest: function(){
-    return rcCard({name:'Epinephrine — Arrest',generic:'1:10,000 (0.1 mg/mL) — pre-filled syringe',cat:'ARREST',form:'syringe',
+    return rcCard({name:'Epinephrine — Arrest',generic:'1:10,000 (0.1 mg/mL) — pre-filled syringe',cat:'ARREST',form:'syringe',line:'1st line',
       indication:'Adult cardiac arrest',color:'var(--rose)',
       rows:[{k:'Dose',v:'1 mg IV/IO q 3-5 min'},{k:'Volume',v:'10 mL of 0.1 mg/mL',cls:'calc'}],
       note:'Push then 20 mL flush. Continue CPR.'});
   },
   amioArrest: function(){
-    return rcCard({name:'Amiodarone — Arrest',generic:'Stock 50 mg/mL vial',cat:'ARREST',form:'vial',
+    return rcCard({name:'Amiodarone — Arrest',generic:'Stock 50 mg/mL vial',cat:'ARREST',form:'vial',line:'2nd line',
       indication:'Refractory VF / pulseless VT (after 3rd shock + epi)',color:'var(--rose)',
       rows:[{k:'1st dose',v:'300 mg IV/IO push'},{k:'1st volume',v:'6 mL of 50 mg/mL',cls:'calc'},{k:'2nd dose',v:'150 mg IV/IO'},{k:'2nd volume',v:'3 mL',cls:'calc'},{k:'Max',v:mx('2.2 g / 24 hr'),cls:'warn'}]});
   },
   lidoArrest: function(){
     var w=dosingWt(); var lo=round(1*w,0); var hi=round(1.5*w,0);
-    return rcCard({name:'Lidocaine — Arrest (alt)',generic:'Stock 20 mg/mL pre-filled syringe',cat:'ARREST',form:'syringe',
+    return rcCard({name:'Lidocaine — Arrest (alt)',generic:'Stock 20 mg/mL pre-filled syringe',cat:'ARREST',form:'syringe',line:'3rd line',
       indication:'Refractory VF / pulseless VT (alt to amio)',color:'var(--rose)',
       rows:[{k:'1st dose',v:'1 to '+mx('1.5')+' mg/kg IV/IO'},{k:'Calc',v:lo+' to '+mx(hi+' mg'),cls:'calc'},{k:'Volume',v:round(lo/20,1)+' to '+mx(round(hi/20,1)+' mL'),cls:'calc'},{k:'Repeat',v:'0.5-0.75 mg/kg q 5-10 min'},{k:'Max',v:mx('3 mg/kg total'),cls:'warn'}]});
   },
   defib: function(){
-    return rcCard({name:'Defibrillation',generic:'Asynchronous shock',cat:'ARREST',
+    return rcCard({name:'Defibrillation',generic:'Asynchronous shock',cat:'ARREST',line:'1st line',
       indication:'VF / pulseless VT',color:'var(--red)',
       rows:[{k:'1st shock',v:'200 J biphasic'},{k:'2nd+ shock',v:mx('200-360 J biphasic')},{k:'Pads',v:'Anterior-lateral or AP'}]});
   },
   cardiovert: function(){
-    return rcCard({name:'Synchronized Cardioversion',generic:'Sync shock',cat:'DYSRHYTHMIA',
+    return rcCard({name:'Synchronized Cardioversion',generic:'Sync shock',cat:'DYSRHYTHMIA',line:'1st line',
       indication:'Unstable SVT / VT / A-fib RVR / A-flutter',color:'var(--red)',
       rows:[{k:'A-fib',v:'120-200 J biphasic'},{k:'A-flutter / SVT',v:'50-100 J biphasic'},{k:'VT mono',v:'100 J biphasic'},{k:'Sedate',v:'Midazolam 2-5 mg or Etomidate 0.15 mg/kg'}]});
   },
   // DYSRHYTHMIA
   adenosine: function(){
-    return rcCard({name:'Adenosine',generic:'Stock 3 mg/mL vial',cat:'DYSRHYTHMIA',form:'vial',
+    return rcCard({name:'Adenosine',generic:'Stock 3 mg/mL vial',cat:'DYSRHYTHMIA',form:'vial',line:'1st line',
       indication:'Stable narrow-complex SVT',color:'var(--cyan)',
       rows:[{k:'1st dose',v:'6 mg rapid IV push'},{k:'1st volume',v:'2 mL',cls:'calc'},{k:'2nd dose',v:mx('12 mg')+' rapid IV push'},{k:'2nd volume',v:mx('4 mL'),cls:'calc'},{k:'Repeat',v:'12 mg × 1 if no response'}],
       note:'PROXIMAL large-bore IV. Push as fast as possible, follow with 20 mL NS flush. Continuous EKG.'});
   },
   atropine: function(){
-    return rcCard({name:'Atropine',generic:'Stock 0.1 mg/mL pre-filled syringe',cat:'DYSRHYTHMIA',form:'syringe',
+    return rcCard({name:'Atropine',generic:'Stock 0.1 mg/mL pre-filled syringe',cat:'DYSRHYTHMIA',form:'syringe',line:'1st line',
       indication:'Symptomatic bradycardia, organophosphate tox',color:'var(--amber)',
       rows:[{k:'Dose',v:'1 mg IV/IO'},{k:'Volume',v:'10 mL',cls:'calc'},{k:'Repeat',v:'q 3-5 min'},{k:'Max',v:mx('3 mg'),cls:'warn'}],
       warn:'Avoid in degenerative conduction blocks (Mobitz II, complete heart block) — consider pacing or epi instead.'});
   },
   diltiazem: function(){
     var w=dosingWt(); var dose=round(0.25*w,0);
-    return rcCard({name:'Diltiazem',generic:'Stock 5 mg/mL vial',cat:'DYSRHYTHMIA',form:'vial',
+    return rcCard({name:'Diltiazem',generic:'Stock 5 mg/mL vial',cat:'DYSRHYTHMIA',form:'vial',line:'2nd line',
       indication:'A-fib / A-flutter with RVR (rate control)',color:'var(--cyan)',
       rows:[{k:'1st dose',v:'0.25 mg/kg IV over 2 min'},{k:'Calc',v:dose+' mg = '+round(dose/5,1)+' mL',cls:'calc'},{k:'2nd dose',v:'0.35 mg/kg IV in 15 min if needed'},{k:'2nd calc',v:round(0.35*w,0)+' mg',cls:'calc'},{k:'Drip',v:'5-15 mg/hr'}],
       warn:'AVOID in WPW with A-fib (preexcited). Caution in CHF, hypotension. Hold for SBP < 90.'});
   },
   metop: function(){
-    return rcCard({name:'Metoprolol',generic:'Stock 1 mg/mL vial',cat:'DYSRHYTHMIA',form:'vial',
+    return rcCard({name:'Metoprolol',generic:'Stock 1 mg/mL vial',cat:'DYSRHYTHMIA',form:'vial',line:'2nd line',
       indication:'A-fib / A-flutter with RVR (alternative)',color:'var(--cyan)',
       rows:[{k:'Dose',v:'5 mg slow IV q 5 min × 3'},{k:'Volume',v:'5 mL × 3',cls:'calc'},{k:'Max',v:mx('15 mg'),cls:'warn'}],
       warn:'Caution in asthma, decompensated CHF, hypotension.'});
   },
   // ACS
   asa: function(){
-    return rcCard({name:'Aspirin',generic:'81 mg chewable',cat:'ACS',form:'po',
+    return rcCard({name:'Aspirin',generic:'81 mg chewable',cat:'ACS',form:'po',line:'1st line',
       indication:'Suspected ACS / STEMI',color:'var(--red)',
       rows:[{k:'Dose',v:'324-325 mg PO chewed'},{k:'Tabs',v:'4 × 81 mg chewable',cls:'calc'}],
       warn:'Hold if active GI bleed or anaphylaxis to ASA.'});
   },
   ntg: function(){
-    return rcCard({name:'Nitroglycerin',generic:'0.4 mg SL tab',cat:'ACS',form:'po',
+    return rcCard({name:'Nitroglycerin',generic:'0.4 mg SL tab',cat:'ACS',form:'po',line:'1st line',
       indication:'ACS chest pain, pulmonary edema',color:'var(--rose)',
       rows:[{k:'SL dose',v:'0.4 mg q 5 min × 3'},{k:'Spray',v:'0.4 mg metered dose'},{k:'IV drip',v:'10-20 mcg/min, titrate by 5-10 mcg/min q 3-5 min'},{k:'Max',v:mx('200 mcg/min'),cls:'warn'}],
       warn:'HOLD if SBP < 90, RV infarct (inferior MI with R-sided EKG changes), recent PDE-5 inhibitor (sildenafil 24 hr, tadalafil 48 hr).'});
   },
   morphine: function(){
-    return rcCard({name:'Morphine',generic:'Stock 4 mg/mL vial',cat:'ACS',form:'vial',
+    return rcCard({name:'Morphine',generic:'Stock 4 mg/mL vial',cat:'ACS',form:'vial',line:'3rd line',
       indication:'Refractory ACS pain (after NTG), cardiogenic pulmonary edema',color:'var(--amber)',
       rows:[{k:'Dose',v:'2 to '+mx('4')+' mg IV q 5-15 min PRN'},{k:'Volume',v:'0.5 to '+mx('1 mL'),cls:'calc'},{k:'Max',v:mx('10 mg total'),cls:'warn'}],
       warn:'Caution in NSTEMI — associated with ↑ mortality. Avoid in inferior MI with hypotension.'});
   },
   // PULMONARY EDEMA
   furosemide: function(){
-    return rcCard({name:'Furosemide',generic:'Stock 10 mg/mL vial',cat:'CARDIAC',form:'vial',
+    return rcCard({name:'Furosemide',generic:'Stock 10 mg/mL vial',cat:'CARDIAC',form:'vial',line:'2nd line',
       indication:'CHF exacerbation, volume overload',color:'var(--sky)',
       rows:[{k:'Naive',v:'40 mg IV'},{k:'On home Lasix',v:'2× home dose IV'},{k:'Severe',v:mx('80-160 mg IV')},{k:'Volume',v:'4 to '+mx('16 mL'),cls:'calc'}],
       warn:'Avoid in cardiogenic shock, hypovolemia, AMI without overt CHF.'});
   },
   // RESPIRATORY
   albuterol: function(){
-    return rcCard({name:'Albuterol',generic:'Stock 2.5 mg / 3 mL nebule',cat:'RESPIRATORY',form:'premix',
+    return rcCard({name:'Albuterol',generic:'Stock 2.5 mg / 3 mL nebule',cat:'RESPIRATORY',form:'premix',line:'1st line',
       indication:'Bronchospasm (asthma, COPD, anaphylaxis adjunct, hyperK)',color:'var(--teal)',
       rows:[{k:'Dose',v:'2.5 to '+mx('5')+' mg neb'},{k:'Continuous severe',v:mx('10-20 mg/hr'),cls:'warn'},{k:'Repeat',v:'q 20 min × 3, then q 1-4 hr'}]});
   },
   ipratropium: function(){
-    return rcCard({name:'Ipratropium',generic:'Stock 0.5 mg / 2.5 mL nebule',cat:'RESPIRATORY',form:'premix',
+    return rcCard({name:'Ipratropium',generic:'Stock 0.5 mg / 2.5 mL nebule',cat:'RESPIRATORY',form:'premix',line:'1st line',
       indication:'Severe asthma / COPD — added to first 3 albuterol nebs',color:'var(--teal)',
       rows:[{k:'Dose',v:'0.5 mg neb'},{k:'Repeat',v:'with first 3 albuterol nebs'}]});
   },
   methylpred: function(){
-    return rcCard({name:'Methylprednisolone',generic:'Solu-Medrol — Stock 125 mg vial reconstituted',cat:'RESPIRATORY',form:'vialmix',
+    return rcCard({name:'Methylprednisolone',generic:'Solu-Medrol — Stock 125 mg vial reconstituted',cat:'RESPIRATORY',form:'vialmix',line:'1st line',
       indication:'Asthma, COPD, anaphylaxis',color:'var(--lime)',
       rows:[{k:'Dose',v:'125 mg IV/IM'},{k:'Mix',v:'Reconstitute 125 mg vial with 2 mL diluent',cls:'calc'}]});
   },
   magAsthma: function(){
-    return rcCard({name:'Magnesium Sulfate — Asthma',generic:'Stock 5 g / 10 mL vial (50%)',cat:'RESPIRATORY',form:'vialmix',
+    return rcCard({name:'Magnesium Sulfate — Asthma',generic:'Stock 5 g / 10 mL vial (50%)',cat:'RESPIRATORY',form:'vialmix',line:'2nd line',
       indication:'Severe asthma refractory to nebs',color:'var(--purple)',
       rows:[{k:'Dose',v:'2 g IV over 20 min'},{k:'Volume',v:'4 mL of 50%',cls:'calc'},{k:'Mix',v:'Dilute in 100 mL NS, infuse over 20 min',cls:'calc'}],
       warn:'Hypotension if pushed too fast.'});
   },
   epiAna: function(){
-    return rcCard({name:'Epinephrine IM — Anaphylaxis',generic:'Stock 1 mg/mL (1:1000) vial',cat:'ANAPHYLAXIS',form:'vial',
+    return rcCard({name:'Epinephrine IM — Anaphylaxis',generic:'Stock 1 mg/mL (1:1000) vial',cat:'ANAPHYLAXIS',form:'vial',line:'1st line',
       indication:'Anaphylaxis — 1st line, only proven life-saver',color:'var(--rose)',
       rows:[{k:'Dose',v:'0.3 to '+mx('0.5')+' mg IM into anterolateral thigh'},{k:'Volume',v:'0.3 to '+mx('0.5 mL of 1 mg/mL'),cls:'calc'},{k:'Repeat',v:'q 5-15 min PRN'}],
       note:'IM > IV/SQ. Use 1:1000 NOT 1:10,000.'});
   },
   diphenhydramine: function(){
-    return rcCard({name:'Diphenhydramine',generic:'Stock 50 mg/mL vial',cat:'ANAPHYLAXIS',form:'vial',
+    return rcCard({name:'Diphenhydramine',generic:'Stock 50 mg/mL vial',cat:'ANAPHYLAXIS',form:'vial',line:'adjunct',
       indication:'Anaphylaxis (H1 — adjunct)',color:'var(--purple)',
       rows:[{k:'Dose',v:'50 mg IV/IM'},{k:'Volume',v:'1 mL',cls:'calc'}],
       note:'Adjunct only — NOT a substitute for epinephrine.'});
   },
   famotidine: function(){
-    return rcCard({name:'Famotidine',generic:'Stock 10 mg/mL vial',cat:'ANAPHYLAXIS',form:'vial',
+    return rcCard({name:'Famotidine',generic:'Stock 10 mg/mL vial',cat:'ANAPHYLAXIS',form:'vial',line:'adjunct',
       indication:'Anaphylaxis (H2 — adjunct)',color:'var(--purple)',
       rows:[{k:'Dose',v:'20 mg IV'},{k:'Volume',v:'2 mL',cls:'calc'}]});
   },
   // SHOCK
   fluidBolus: function(){
     var w=dosingWt(); var ml30=round(30*w,0);
-    return rcCard({name:'Crystalloid Bolus',generic:'NS or LR (1000 mL bag)',cat:'SHOCK',form:'premix',
+    return rcCard({name:'Crystalloid Bolus',generic:'NS or LR (1000 mL bag)',cat:'SHOCK',form:'premix',line:'1st line',
       indication:'Sepsis, hypovolemia, trauma',color:'var(--teal)',
       rows:[{k:'Sepsis',v:'30 mL/kg over 3 hr'},{k:'Calc sepsis',v:ml30+' mL total',cls:'calc'},{k:'Trauma',v:'500 mL bolus, reassess (permissive hypotension if no TBI)'},{k:'CHF / cardiogenic',v:'250 mL cautious bolus'}],
       note:'Reassess after each bolus. Cardiogenic features → STOP and consider pressors.'});
   },
   norepi: function(){
     var w=dosingWt(); var lo=round(0.05*w*60/16,2); var hi=round(2*w*60/16,1);
-    return rcCard({name:'Norepinephrine',generic:'Mix 4 mg in 250 mL NS = 16 mcg/mL',cat:'SHOCK',form:'vialmix',
+    return rcCard({name:'Norepinephrine',generic:'Mix 4 mg in 250 mL NS = 16 mcg/mL',cat:'SHOCK',form:'vialmix',line:'1st line',
       indication:'Septic shock (1st line), cardiogenic, hypotension',color:'var(--rose)',
       rows:[{k:'Mix',v:'4 mg (4 mL of 1 mg/mL) into 250 mL NS = 16 mcg/mL',cls:'calc'},{k:'Dose',v:'0.05 to '+mx('2')+' mcg/kg/min'},{k:'Pump rate (low)',v:lo+' mL/hr',cls:'calc'},{k:'Pump rate (max)',v:mx(hi+' mL/hr'),cls:'calc'},{k:'Titrate',v:'q 5 min to MAP > 65'}]});
   },
   epiInfusion: function(){
     var w=dosingWt(); var lo=round(0.05*w*60/10,2); var hi=round(1*w*60/10,1);
-    return rcCard({name:'Epinephrine Infusion',generic:'Mix 1 mg in 100 mL NS = 10 mcg/mL',cat:'SHOCK',form:'vialmix',
+    return rcCard({name:'Epinephrine Infusion',generic:'Mix 1 mg in 100 mL NS = 10 mcg/mL',cat:'SHOCK',form:'vialmix',line:'2nd line',
       indication:'Refractory septic / cardiogenic shock, severe brady',color:'var(--rose)',
       rows:[{k:'Mix',v:'1 mg (10 mL of 1:10,000) into 100 mL NS = 10 mcg/mL',cls:'calc'},{k:'Dose',v:'0.05 to '+mx('1')+' mcg/kg/min'},{k:'Pump rate (low)',v:lo+' mL/hr',cls:'calc'},{k:'Pump rate (max)',v:mx(hi+' mL/hr'),cls:'calc'}]});
   },
   vaso: function(){
-    return rcCard({name:'Vasopressin',generic:'Stock 20 u/mL vial',cat:'SHOCK',form:'vialmix',
+    return rcCard({name:'Vasopressin',generic:'Stock 20 u/mL vial',cat:'SHOCK',form:'vialmix',line:'2nd line',
       indication:'Refractory septic shock (add-on to norepi)',color:'var(--rose)',
       rows:[{k:'Dose',v:'0.04 u/min IV (fixed)'},{k:'Mix',v:'40 u in 250 mL NS = 0.16 u/mL → run at 15 mL/hr',cls:'calc'}]});
   },
   dobutamine: function(){
     var w=dosingWt(); var lo=round(2*w*60/250,1); var hi=round(20*w*60/250,1);
-    return rcCard({name:'Dobutamine',generic:'Mix 250 mg in 250 mL NS = 1 mg/mL',cat:'SHOCK',form:'vialmix',
+    return rcCard({name:'Dobutamine',generic:'Mix 250 mg in 250 mL NS = 1 mg/mL',cat:'SHOCK',form:'vialmix',line:'2nd line',
       indication:'Cardiogenic shock with normal BP, low CO',color:'var(--rose)',
       rows:[{k:'Mix',v:'250 mg into 250 mL NS = 1 mg/mL = 1000 mcg/mL',cls:'calc'},{k:'Dose',v:'2 to '+mx('20')+' mcg/kg/min'},{k:'Pump rate (low)',v:lo+' mL/hr',cls:'calc'},{k:'Pump rate (max)',v:mx(hi+' mL/hr'),cls:'calc'}],
       warn:'Causes vasodilation — may drop BP. Don\'t use as sole agent in hypotensive cardiogenic shock.'});
   },
   hydrocortisone: function(){
-    return rcCard({name:'Hydrocortisone',generic:'Stock 100 mg vial reconstituted',cat:'SHOCK',form:'vialmix',
+    return rcCard({name:'Hydrocortisone',generic:'Stock 100 mg vial reconstituted',cat:'SHOCK',form:'vialmix',line:'adjunct',
       indication:'Catecholamine-resistant septic shock, adrenal crisis',color:'var(--lime)',
       rows:[{k:'Dose',v:'50 mg IV q 6 hr OR 100 mg IV q 8 hr'},{k:'Mix',v:'Reconstitute with 2 mL diluent',cls:'calc'}]});
   },
   // ENDOCRINE
   d50: function(){
-    return rcCard({name:'Dextrose 50%',generic:'D50W 25 g / 50 mL pre-filled syringe',cat:'ENDOCRINE',form:'syringe',
+    return rcCard({name:'Dextrose 50%',generic:'D50W 25 g / 50 mL pre-filled syringe',cat:'ENDOCRINE',form:'syringe',line:'1st line',
       indication:'Adult hypoglycemia',color:'var(--amber)',
       rows:[{k:'Dose',v:'25 g IV (1 amp = 50 mL)'},{k:'Volume',v:'50 mL of 50%',cls:'calc'},{k:'Repeat',v:'PRN q 5-10 min'}],
       warn:'Vesicant — use large vein. Caution with concomitant TPA / stroke.'});
   },
   d10: function(){
-    return rcCard({name:'Dextrose 10%',generic:'D10W premix bag',cat:'ENDOCRINE',form:'premix',
+    return rcCard({name:'Dextrose 10%',generic:'D10W premix bag',cat:'ENDOCRINE',form:'premix',line:'1st line',
       indication:'Hypoglycemia (alt to D50, gentler)',color:'var(--amber)',
       rows:[{k:'Dose',v:'250 mL IV bolus = 25 g dextrose'},{k:'Volume',v:'250 mL premix bag',cls:'calc'}]});
   },
   glucagon: function(){
-    return rcCard({name:'Glucagon',generic:'Stock 1 mg vial reconstituted',cat:'ENDOCRINE',form:'vialmix',
+    return rcCard({name:'Glucagon',generic:'Stock 1 mg vial reconstituted',cat:'ENDOCRINE',form:'vialmix',line:'2nd line',
       indication:'Hypoglycemia w/o IV; β-blocker / CCB OD',color:'var(--amber)',
       rows:[{k:'Hypoglycemia',v:'1 mg IM/SC'},{k:'β-blocker / CCB',v:'5 to '+mx('10')+' mg IV bolus, then 1-5 mg/hr'},{k:'Mix',v:'Reconstitute 1 mg vial with 1 mL diluent',cls:'calc'}]});
   },
   // SEIZURE
   lorazepamSeizure: function(){
-    return rcCard({name:'Lorazepam — Seizure',generic:'Stock 2 mg/mL vial',cat:'SEIZURE',form:'vial',
+    return rcCard({name:'Lorazepam — Seizure',generic:'Stock 2 mg/mL vial',cat:'SEIZURE',form:'vial',line:'1st line',
       indication:'Status epilepticus (1st line if IV)',color:'var(--rose)',
       rows:[{k:'Dose',v:'4 mg IV/IO'},{k:'Volume',v:'2 mL',cls:'calc'},{k:'Repeat',v:'4 mg in 5-10 min if still seizing'},{k:'Max',v:mx('8 mg'),cls:'warn'}]});
   },
   midazolamSeizure: function(){
-    return rcCard({name:'Midazolam — Seizure',generic:'Stock 5 mg/mL vial',cat:'SEIZURE',form:'vial',
+    return rcCard({name:'Midazolam — Seizure',generic:'Stock 5 mg/mL vial',cat:'SEIZURE',form:'vial',line:'1st line',
       indication:'Status epilepticus (1st line if no IV — IM/IN)',color:'var(--rose)',
       rows:[{k:'IM/IN',v:'10 mg IM/IN'},{k:'IV/IO',v:'5 to '+mx('10')+' mg'},{k:'Volume',v:'1 to '+mx('2 mL'),cls:'calc'},{k:'Repeat',v:'5-10 mg in 5-10 min'}]});
   },
   levetiracetam: function(){
     var w=dosingWt(); var mg=Math.min(round(60*w,0),4500);
-    return rcCard({name:'Levetiracetam (Keppra)',generic:'Stock 100 mg/mL vial',cat:'SEIZURE',form:'vialmix',
+    return rcCard({name:'Levetiracetam (Keppra)',generic:'Stock 100 mg/mL vial',cat:'SEIZURE',form:'vialmix',line:'2nd line',
       indication:'Status epilepticus (after benzo)',color:'var(--purple)',
       rows:[{k:'Dose',v:'60 mg/kg IV over 10 min'},{k:'Calc',v:mg+' mg = '+round(mg/100,1)+' mL',cls:'calc'},{k:'Max',v:mx('4500 mg'),cls:'warn'},{k:'Mix',v:'Dilute in 100 mL NS, infuse over 10 min',cls:'calc'}]});
   },
   fosphenytoin: function(){
     var w=dosingWt(); var mg=Math.min(round(20*w,0),1500);
-    return rcCard({name:'Fosphenytoin',generic:'Stock 50 mg PE/mL vial',cat:'SEIZURE',form:'vialmix',
+    return rcCard({name:'Fosphenytoin',generic:'Stock 50 mg PE/mL vial',cat:'SEIZURE',form:'vialmix',line:'3rd line',
       indication:'Status epilepticus (alternative to Keppra)',color:'var(--purple)',
       rows:[{k:'Dose',v:'20 mg PE/kg IV (max 150 mg PE/min)'},{k:'Calc',v:mg+' mg PE = '+round(mg/50,1)+' mL',cls:'calc'},{k:'Max',v:mx('1500 mg PE'),cls:'warn'}],
       warn:'Watch hypotension and arrhythmias. Continuous EKG.'});
   },
   // ICP / NEURO
   hypertonic: function(){
-    return rcCard({name:'3% Sodium Chloride',generic:'Premix 250 mL bag',cat:'ICP',form:'premix',
+    return rcCard({name:'3% Sodium Chloride',generic:'Premix 250 mL bag',cat:'ICP',form:'premix',line:'1st line',
       indication:'↑ ICP / herniation, severe hyponatremia w/ seizure',color:'var(--purple)',
       rows:[{k:'Dose',v:'250 mL IV over 10 min'},{k:'Repeat',v:'PRN for sustained ICP'}],
       note:'Preferred over mannitol if hypovolemic.'});
   },
   mannitol: function(){
     var w=dosingWt(); var loG=round(0.5*w,1); var hiG=round(1*w,1);
-    return rcCard({name:'Mannitol 20%',generic:'Stock 200 mg/mL bag',cat:'ICP',form:'premix',
+    return rcCard({name:'Mannitol 20%',generic:'Stock 200 mg/mL bag',cat:'ICP',form:'premix',line:'2nd line',mdControl:true,
       indication:'↑ ICP / herniation (when euvolemic)',color:'var(--purple)',
       rows:[{k:'Dose',v:'0.5 to '+mx('1')+' g/kg IV over 10-20 min'},{k:'Calc',v:loG+' to '+mx(hiG+' g'),cls:'calc'},{k:'Volume',v:round(loG*5,0)+' to '+mx(round(hiG*5,0)+' mL'),cls:'calc'}],
-      warn:'AVOID if hypovolemic. Don\'t give in renal failure.'});
+      warn:'MEDICAL DIRECTION REQUIRED prior to administration. AVOID if hypovolemic. Don\'t give in renal failure.'});
   },
   // ──── BP CONTROL / HYPERTENSIVE EMERGENCY (PHI order) ────
   // 1. Nicardipine
   nicardipine: function(){
-    return rcCard({name:'Nicardipine',generic:'Mix 25 mg in 250 mL = 0.1 mg/mL (100 mcg/mL)',cat:'BP CONTROL',form:'vialmix',
+    return rcCard({name:'Nicardipine',generic:'Mix 25 mg in 250 mL = 0.1 mg/mL (100 mcg/mL)',cat:'BP CONTROL',form:'vialmix',line:'1st line',
       indication:'Hypertensive emergency, stroke BP control. Adult & Pediatric.',color:'var(--cyan)',
       rows:[
         {k:'Mix prep',v:'25 mg (25 mL of 1 mg/mL) into 250 mL NS = 0.1 mg/mL',cls:'calc'},
@@ -1274,7 +1364,7 @@ var DRUGS = {
   },
   // 2. Clevidipine
   clevidipine: function(){
-    return rcCard({name:'Clevidipine',generic:'Stock 0.5 mg/mL premix bag (Cleviprex)',cat:'BP CONTROL',form:'premix',
+    return rcCard({name:'Clevidipine',generic:'Stock 0.5 mg/mL premix bag (Cleviprex)',cat:'BP CONTROL',form:'premix',line:'1st line',
       indication:'Hypertensive emergency (alternative to Nicardipine). Adult & Pediatric.',color:'var(--cyan)',
       rows:[
         {k:'Initial',v:'1-2 mg/hr IV infusion'},
@@ -1288,7 +1378,7 @@ var DRUGS = {
   },
   // 3. Labetalol
   labetalol: function(){
-    return rcCard({name:'Labetalol',generic:'Stock 100 mg / 20 mL vial (5 mg/mL) — combined α/β blocker',cat:'BP CONTROL',form:'vial',
+    return rcCard({name:'Labetalol',generic:'Stock 100 mg / 20 mL vial (5 mg/mL) — combined α/β blocker',cat:'BP CONTROL',form:'vial',line:'1st line',
       indication:'Hypertensive emergency, stroke BP control. Adult & Pediatric.',color:'var(--cyan)',
       rows:[
         {k:'Dose 1',v:'20 mg IV over 2 min'},
@@ -1310,7 +1400,7 @@ var DRUGS = {
     var loadMcg=round(500*w,0);
     var loadMg=round(loadMcg/1000,2);
     var maxRate=round(300*w,0);
-    return rcCard({name:'Esmolol',generic:'Stock 10 mg/mL vial OR 2.5 g / 250 mL premix (10 mg/mL)',cat:'BP CONTROL',form:'vialmix',
+    return rcCard({name:'Esmolol',generic:'Stock 10 mg/mL vial OR 2.5 g / 250 mL premix (10 mg/mL)',cat:'BP CONTROL',form:'vialmix',line:'1st line',
       indication:'Hypertensive emergency, A-fib rate control, refractory tachycardia. Adult & Pediatric.',color:'var(--cyan)',
       rows:[
         {k:'Initial load',v:'500 mcg/kg IV over 1 min'},
@@ -1324,100 +1414,100 @@ var DRUGS = {
   },
   // PAIN / SEDATION
   fentanylBolus: function(){
-    return rcCard({name:'Fentanyl',generic:'Stock 50 mcg/mL vial',cat:'PAIN',form:'vial',
+    return rcCard({name:'Fentanyl',generic:'Stock 50 mcg/mL vial',cat:'PAIN',form:'vial',line:'1st line',
       indication:'Pain, post-RSI analgesia',color:'var(--amber)',
       rows:[{k:'Dose',v:'50 to '+mx('100')+' mcg IV/IM/IN'},{k:'Volume',v:'1 to '+mx('2 mL'),cls:'calc'},{k:'Repeat',v:'q 30-60 min PRN'}]});
   },
   morphinePain: function(){
-    return rcCard({name:'Morphine — Pain',generic:'Stock 4 mg/mL vial',cat:'PAIN',form:'vial',
+    return rcCard({name:'Morphine — Pain',generic:'Stock 4 mg/mL vial',cat:'PAIN',form:'vial',line:'adjunct',
       indication:'Pain (non-cardiac)',color:'var(--amber)',
       rows:[{k:'Dose',v:'2 to '+mx('5')+' mg IV/IM'},{k:'Volume',v:'0.5 to '+mx('1.25 mL'),cls:'calc'},{k:'Max single',v:mx('10 mg'),cls:'warn'}]});
   },
   // RSI
   ketamineInd: function(){
     var w=dosingWt(); var lo=round(1.5*w,0); var hi=round(2*w,0);
-    return rcCard({name:'Ketamine — Induction',generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — PHI preferred',cat:'RSI',form:'vial',
+    return rcCard({name:'Ketamine — Induction',generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — PHI preferred',cat:'RSI',form:'vial',line:'1st line',
       indication:'Adult RSI induction — preferred for hypotension, asthma, hemorrhage',color:'var(--orange)',
       rows:[{k:'PHI dose',v:'1.5 to '+mx('2')+' mg/kg IV'},{k:'Calc',v:lo+' to '+mx(hi+' mg'),cls:'calc'},{k:'Volume',v:round(lo/50,2)+' to '+mx(round(hi/50,2)+' mL'),cls:'calc'},{k:'Max RSI',v:mx('2 mg/kg = '+hi+' mg'),cls:'warn'},{k:'Onset',v:'30-60 sec'},{k:'Duration',v:'10-20 min'}],
       note:'PHI preferred adult induction. Preserves BP.'});
   },
   etomidate: function(){
     var w=dosingWt(); var dose=round(0.3*w,1);
-    return rcCard({name:'Etomidate — REFERENCE ONLY',generic:'Stock 20 mg / 10 mL (2 mg/mL) — NOT on PHI formulary',cat:'RSI',form:'vial',
+    return rcCard({name:'Etomidate — REFERENCE ONLY',generic:'Stock 20 mg / 10 mL (2 mg/mL) — NOT on PHI formulary',cat:'RSI',form:'vial',line:'see protocol',
       indication:'Alternative induction (not PHI standing order)',color:'var(--tx2)',
       rows:[{k:'Dose',v:'0.3 mg/kg IV'},{k:'Calc',v:dose+' mg = '+round(dose/2,2)+' mL',cls:'calc'},{k:'Onset',v:'30 sec'},{k:'Duration',v:'5-10 min'}],
       warn:'⚠ NOT on PHI Health formulary. Use ketamine as PHI preferred.'});
   },
   rocRSI: function(){
     var ibw=dosingIbw(); var dose=round(1.5*ibw,0); var doseIM=round(2*ibw,0);
-    return rcCard({name:'Rocuronium — RSI',generic:'Stock 100 mg / 10 mL vial (10 mg/mL) — PHI formulary',cat:'RSI',form:'vial',
+    return rcCard({name:'Rocuronium — RSI',generic:'Stock 100 mg / 10 mL vial (10 mg/mL) — PHI formulary',cat:'RSI',form:'vial',line:'1st line',
       indication:'Adult RSI paralysis',color:'var(--rose)',
       rows:[{k:'PHI IV',v:'1.5 mg/kg IBW IV'},{k:'PHI IM',v:'2 mg/kg IBW IM (onset ~5 min)'},{k:'IBW',v:round(ibw,1)+' kg',cls:'calc'},{k:'Calc IV',v:dose+' mg = '+round(dose/10,2)+' mL',cls:'calc'},{k:'Calc IM',v:doseIM+' mg = '+round(doseIM/10,2)+' mL',cls:'calc'},{k:'Onset',v:'60-90 sec IV'},{k:'Duration',v:'45-90 min'}],
       warn:'Ensure post-RSI sedation drip is running BEFORE paralytic wears off.'});
   },
   succRSI: function(){
     var ibw=dosingIbw(); var doseIV=round(1.5*ibw,0); var doseIM=round(4*ibw,0);
-    return rcCard({name:'Succinylcholine',generic:'Stock 200 mg / 10 mL vial (20 mg/mL)',cat:'RSI',form:'vial',
+    return rcCard({name:'Succinylcholine',generic:'Stock 200 mg / 10 mL vial (20 mg/mL)',cat:'RSI',form:'vial',line:'2nd line',
       indication:'PHI Dangerous Agitation (4 mg/kg IM). Avoid for routine RSI when roc available.',color:'var(--red)',
       rows:[{k:'PHI Dangerous Agit',v:'4 mg/kg IBW IM'},{k:'IBW',v:round(ibw,1)+' kg',cls:'calc'},{k:'Calc IM',v:mx(doseIM+' mg = '+round(doseIM/20,2)+' mL'),cls:'calc'},{k:'Lit RSI (NOT PHI SO)',v:'1.5 mg/kg IV'},{k:'Calc IV',v:doseIV+' mg = '+round(doseIV/20,2)+' mL',cls:'calc'}],
       warn:'⚠ Hyperkalemia risk (burns, crush, denervation). MH. Don\'t use as 1st RSI agent in adult — use roc.'});
   },
   ketamineDrip: function(){
     var w=dosingWt(); var lo=round(1*w,0); var maxMg=round(4*w,0);
-    return rcCard({name:'Ketamine Drip — Sedation',generic:'Mix 500 mg in 100 mL NS = 5 mg/mL',cat:'RSI',form:'vialmix',
+    return rcCard({name:'Ketamine Drip — Sedation',generic:'Mix 500 mg in 100 mL NS = 5 mg/mL',cat:'RSI',form:'vialmix',line:'1st line',
       indication:'Post-intubation sedation — esp. hemodynamically tenuous',color:'var(--orange)',
       rows:[{k:'Mix',v:'500 mg (1 vial / 10 mL) into 100 mL NS = 5 mg/mL',cls:'calc'},{k:'PHI typical',v:'1-3 mg/kg/hr'},{k:'PHI MAX',v:mx('4 mg/kg/hr (PHI Adult)'),cls:'warn'},{k:'Patient wt',v:round(w,1)+' kg',cls:'calc'},{k:'Max calc',v:mx(maxMg+' mg/hr ('+round(maxMg/5,1)+' mL/hr)'),cls:'calc'},{k:'Bolus PRN',v:'0.5 mg/kg IV'}]});
   },
   midazolamDrip: function(){
     var w=dosingWt(); var lo=round(0.05*w,1); var hi=round(0.2*w,1);
-    return rcCard({name:'Midazolam Drip — Sedation',generic:'Mix 50 mg in 100 mL NS = 0.5 mg/mL',cat:'RSI',form:'vialmix',
+    return rcCard({name:'Midazolam Drip — Sedation',generic:'Mix 50 mg in 100 mL NS = 0.5 mg/mL',cat:'RSI',form:'vialmix',line:'2nd line',
       indication:'Post-intubation sedation (alt or adjunct)',color:'var(--amber)',
       rows:[{k:'Mix',v:'50 mg (10 mL of 5 mg/mL) into 100 mL NS = 0.5 mg/mL',cls:'calc'},{k:'Dose',v:'0.05 to '+mx('0.2')+' mg/kg/hr (typical 1-10 mg/hr)'},{k:'Calc',v:lo+' to '+mx(hi+' mg/hr'),cls:'calc'},{k:'Pump rate',v:round(lo/0.5,1)+' to '+mx(round(hi/0.5,1)+' mL/hr'),cls:'calc'}]});
   },
   fentanylDrip: function(){
     var w=dosingWt(); var lo=round(0.5*w,0); var hi=round(2*w,0);
-    return rcCard({name:'Fentanyl Drip — Analgesia',generic:'Mix 1000 mcg in 100 mL NS = 10 mcg/mL',cat:'RSI',form:'vialmix',
+    return rcCard({name:'Fentanyl Drip — Analgesia',generic:'Mix 1000 mcg in 100 mL NS = 10 mcg/mL',cat:'RSI',form:'vialmix',line:'1st line',
       indication:'Post-intubation analgesia',color:'var(--amber)',
       rows:[{k:'Mix',v:'1000 mcg (20 mL of 50 mcg/mL) into 100 mL NS = 10 mcg/mL',cls:'calc'},{k:'Dose',v:'0.5 to '+mx('2')+' mcg/kg/hr'},{k:'Calc',v:lo+' to '+mx(hi+' mcg/hr'),cls:'calc'},{k:'Pump rate',v:round(lo/10,1)+' to '+mx(round(hi/10,1)+' mL/hr'),cls:'calc'}]});
   },
   // TOX
   naloxone: function(){
-    return rcCard({name:'Naloxone',generic:'Stock 0.4 mg/mL or 1 mg/mL vial',cat:'TOX',form:'vial',
+    return rcCard({name:'Naloxone',generic:'Stock 0.4 mg/mL or 1 mg/mL vial',cat:'TOX',form:'vial',line:'1st line',
       indication:'Opioid OD with respiratory depression',color:'var(--purple)',
       rows:[{k:'Dose',v:'0.4 to '+mx('2')+' mg IV/IM/IN'},{k:'Volume (0.4 mg/mL)',v:'1 to '+mx('5 mL'),cls:'calc'},{k:'Repeat',v:'q 2-3 min PRN'},{k:'Drip',v:'2/3 of waking dose / hr'}]});
   },
   bicarb: function(){
     var w=dosingWt(); var mEq=round(1*w,0);
-    return rcCard({name:'Sodium Bicarbonate',generic:'Stock 1 mEq/mL = 50 mEq / 50 mL pre-filled syringe',cat:'TOX',form:'syringe',
+    return rcCard({name:'Sodium Bicarbonate',generic:'Stock 1 mEq/mL = 50 mEq / 50 mL pre-filled syringe',cat:'TOX',form:'syringe',line:'1st line',
       indication:'TCA OD, salicylate OD, severe acidosis, hyperK with EKG changes',color:'var(--cyan)',
       rows:[{k:'Dose',v:'1 mEq/kg IV'},{k:'Calc',v:mEq+' mEq',cls:'calc'},{k:'Volume',v:mEq+' mL',cls:'calc'},{k:'Hyperkalemia',v:'50 mEq IV (1 amp)'}]});
   },
   cacl: function(){
-    return rcCard({name:'Calcium Chloride 10%',generic:'Stock 100 mg/mL — 1 g per 10 mL pre-filled syringe',cat:'TOX',form:'syringe',
+    return rcCard({name:'Calcium Chloride 10%',generic:'Stock 100 mg/mL — 1 g per 10 mL pre-filled syringe',cat:'TOX',form:'syringe',line:'1st line',
       indication:'Hyperkalemia EKG, CCB OD, hypocalcemia, mag tox',color:'var(--rose)',
       rows:[{k:'Dose',v:'1 g IV slow push'},{k:'Volume',v:'10 mL of 10%',cls:'calc'},{k:'Repeat',v:'q 5-10 min PRN'}],
       warn:'Vesicant — central line preferred. Use Ca gluconate peripherally.'});
   },
   cagluc: function(){
-    return rcCard({name:'Calcium Gluconate 10%',generic:'Stock 100 mg/mL — 1 g per 10 mL vial',cat:'TOX',form:'vial',
+    return rcCard({name:'Calcium Gluconate 10%',generic:'Stock 100 mg/mL — 1 g per 10 mL vial',cat:'TOX',form:'vial',line:'adjunct',
       indication:'Hyperkalemia, hypocalcemia (peripheral-friendly)',color:'var(--rose)',
       rows:[{k:'Dose',v:'1 to '+mx('3')+' g IV slow'},{k:'Volume',v:'10 to '+mx('30 mL'),cls:'calc'}]});
   },
   cyanokit: function(){
-    return rcCard({name:'Hydroxocobalamin (Cyanokit)',generic:'Stock 5 g vial reconstituted',cat:'TOX',form:'vialmix',
+    return rcCard({name:'Hydroxocobalamin (Cyanokit)',generic:'Stock 5 g vial reconstituted',cat:'TOX',form:'vialmix',line:'1st line',
       indication:'Cyanide toxicity (smoke inhalation)',color:'var(--rose)',
       rows:[{k:'Dose',v:'5 g IV over 15 min'},{k:'Mix',v:'Reconstitute 5 g with 200 mL NS, infuse over 15 min',cls:'calc'},{k:'Repeat',v:'5 g × 1 if severe (max 10 g)'}],
       note:'Turns urine and skin red — falsely elevated SpO2 and cooximetry.'});
   },
   insulinHK: function(){
-    return rcCard({name:'Insulin (Regular) — HyperK',generic:'Stock 100 u/mL vial',cat:'TOX',form:'vial',
+    return rcCard({name:'Insulin (Regular) — HyperK',generic:'Stock 100 u/mL vial',cat:'TOX',form:'vial',line:'2nd line',mdControl:true,
       indication:'Hyperkalemia (shifts K intracellularly)',color:'var(--cyan)',
       rows:[{k:'Dose',v:'10 units IV push'},{k:'Volume',v:'0.1 mL of 100 u/mL',cls:'calc'},{k:'WITH',v:'D50 25 g IV (1 amp) — give first',cls:'warn'}],
-      warn:'Always give dextrose first or simultaneously to prevent iatrogenic hypoglycemia.'});
+      warn:'MEDICAL DIRECTION REQUIRED prior to administration. Always give dextrose first or simultaneously to prevent iatrogenic hypoglycemia.'});
   },
   // TRAUMA
   txa: function(){
-    return rcCard({name:'Tranexamic Acid (TXA)',generic:'Stock 100 mg/mL vial',cat:'TRAUMA',form:'vialmix',
+    return rcCard({name:'Tranexamic Acid (TXA)',generic:'Stock 100 mg/mL vial',cat:'TRAUMA',form:'vialmix',line:'1st line',
       indication:'Hemorrhagic trauma within 3 hr OR PPH',color:'var(--teal)',
       rows:[{k:'Loading',v:'1 g IV over 10 min'},{k:'Volume',v:'10 mL',cls:'calc'},{k:'Mix',v:'Dilute in 100 mL NS, run @ 600 mL/hr × 10 min',cls:'calc'},{k:'Maintenance',v:'1 g IV over 8 hr (at receiving)'}]});
   },
@@ -1440,7 +1530,7 @@ var DRUGS = {
       name:'Blood Products — PHI 4.9.1',
       generic:'PRBCs · FFP · Platelets · Whole Blood (LTOWB if carried)',
       cat:'TRAUMA / HEMORRHAGE',
-      form:'premix',
+      form:'premix',line:'1st line',mdControl:true /* VERIFY-PHI */,
       indication:'Class III/IV hemorrhagic shock OR Shock Index ≥ 1.0 with active bleeding',
       color:'#dc2626',
       rows:[
@@ -1456,17 +1546,17 @@ var DRUGS = {
         {k:'Reassess',v:'After each unit — vitals, SI, perfusion'}
       ],
       note:'PHI Chapter 4.9.1 Blood Administration. Pair with TXA 1 g IV (within 3 hr injury). Correct lethal triad: hypothermia · acidosis · coagulopathy. Calcium replacement after 4 units (citrate binds Ca).',
-      warn:'Document time / products / reactions. Stop for transfusion reaction → NS, methylpred, diphenhydramine. O-neg (or O-pos for males / non-childbearing females) when uncrossmatched.'
+      warn:'MEDICAL DIRECTION REQUIRED prior to administration (after first unit typically). Document time / products / reactions. Stop for transfusion reaction → NS, methylpred, diphenhydramine. O-neg (or O-pos for males / non-childbearing females) when uncrossmatched.'
     });
   },
   // N/V
   ondansetron: function(){
-    return rcCard({name:'Ondansetron',generic:'Stock 2 mg/mL vial',cat:'NAUSEA',form:'vial',
+    return rcCard({name:'Ondansetron',generic:'Stock 2 mg/mL vial',cat:'NAUSEA',form:'vial',line:'1st line',
       indication:'Nausea / vomiting (1st line)',color:'var(--sky)',
       rows:[{k:'Dose',v:'4 mg IV over 2-5 min'},{k:'Volume',v:'2 mL',cls:'calc'},{k:'Max',v:mx('8 mg / 8 hr'),cls:'warn'}]});
   },
   promethazine: function(){
-    return rcCard({name:'Promethazine',generic:'Stock 25 mg/mL vial',cat:'NAUSEA',form:'vial',
+    return rcCard({name:'Promethazine',generic:'Stock 25 mg/mL vial',cat:'NAUSEA',form:'vial',line:'2nd line',
       indication:'N/V (alt)',color:'var(--sky)',
       rows:[{k:'IV',v:'12.5 mg, dilute in 10 mL NS'},{k:'IV vol',v:'0.5 mL drug + 9.5 mL NS',cls:'calc'},{k:'IM',v:'25 mg deep IM'}],
       warn:'Black box: severe extravasation injury. Avoid IV when possible. EPS risk.'});
@@ -1474,10 +1564,45 @@ var DRUGS = {
   // DANGEROUS AGITATION
   ketamineAgit: function(){
     var ibw=dosingIbw(); var ivMg=round(3*ibw,0); var imMg=round(4*ibw,0);
-    return rcCard({name:'Ketamine — Dangerous Agitation',generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — most concentrated',cat:'AGITATION',form:'vial',
+    return rcCard({name:'Ketamine — Dangerous Agitation',generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — most concentrated',cat:'AGITATION',form:'vial',line:'2nd line',mdControl:true,
       indication:'PHI Chapter 6 dangerous agitation / chemical restraint',color:'var(--orange)',
       rows:[{k:'PHI IV/IO',v:'3 mg/kg IBW push'},{k:'PHI IM',v:'4 mg/kg IBW IM (no IV)'},{k:'IBW',v:round(ibw,1)+' kg',cls:'calc'},{k:'Calc IV',v:ivMg+' mg = '+round(ivMg/50,2)+' mL',cls:'calc'},{k:'Calc IM',v:mx(imMg+' mg = '+round(imMg/50,2)+' mL'),cls:'calc'},{k:'Follow with',v:'Ketamine drip 4 mg/kg/hr (PHI)'}],
-      warn:'PHI: prepare for airway management BEFORE initiating. Cardiac monitor, SpO2, EtCO2.'});
+      warn:'MEDICAL DIRECTION REQUIRED prior to administration. PHI: prepare for airway management BEFORE initiating. Cardiac monitor, SpO2, EtCO2.'});
+  },
+  // TRAUMA — OPEN FRACTURE
+  cefazolin: function(){
+    var w = state.weightKg;
+    var doseLabel = '', doseRule = '';
+    if(w){
+      if(w >= 50){ doseLabel = '2 g'; doseRule = '≥50 kg → 2 g'; }
+      else      { doseLabel = '1 g'; doseRule = '<50 kg → 1 g'; }
+    }
+    return rcCard({
+      name:'Cefazolin', generic:'Ancef — 1 g vial', cat:'TRAUMA — OPEN FX',
+      form:'vialmix', line:'1st-line abx',
+      indication:'Open fracture — early abx reduces morbidity (PHI Trauma 8-11). Single dose. Select ONLY ONE.', color:'var(--teal)',
+      giveBox: w ? {label:'Give IV/IM over 3-5 min', mg:doseLabel, rule:doseRule} : {needsWt:true},
+      rows:[
+        {k:'Adult ≥50 kg', v:'2 g IV/IM over 3-5 min'},
+        {k:'Adult <50 kg', v:'1 g IV/IM over 3-5 min'},
+        {k:'Source', v:'PHI Trauma 8-11 (Rev 22, 01May2024)'},
+        {k:'Allergy alt', v:'Use Clindamycin if cephalosporin/PCN allergy'}
+      ]
+    });
+  },
+  clindamycin: function(){
+    return rcCard({
+      name:'Clindamycin', generic:'For cephalosporin/PCN allergy', cat:'TRAUMA — OPEN FX',
+      form:'vialmix', line:'2nd-line abx',
+      indication:'Open fracture — alternative when patient is allergic to cephalosporins or PCN (PHI Trauma 8-11).', color:'var(--teal)',
+      giveBox:{label:'Give IV over 30 min', mg:'900 mg', rule:'900 mg IV over 30 min'},
+      rows:[
+        {k:'Adult', v:'900 mg IV over 30 min'},
+        {k:'Rate', v:'Infusion rate ≤ 30 mg/min'},
+        {k:'Indication', v:'Cephalosporin or PCN allergy'},
+        {k:'Source', v:'PHI Trauma 8-11 (Rev 22, 01May2024)'}
+      ]
+    });
   }
 };
 
@@ -1498,6 +1623,7 @@ var DX_DRUGS = {
   seizure:['lorazepamSeizure','midazolamSeizure','levetiracetam','fosphenytoin','d50'],
   stroke_ich:['nicardipine','clevidipine','labetalol','esmolol'],
   stroke_ais:['nicardipine','clevidipine','labetalol','esmolol'],
+  undif_stroke:['nicardipine','clevidipine','labetalol'],
   icp:['hypertonic','mannitol','nicardipine','clevidipine','labetalol','esmolol','midazolamSeizure','fentanylBolus'],
   tox:['naloxone','bicarb','cacl','glucagon'],
   cyanide:['cyanokit'],
@@ -1508,12 +1634,24 @@ var DX_DRUGS = {
   hyperK:['cacl','cagluc','bicarb','insulinHK','albuterol','furosemide'],
   agitation:['ketamineAgit','succRSI','ketamineDrip'],
   pe:['fluidBolus','norepi'],
-  open_fracture:['fentanylBolus','fluidBolus','txa'],
+  open_fracture:['cefazolin','clindamycin','fentanylBolus','fluidBolus','txa'],
   aaa:['fluidBolus','fentanylBolus','txa'],
   dissection:['esmolol','labetalol','nicardipine','fentanylBolus'],
   hemshock:['fluidBolus','txa','cacl'],
   post_intubation:['fentanylBolus','ketamineDrip','midazolamDrip'],
-  anxiolysis:['midazolamSeizure','lorazepamSeizure','fentanylBolus']
+  anxiolysis:['midazolamSeizure','lorazepamSeizure','fentanylBolus'],
+  pelvic_fracture:['fluidBolus','txa','fentanylBolus','cefazolin','clindamycin'],
+  amputation:['fentanylBolus','txa','fluidBolus','cefazolin','clindamycin'],
+  impaled:['fentanylBolus','fluidBolus','txa'],
+  femur_fracture:['fentanylBolus','fluidBolus','txa'],
+  ocular:['fentanylBolus'],
+  crush:['fluidBolus','cagluc','cacl','fentanylBolus'],
+  co_poison:['cyanokit'],
+  electrical_burn:['fluidBolus','fentanylBolus','cacl'],
+  chemical_burn:['fentanylBolus','fluidBolus'],
+  hypothermia:['fluidBolus'],
+  frostbite:['fentanylBolus'],
+  heat_illness:['fluidBolus']
 };
 
 function renderDxDrugs(){
@@ -1560,6 +1698,7 @@ var ALL_DRUGS = [
   {cat:'tox',key:'cyanokit',form:'vialmix'},{cat:'tox',key:'insulinHK',form:'vial'},
   {cat:'trauma',key:'txa',form:'vialmix'},
   {cat:'trauma',key:'bloodAdmin',form:'premix'},
+  {cat:'trauma',key:'cefazolin',form:'vialmix'},{cat:'trauma',key:'clindamycin',form:'vialmix'},
   {cat:'nv',key:'ondansetron',form:'vial'},{cat:'nv',key:'promethazine',form:'vial'}
 ];
 
@@ -1810,6 +1949,8 @@ safeRun('renderBurnMap',renderBurnMap);
     </button>
     <div class="pdf-title" id="pdfOverlayTitle">Protocol</div>
     <div class="pdf-nav">
+      <button class="pdf-nav-btn" id="pdfZoomOut" type="button" onclick="pdfZoomOut()" aria-label="Zoom out">−</button>
+      <button class="pdf-nav-btn" id="pdfZoomIn" type="button" onclick="pdfZoomIn()" aria-label="Zoom in">+</button>
       <button class="pdf-nav-btn" id="pdfPrevBtn" type="button" onclick="pdfPrevPage()" aria-label="Previous page">‹</button>
       <div class="pdf-page-info">
         <input class="pdf-page-input" id="pdfPageInput" type="number" min="1" inputmode="numeric" onchange="pdfGoToPage()" />

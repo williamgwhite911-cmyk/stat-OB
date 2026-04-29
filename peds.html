@@ -157,6 +157,7 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .proto-cite{font-size:.72rem;color:var(--tx2);margin-top:2px;font-style:italic}
 .proto-chev{font-size:1.4rem;color:#c084fc;font-weight:900;opacity:.7}
 .rc-warn{margin-top:8px;padding:7px 10px;background:rgba(255,95,109,.07);border:1px solid rgba(255,95,109,.28);border-radius:7px;font-size:.68rem;color:var(--rose);line-height:1.5;font-weight:600}
+.rc-mdctrl{background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.45);color:var(--rose);font-family:var(--mono);font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 9px;border-radius:6px;margin:8px 0 4px;display:flex;align-items:center;gap:6px}
 .fb{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.13em;padding:4px 9px;border-radius:5px;margin-bottom:10px}
 .fb-premix{background:rgba(0,232,176,.12);color:var(--teal);border:1px solid rgba(0,232,176,.4)}
 .fb-vial{background:rgba(251,191,36,.12);color:var(--amber);border:1px solid rgba(251,191,36,.4)}
@@ -173,6 +174,8 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .form-section-hdr.h-po{color:var(--purple)}
 
 .dx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:8px}
+.dx-cat-header{grid-column:1/-1;font-family:var(--mono);font-size:.62rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);padding:14px 4px 6px;border-bottom:1px solid var(--bd0);margin-top:10px}
+.dx-cat-header:first-child{margin-top:0}
 .dx-card{background:var(--bg2);border:1px solid var(--bd1);border-radius:9px;padding:10px 12px;cursor:pointer;transition:all .13s}
 .dx-card:hover{border-color:var(--bd2);transform:translateY(-1px)}
 .dx-card.on{background:rgba(167,139,250,.08);border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
@@ -544,6 +547,8 @@ function openPdfOverlay(url, title){
   });
 }
 
+var __pdfZoom = 1.4;  // default zoom (1.0 = fit to width, 1.4 = ~140% of fit width)
+
 function renderPdfPage(num){
   var loading = document.getElementById('pdfLoading');
   if(!__pdfDoc) return Promise.resolve();
@@ -554,7 +559,7 @@ function renderPdfPage(num){
     if(!canvas || !wrap) return;
     var availW = wrap.clientWidth - 16;
     var rawViewport = page.getViewport({scale: 1});
-    var fitScale = availW / rawViewport.width;
+    var fitScale = (availW / rawViewport.width) * __pdfZoom;
     var dpr = window.devicePixelRatio || 1;
     var viewport = page.getViewport({scale: fitScale * dpr});
     canvas.width = Math.floor(viewport.width);
@@ -572,6 +577,16 @@ function renderPdfPage(num){
     if(err && err.name === 'RenderingCancelledException') return;
     console.error('PDF render failed:', err);
   });
+}
+
+function pdfZoomIn(){
+  __pdfZoom = Math.min(4.0, __pdfZoom + 0.25);
+  if(__pdfDoc) renderPdfPage(__pdfCurrentPage);
+}
+
+function pdfZoomOut(){
+  __pdfZoom = Math.max(0.6, __pdfZoom - 0.25);
+  if(__pdfDoc) renderPdfPage(__pdfCurrentPage);
 }
 
 function updatePdfNavButtons(){
@@ -618,6 +633,7 @@ function closePdfOverlay(){
   if(__pdfRenderTask){ try{ __pdfRenderTask.cancel(); }catch(e){} __pdfRenderTask = null; }
   if(__pdfDoc){ try{ __pdfDoc.destroy(); }catch(e){} __pdfDoc = null; }
   __pdfCurrentPage = 1;
+  __pdfZoom = 1.4;
   if(loading){ loading.classList.remove('hidden'); loading.textContent = 'Loading…'; }
   document.documentElement.style.overflow='';
   document.body.style.overflow='';
@@ -966,10 +982,24 @@ var PROTOCOL_PAGES = {
   bronchio:   { src: 'medical', label: 'Medical 6.11 — Respiratory Emergencies',               page: 29 },
   // ── NEURO (Ch 7) ──
   seizure:    { src: 'neuro',   label: 'Neuro 7.1 — Seizures & Status Epilepticus',            page: 1  },
+  undif_stroke:{ src: 'neuro',   label: 'Neuro 7.4 — Undifferentiated Stroke (NO peds SO)',      page: 8  },
   icp:        { src: 'neuro',   label: 'Neuro 7.5 — Brain Herniation Syndrome',                page: 8  },
   // ── TRAUMA (Ch 8) ──
   trauma:     { src: 'trauma',  label: 'Trauma 8.1 — Trauma Assessment',                       page: 1  },
   burn:       { src: 'trauma',  label: 'Trauma 8.1.5 — Thermal Injuries',                      page: 14 },
+  open_fracture:{ src: 'trauma', label: 'Trauma 8-11 — Open Fractures',                           page: 11 },
+  pelvic_fracture:{ src: 'trauma',  label: 'Trauma 8-10 — Pelvic Fracture', page: 10 },
+  amputation:{ src: 'trauma', label: 'Trauma 8-9 — Amputation', page: 9 },
+  impaled:{ src: 'trauma', label: 'Trauma 8-9 — Impaled Object', page: 9 },
+  femur_fracture:{ src: 'trauma', label: 'Trauma 8-10 — Femur Fracture', page: 10 },
+  ocular:{ src: 'trauma', label: 'Trauma 8-11 — Ocular Injuries', page: 11 },
+  crush:{ src: 'trauma', label: 'Trauma 8-12 — Crush Injury', page: 12 },
+  co_poison:{ src: 'trauma', label: 'Trauma 8-15 — CO & Cyanide Poisoning', page: 15 },
+  electrical_burn:{ src: 'trauma', label: 'Trauma 8-16 — Electrical Burns', page: 16 },
+  chemical_burn:{ src: 'trauma', label: 'Trauma 8-17 — Chemical Burns', page: 17 },
+  hypothermia:{ src: 'trauma', label: 'Trauma 8-19 — Hypothermia', page: 19 },
+  frostbite:{ src: 'trauma', label: 'Trauma 8-19 — Frostbite', page: 19 },
+  heat_illness:{ src: 'trauma', label: 'Trauma 8-19 — Heat-Related Illness', page: 19 },
   // ── TOXICOLOGY (Ch 9) ──
   tox:        { src: 'tox',     label: 'Tox 9.1 — Poisoning (Opioid OD, TCA, Cyanide)',        page: 1  },
   // ── NEONATE (Ch 11) ──
@@ -977,41 +1007,74 @@ var PROTOCOL_PAGES = {
 };
 
 var DIAGNOSES = [
-  {id:'preterm',    name:'Preterm / NRP',          sub:'Prematurity / unattended birth / NICU transport'},
-  {id:'arrest',     name:'Cardiac Arrest',         sub:'PALS — VF/VT/PEA/asystole'},
-  {id:'brady',      name:'Symptomatic Brady',      sub:'HR low for age + poor perfusion'},
-  {id:'svt',        name:'SVT',                    sub:'Narrow tachy — stable / unstable'},
-  {id:'vt',         name:'VT (with pulse)',        sub:'Wide complex tachy'},
-  {id:'seizure',    name:'Status Epilepticus',     sub:'>5 min seizure or 2+ without recovery'},
-  {id:'anaphylaxis',name:'Anaphylaxis',            sub:'Multisystem allergic'},
-  {id:'asthma',     name:'Status Asthmaticus',     sub:'Severe bronchospasm'},
-  {id:'croup',      name:'Severe Croup',           sub:'Stridor at rest, retractions'},
-  {id:'bronchio',   name:'Severe Bronchiolitis',   sub:'<2 yr, RSV-like'},
-  {id:'sepsis',     name:'Sepsis / Septic Shock',  sub:'Fever + altered perfusion'},
-  {id:'dka',        name:'DKA',                    sub:'Hyperglycemia + acidosis'},
-  {id:'hypo',       name:'Hypoglycemia',           sub:'Glucose < 60 (or <45 neonate)'},
-  {id:'icp',        name:'Increased ICP / TBI',    sub:'Cushing triad / herniation signs'},
-  {id:'tox',        name:'Toxic Ingestion',        sub:'Suspected overdose / exposure'},
-  {id:'trauma',     name:'Hemorrhagic Trauma',     sub:'Class III/IV shock'},
-  {id:'burn',       name:'Severe Burn',            sub:'>10% TBSA / airway involvement'},
-  {id:'hyperK',     name:'Hyperkalemia',           sub:'Peaked T waves, wide QRS'},
-  {id:'open_fracture', name:'Open Fracture',        sub:'Compound fracture · NV check + abx'},
-  {id:'laceration', name:'Laceration / Soft Tissue', sub:'Hemostasis · NV check · pain control'},
-  {id:'aaa',        name:'AAA (rare in peds)',      sub:'Connective tissue disease workup'},
-  {id:'dissection', name:'Aortic Dissection (rare)', sub:'Connective tissue disease association'},
-  {id:'herniation', name:'Brain Herniation',        sub:'Cushing · pupil · posturing'},
-  {id:'hemshock',   name:'Hemorrhagic Shock',       sub:'Damage-control · 1:1:1'},
-  {id:'stroke_ich', name:'Hemorrhagic Stroke',      sub:'BP control · neuro q15'},
-  {id:'post_intubation', name:'Post-Intubation Sedation', sub:'Analgesia first · paralytic outlives sedative'},
-  {id:'agitation',  name:'Dangerous Agitation',     sub:'In-flight safety · airway ready'},
-  {id:'anxiolysis', name:'Anxiolysis',              sub:'Treat early to prevent escalation'}
+  {id:'preterm',    cat:'CARDIAC', name:'Preterm / NRP',          sub:'Prematurity / unattended birth / NICU transport'},
+  {id:'arrest',     cat:'CARDIAC', name:'Cardiac Arrest',         sub:'PALS — VF/VT/PEA/asystole'},
+  {id:'brady',      cat:'CARDIAC', name:'Symptomatic Brady',      sub:'HR low for age + poor perfusion'},
+  {id:'svt',        cat:'CARDIAC', name:'SVT',                    sub:'Narrow tachy — stable / unstable'},
+  {id:'vt',         cat:'CARDIAC', name:'VT (with pulse)',        sub:'Wide complex tachy'},
+  {id:'seizure',    cat:'NEURO', name:'Status Epilepticus',     sub:'>5 min seizure or 2+ without recovery'},
+  {id:'undif_stroke', cat:'NEURO', name:'Undifferentiated Stroke', sub:'NO PHI peds standing orders — MD direction required'},
+  {id:'anaphylaxis',cat:'ALLERGIC / SHOCK', name:'Anaphylaxis',            sub:'Multisystem allergic'},
+  {id:'asthma',     cat:'RESPIRATORY', name:'Status Asthmaticus',     sub:'Severe bronchospasm'},
+  {id:'croup',      cat:'RESPIRATORY', name:'Severe Croup',           sub:'Stridor at rest, retractions'},
+  {id:'bronchio',   cat:'RESPIRATORY', name:'Severe Bronchiolitis',   sub:'<2 yr, RSV-like'},
+  {id:'sepsis',     cat:'ALLERGIC / SHOCK', name:'Sepsis / Septic Shock',  sub:'Fever + altered perfusion'},
+  {id:'dka',        cat:'METABOLIC', name:'DKA',                    sub:'Hyperglycemia + acidosis'},
+  {id:'hypo',       cat:'METABOLIC', name:'Hypoglycemia',           sub:'Glucose < 60 (or <45 neonate)'},
+  {id:'icp',        cat:'NEURO', name:'Increased ICP / TBI',    sub:'Cushing triad / herniation signs'},
+  {id:'tox',        cat:'TOXICOLOGY', name:'Toxic Ingestion',        sub:'Suspected overdose / exposure'},
+  {id:'trauma',     cat:'TRAUMA', name:'Hemorrhagic Trauma',     sub:'Class III/IV shock'},
+  {id:'burn',       cat:'TRAUMA', name:'Severe Burn',            sub:'>10% TBSA / airway involvement'},
+  {id:'hyperK',     cat:'METABOLIC', name:'Hyperkalemia',           sub:'Peaked T waves, wide QRS'},
+  {id:'open_fracture', cat:'TRAUMA', name:'Open Fracture',        sub:'Compound fracture · NV check + abx'},
+  {id:'pelvic_fracture', cat:'TRAUMA', name:'Pelvic Fracture',     sub:'Hemorrhage control · binder · permissive hypotension'},
+  {id:'laceration', cat:'TRAUMA', name:'Laceration / Soft Tissue', sub:'Hemostasis · NV check · pain control'},
+  {id:'aaa',        cat:'VASCULAR', name:'AAA (rare in peds)',      sub:'Connective tissue disease workup'},
+  {id:'dissection', cat:'VASCULAR', name:'Aortic Dissection (rare)', sub:'Connective tissue disease association'},
+  {id:'herniation', cat:'NEURO', name:'Brain Herniation',        sub:'Cushing · pupil · posturing'},
+  {id:'hemshock',   cat:'ALLERGIC / SHOCK', name:'Hemorrhagic Shock',       sub:'Damage-control · 1:1:1'},
+  {id:'stroke_ich', cat:'NEURO', name:'Hemorrhagic Stroke',      sub:'BP control · neuro q15'},
+  {id:'post_intubation', cat:'SEDATION / BEHAVIORAL', name:'Post-Intubation Sedation', sub:'Analgesia first · paralytic outlives sedative'},
+  {id:'agitation',  cat:'SEDATION / BEHAVIORAL', name:'Dangerous Agitation',     sub:'In-flight safety · airway ready'},
+  {id:'anxiolysis', cat:'SEDATION / BEHAVIORAL', name:'Anxiolysis',              sub:'Treat early to prevent escalation'},
+  {id:'amputation', cat:'TRAUMA', name:'Amputation',              sub:'Hemorrhage control · preserve part'},
+  {id:'impaled',    cat:'TRAUMA', name:'Impaled Object',          sub:'Stabilize · do not remove'},
+  {id:'femur_fracture', cat:'TRAUMA', name:'Femur Fracture',     sub:'Traction splint (size-appropriate) · NV'},
+  {id:'ocular',     cat:'TRAUMA', name:'Ocular Injury',           sub:'Eye shield · cover both eyes'},
+  {id:'crush',      cat:'TRAUMA', name:'Crush Injury',            sub:'Aggressive fluid · hyperK prep'},
+  {id:'co_poison',  cat:'TOXICOLOGY', name:'Carbon Monoxide Poisoning', sub:'100% O2 · fire victim suspicion'},
+  {id:'electrical_burn', cat:'TRAUMA', name:'Electrical Burn',    sub:'EKG · myoglobinuria'},
+  {id:'chemical_burn', cat:'TRAUMA', name:'Chemical Burn',        sub:'PPE · irrigate 20+ min'},
+  {id:'hypothermia', cat:'ENVIRONMENTAL', name:'Hypothermia',            sub:'Active rewarming · gentle handling'},
+  {id:'frostbite',  cat:'ENVIRONMENTAL', name:'Frostbite',               sub:'No partial thaw · loose dressing'},
+  {id:'heat_illness', cat:'ENVIRONMENTAL', name:'Heat Illness / Heat Stroke', sub:'Cool aggressively'}
 ];
 
 function renderDxGrid(){
+  var CAT_ORDER = ['CARDIAC','RESPIRATORY','NEURO','METABOLIC','ALLERGIC / SHOCK','TOXICOLOGY','TRAUMA','ENVIRONMENTAL','SEDATION / BEHAVIORAL'];
+  var groups = {};
+  DIAGNOSES.forEach(function(dx){
+    var cat = dx.cat || 'OTHER';
+    if(!groups[cat]) groups[cat] = [];
+    groups[cat].push(dx);
+  });
   var grid = document.getElementById('dxGrid');
-  grid.innerHTML = DIAGNOSES.map(function(d){
-    return '<div class="dx-card' + (state.dx===d.id?' on':'') + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
-  }).join('');
+  var html = '';
+  CAT_ORDER.forEach(function(cat){
+    if(!groups[cat] || !groups[cat].length) return;
+    html += '<div class="dx-cat-header">' + cat + '</div>';
+    groups[cat].forEach(function(d){
+      html += '<div class="dx-card' + (state.dx===d.id?' on':'') + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
+    });
+  });
+  Object.keys(groups).forEach(function(cat){
+    if(CAT_ORDER.indexOf(cat) !== -1) return;
+    html += '<div class="dx-cat-header">' + cat + '</div>';
+    groups[cat].forEach(function(d){
+      html += '<div class="dx-card' + (state.dx===d.id?' on':'') + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
+    });
+  });
+  grid.innerHTML = html;
   grid.querySelectorAll('.dx-card').forEach(function(el){
     el.onclick = function(){
       state.dx = el.dataset.id === state.dx ? '' : el.dataset.id;
@@ -1242,18 +1305,169 @@ var DX_PLAN = {
       '3rd (ELIMINATE): Furosemide 1 mg/kg if euvolemic and renal function intact'
     ]
   },
-  open_fracture: {
-    picture:'Open (compound) fracture in pediatric patient. Children have growth-plate considerations and tolerate hemorrhage poorly relative to body size. Document neurovascular status BEFORE and AFTER splinting.',
+  pelvic_fracture: {
+    picture:'Pediatric suspected pelvic fracture — occult hemorrhage risk. Children\'s pelvic ring is more flexible but still bleeds. Stabilize with sized binder (PHI Trauma 8-10).',
     plan:[
-      'Control hemorrhage: direct pressure, pressure dressing; tourniquet only for life-threatening extremity bleed',
-      'Distal NV check: pulse, cap refill, motor, sensation — document before/after splinting',
-      'Cover with sterile saline-moistened gauze; splint in position found unless distal pulse lost',
-      'Do NOT scrub bone, do NOT attempt reduction in field',
-      'Pain: fentanyl 1-2 mcg/kg IV/IN; titrate q5-10 min',
-      'TXA 15 mg/kg IV (max 2 g) within 3 hr if significant hemorrhage',
-      'Early IV abx per receiving (cefazolin 30 mg/kg typical, add gentamicin for grossly contaminated)',
-      'Tetanus status — note for receiving',
-      'Reassess NV status q15 min en route'
+      'Stabilize pelvis with SAM sling/peds-sized binder at level of greater trochanters',
+      'Neurovascular exam BEFORE and AFTER stabilization',
+      'DO NOT insert urinary catheter if pelvic fracture suspected',
+      'Two large-bore IVs/IO — IO if access delayed',
+      'Crystalloid 10-20 mL/kg LR aliquots; prefer blood products',
+      'Permissive hypotension to radial pulse / normal mentation UNLESS TBI',
+      'TXA 15 mg/kg IV (max 2 g) within 3 hr',
+      'Pain: fentanyl 1-2 mcg/kg',
+      'Pre-alert peds trauma center'
+    ]
+  },
+  amputation: {
+    picture:'Pediatric traumatic amputation. Priorities: stump hemorrhage control + preservation of amputated part for re-implantation (PHI Trauma 8-9). Children compensate for blood loss until late.',
+    plan:[
+      'Control stump hemorrhage: direct pressure → tourniquet (mark time)',
+      'Amputated part: rinse off gross debris with sterile saline',
+      'Wrap part in saline-moistened sterile gauze',
+      'Place in sealed plastic bag, then in cool water with ice (do NOT freeze, do NOT pack directly in ice)',
+      'Transport part WITH patient',
+      'Pain: fentanyl 1-2 mcg/kg IV/IN',
+      'TXA 15 mg/kg IV (max 2 g) within 3 hr',
+      'Cefazolin 25 mg/kg IV/IM for open injury',
+      'Pre-alert peds re-implantation center'
+    ]
+  },
+  impaled: {
+    picture:'Pediatric impaled object. DO NOT remove — stabilize in place. Removal causes catastrophic hemorrhage (PHI Trauma 8-9). Exception: object obstructs airway.',
+    plan:[
+      'DO NOT remove the impaled object',
+      'Stabilize with bulky dressings or improvised supports',
+      'Direct pressure around (NOT on) the object for hemorrhage',
+      'Shorten only if absolutely needed for transport (with stabilization)',
+      'Pain: fentanyl 1-2 mcg/kg IV/IN',
+      'Distal NV check before/after stabilization',
+      'Pre-alert peds trauma — likely OR for removal'
+    ]
+  },
+  femur_fracture: {
+    picture:'Pediatric midshaft femur fracture — blood loss possible. Apply size-appropriate traction splint (PHI Trauma 8-10).',
+    plan:[
+      'Neurovascular exam (CMS) before AND after',
+      'Apply size-appropriate femoral traction device',
+      'CONTRAINDICATED: elbow, hip, or lower leg injuries',
+      'Severe angulation or absent pulse: realign up to 2 attempts',
+      'If unsuccessful, splint in position found',
+      'Pain: fentanyl 1-2 mcg/kg IV/IN',
+      'Reassess CMS q15 min'
+    ]
+  },
+  ocular: {
+    picture:'Pediatric eye injury. Avoid pressure on globe; cover both eyes (PHI Trauma 8-11).',
+    plan:[
+      'Remove contact lenses PRN',
+      'Apply LOOSE sterile dressing — NO pressure',
+      'Cover with rigid eye shield PRN',
+      'Cover BOTH eyes PRN to limit eye movement',
+      'Do NOT remove impaled objects',
+      'Chemical exposure: irrigate per chemical burn protocol',
+      'Pain control as needed',
+      'Pre-alert peds ophthalmology'
+    ]
+  },
+  crush: {
+    picture:'Pediatric crush injury — torso/extremity crushed >1 hour. K+ release on extrication = VF risk (PHI Trauma 8-12, 8-13).',
+    plan:[
+      'BEFORE extrication: aggressive IV fluids',
+      'NS 0.9% — 40 mL/kg IBW initial bolus, then 20 mL/kg/hr (1.5× maintenance)',
+      'Calcium gluconate 60 mg/kg IV over 2-10 min — repeat q10 min up to 3× as bridge',
+      'Faster Ca infusion if cardiac instability/arrest',
+      'Cardiac monitor — peaked T waves, wide QRS = hyperK',
+      'Tourniquet only if unable to fluid-resuscitate',
+      'Pain: fentanyl 1-2 mcg/kg',
+      'Pre-alert peds — anticipate dialysis'
+    ]
+  },
+  co_poison: {
+    picture:'Pediatric CO poisoning — suspect in fire/enclosed-space exposure. Pulse-ox is FALSELY NORMAL — use rainbow SpCO sensor (PHI Trauma 8-15).',
+    plan:[
+      '100% FiO2 via NRB at 15-25 L/min (sized to peds)',
+      'Decreased LOC or severe sx: intubate',
+      'SpCO via rainbow sensor (Zoll X) — standard SpO2 unreliable',
+      'Suspect concurrent cyanide in fire victims — see cyanide protocol',
+      'Hyperbaric for severe (LOC, AMS, cardiac sx)',
+      'Continue 100% O2 throughout transport'
+    ]
+  },
+  electrical_burn: {
+    picture:'Pediatric electrical burn — entrance/exit wounds, arrhythmia, deep tissue injury (PHI Trauma 8-16).',
+    plan:[
+      '12-lead EKG',
+      'TBSA >20%: LR 3 mL/kg/TBSA peds (vs 4 mL/kg adult)',
+      'Urinary catheter if available',
+      'Assess compartment syndrome with circumferential burns',
+      'Urine output target: 1 mL/kg/hr; 1.5-2× MIVF if myoglobinuria',
+      'Pain: fentanyl 1-2 mcg/kg',
+      'Pre-alert peds burn center'
+    ]
+  },
+  chemical_burn: {
+    picture:'Pediatric chemical burn — PPE for crew, decon before transport (PHI Trauma 8-17).',
+    plan:[
+      'DON PPE before patient contact',
+      'Remove ALL clothing, jewelry, contacts',
+      'Brush off DRY chemicals first (do NOT wet)',
+      'Irrigate with running water 20+ minutes',
+      'Do NOT transport undecontaminated patient',
+      'Identify chemical, notify receiving',
+      'Pain after decontamination',
+      'Eye involvement: continuous saline irrigation'
+    ]
+  },
+  hypothermia: {
+    picture:'Pediatric hypothermia — children cool faster than adults due to surface-area-to-mass ratio. Mild 32-35°C, Moderate 28-32°C, Severe <28°C (PHI Trauma 8-19).',
+    plan:[
+      'Remove wet clothing, dry, insulate',
+      'Mild (32-35°C): warm IV fluids (40°C)',
+      'Moderate (28-32°C): minimize stimulation, thermal blanket, warm humidified O2',
+      'Severe (<28°C): heated O2, warm IV; ECMO not field-available',
+      'Handle gently — VF risk in severe hypothermia',
+      'Cardiac arrest in hypothermia: continue CPR — \'not dead until warm and dead\'',
+      'Withhold meds/defib if core <30°C; defib ×1 if shockable, then warm before further attempts'
+    ]
+  },
+  frostbite: {
+    picture:'Pediatric frostbite — fingers, toes, ears, nose at highest risk (PHI Trauma 8-19).',
+    plan:[
+      'Gentle handling — frozen tissue is fragile',
+      'Loose sterile dressing',
+      'Pad and protect — avoid friction',
+      'DO NOT thaw if any chance of refreezing',
+      'Definitive thawing: warm-water bath 37-39°C for 15-30 min',
+      'Pain: fentanyl 1-2 mcg/kg during/after thawing',
+      'Treat associated hypothermia first',
+      'Pre-alert peds receiving'
+    ]
+  },
+  heat_illness: {
+    picture:'Pediatric heat illness — heat exhaustion vs heat stroke (>40°C/104°F + AMS, often anhidrotic). Heat stroke = life-threatening (PHI Trauma 8-19).',
+    plan:[
+      'Move to cool environment',
+      'Remove clothing',
+      'Cold packs to chest, groin, axilla',
+      'Mist + fan for evaporative cooling',
+      'Cold IV fluids 20 mL/kg if heat stroke',
+      'Continuous core temp monitoring',
+      'Stop active cooling at 38-39°C to avoid overshoot',
+      'Treat seizures (cool first)',
+      'Pre-alert peds receiving'
+    ]
+  },
+  open_fracture: {
+    picture:'Open fracture — any skin opening near a suspected fracture (PHI Trauma 8-11). Early antibiotics greatly reduce morbidity.',
+    plan:[
+      'Control bleeding, realign, and splint as indicated',
+      'Cover wound with saline-soaked gauze',
+      'Give ONE antibiotic — Cefazolin (1st line) OR Clindamycin (if cephalosporin/PCN allergy)',
+      'Cefazolin: 25 mg/kg IV/IM over 3-5 min',
+      'Clindamycin (allergy alt): 10 mg/kg IV over 10-30 min, max 900 mg, rate ≤30 mg/min',
+      'Pain control per protocol',
+      'Document neurovascular status before AND after splinting'
     ]
   },
   laceration: {
@@ -1335,6 +1549,8 @@ var DX_PLAN = {
       'Transport to peds neuro/neurosurgery center'
     ]
   },
+  undif_stroke:{picture:'Pediatric stroke symptoms without head CT diagnosis. PHI Neuro 7.4: NO pediatric standing orders. Online medical direction REQUIRED before BP treatment.',
+    plan:['Check finger-stick glucose FIRST — hypoglycemia mimics stroke; treat hypoglycemia immediately','CONTACT ONLINE MEDICAL DIRECTION before any BP treatment in peds','PHI states "No PHI Standing Orders or Indications" for nicardipine, clevidipine, labetalol in peds','Acute HTN may be protective for brain perfusion','Avoid acute lowering of BP without medical direction order','Supportive care: airway, monitoring, neuro checks q15 min','Notify receiving peds neuro/stroke center','Document MD contacted and orders received']},
   post_intubation: {
     picture:'Post-RSI sedation in pediatric patient. Analgesia FIRST. Paralytic outlasts induction — child paralyzed but AWARE without sedation. Use age-appropriate dosing; ketamine preferred if unstable.',
     plan:[
@@ -1704,6 +1920,8 @@ function rcCard(opts){
   if(opts.mc){
     mcBanner = '<div class="mc-banner">⚠ NEEDS MEDICAL CONTROL — NO STANDING ORDERS</div>';
   }
+  // MD CONTROL badge — compact indicator for drugs requiring medical direction
+  var mdCtrlBadge = opts.mdControl ? '<div class="rc-mdctrl">⚠ MEDICAL DIRECTION REQUIRED</div>' : '';
   // GIVE BOX — prominent under-stress display of MAX recommended dose + concentration + mL to push.
   var giveBox = '';
   if(opts.giveBox && opts.giveBox.mL != null){
@@ -1720,7 +1938,7 @@ function rcCard(opts){
   return '<div class="rc' + formCls + (opts.mc ? ' rc-mc' : '') + '"><div class="rc-bar" style="background:' + (opts.color || 'var(--cyan)') + '"></div>' +
     '<div class="rc-cat">' + (opts.cat || '') + '</div>' +
     '<div class="rc-name">' + opts.name + lineBadge + '</div>' +
-    sub + badge + ind + mcBanner + giveBox + rows + note + warn + '</div>';
+    sub + badge + ind + mdCtrlBadge + mcBanner + giveBox + rows + note + warn + '</div>';
 }
 function noWt(){ return '<span class="rv warn">Enter weight first</span>'; }
 
@@ -1773,7 +1991,7 @@ var DRUGS = {
     var ml = mg ? round(mg/20, 2) : null;
     return rcCard({
       name:'Lidocaine — Arrest', generic:'Stock 20 mg/mL (2%) vial', cat:'ARREST',
-      form:'vial', line:'alt',
+      form:'vial', line:'3rd',
       indication:'Alternative to amiodarone for refractory VF/pVT — PHI Ch 5', color:'var(--rose)',
       giveBox: w ? {label:'Give IV/IO bolus', mL:ml, mg:mg+' mg'+(mg===100?' (max)':''), conc:'20 mg/mL stock', rule:'1 mg/kg per PHI, max 100 mg single'} : {needsWt:true},
       rows:[
@@ -1967,7 +2185,7 @@ var DRUGS = {
     var ml = mg ? round(mg/100, 1) : null;
     return rcCard({
       name:'Procainamide', generic:'Stock 100 mg/mL vial', cat:'CARDIAC',
-      form:'vialmix', mc:true, line:'alt',
+      form:'vialmix', line:'2nd', mdControl:true,
       indication:'Alternative to amiodarone/lidocaine for wide-complex tachycardia with pulse — PHI Ch 5', color:'var(--rose)',
       giveBox: w ? {label:'After contacting medical control', mL:ml, mg:mg+' mg', conc:'100 mg/mL stock', rule:'15 mg/kg IBW per PHI'} : {needsWt:true},
       rows:[
@@ -1983,7 +2201,7 @@ var DRUGS = {
   alprostadil: function(){
     return rcCard({
       name:'Alprostadil (PGE-1)', generic:'Stock 500 mcg/mL ampule', cat:'NEONATE',
-      form:'vialmix', mc:true, line:'1st',
+      form:'vialmix', mdControl:true, line:'1st',
       indication:'1st-line for suspected ductal-dependent CHD (cyanotic neonate, age < 4 wk) — keeps ductus open — PHI Ch 5', color:'var(--blue)',
       rows:[
         {k:'PHI dose', v:'0.02-0.05 mcg/kg/min IV drip'},
@@ -2080,7 +2298,7 @@ var DRUGS = {
     var ml = mg ? round(mg/500, 2) : null;
     return rcCard({
       name:'Magnesium Sulfate — Asthma', generic:'Stock 5 g / 10 mL vial (50%)', cat:'RESPIRATORY',
-      form:'vialmix', line:'3rd',
+      form:'vialmix', line:'2nd',
       indication:'3rd-line for severe asthma refractory to nebs + steroids — PHI Ch 5', color:'var(--purple)',
       giveBox: w ? {label:'Dilute in 50-100 mL NS, infuse over 20 min', mL:ml+' (of 50% mag)', mg:mg+' mg'+(mg===2000?' = 2 g (max)':''), conc:'50% = 500 mg/mL stock', rule:'50 mg/kg max IV (2 g cap). Slow over 20 min — hypotension risk.'} : {needsWt:true},
       rows:[
@@ -2173,7 +2391,7 @@ var DRUGS = {
     return rcCard({
       name:'Norepinephrine Infusion', generic:'Mix 4 mg in 250 mL NS = 16 mcg/mL', cat:'SHOCK',
       form:'vialmix',
-      line:'alt',
+      line:'2nd',
       indication:'Alternative to epi infusion — preferred for warm shock (vasodilated, bounding pulses, flash cap refill) — PHI Ch 5', color:'var(--rose)',
       rows:[
         {k:'Mix prep', v:'4 mg (4 mL of 1 mg/mL) into 250 mL NS = 16 mcg/mL', cls:'calc'},
@@ -2190,7 +2408,7 @@ var DRUGS = {
     var ml = mg ? round(mg/50, 1) : null;
     return rcCard({
       name:'Hydrocortisone', generic:'Stock 100 mg vial reconstituted (50 mg/mL)', cat:'SHOCK',
-      form:'vialmix', mc:true, line:'3rd',
+      form:'vialmix', mdControl:true, line:'3rd',
       indication:'3rd-line for catecholamine-resistant septic shock (after fluids + epi/norepi) — PHI Ch 5', color:'var(--lime)',
       giveBox: w ? {label:'After contacting medical control', mL:ml, mg:mg+' mg', conc:'50 mg/mL reconstituted', rule:'2 mg/kg per PHI — no standing orders'} : {needsWt:true},
       rows:[
@@ -2242,7 +2460,7 @@ var DRUGS = {
     var ml = mg ? round(mg, 1) : null;
     return rcCard({
       name:'Glucagon — Hypoglycemia', generic:'Stock 1 mg vial reconstituted in 1 mL', cat:'ENDOCRINE',
-      form:'vialmix', line:'alt',
+      form:'vialmix', line:'2nd',
       indication:'Alternative when no IV access — IV dextrose is preferred; use only if access not available — PHI Ch 5', color:'var(--amber)',
       giveBox: w ? {label:'IM/IN/SC', mL:ml, mg:mg+' mg', conc:'1 mg/mL reconstituted', rule:(w<20?'<20 kg = 0.5 mg':'≥20 kg = 1 mg')+' per PHI'} : {needsWt:true},
       rows:[
@@ -2276,7 +2494,7 @@ var DRUGS = {
     var hiG = w ? round(1*w, 1) : null;
     return rcCard({
       name:'Mannitol 20%', generic:'Stock 200 mg/mL bag', cat:'ICP',
-      form:'premix', line:'alt',
+      form:'premix', line:'2nd', mdControl:true,
       indication:'Alternative for ↑ICP only when euvolemic — AVOID if hypovolemic or shock — PHI Ch 5', color:'var(--purple)',
       rows:[
         {k:'Dose', v:'0.5 to ' + mx('1') + ' g/kg IV over 10-20 min'},
@@ -2293,7 +2511,7 @@ var DRUGS = {
     var hi = w ? Math.min(round(2*w, 0), 50) : null;
     return rcCard({
       name:'Fentanyl', generic:'Stock 50 mcg/mL vial', cat:'PAIN',
-      form:'vial', line:'1st',
+      form:'vial', line:'adj',
       indication:'1st-line opioid for analgesia — preferred over morphine (less hypotension, faster onset) — PHI Ch 5', color:'var(--amber)',
       rows:[
         {k:'Dose', v:'1 to ' + mx('2') + ' mcg/kg IV/IM/IN'},
@@ -2309,7 +2527,7 @@ var DRUGS = {
     var mg = w ? Math.min(round(0.1*w, 1), 5) : null;
     return rcCard({
       name:'Morphine', generic:'Stock 1 mg/mL or 4 mg/mL vial', cat:'PAIN',
-      form:'vial', line:'alt',
+      form:'vial', line:'adj',
       indication:'Alternative analgesic — slower onset, more histamine release. Use fentanyl preferentially — PHI Ch 5', color:'var(--amber)',
       rows:[
         {k:'Dose', v:'0.1 mg/kg IV/IM'},
@@ -2327,7 +2545,7 @@ var DRUGS = {
     var hiMl = hi ? round(hi/50, 2) : null;
     return rcCard({
       name:'Ketamine — Induction', generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — PHI preferred RSI', cat:'RSI',
-      form:'vial',
+      form:'vial', line:'adj',
       indication:'Peds RSI induction — preferred for asthma, hypotension, hypovolemia', color:'var(--orange)',
       giveBox: w ? {label:'Give MAX IV push', mL:hiMl, mg:hi+' mg', conc:'50 mg/mL stock (500 mg / 10 mL vial)', rule:'2 mg/kg max IV (RSI dose)'} : {needsWt:true},
       rows:[
@@ -2348,7 +2566,7 @@ var DRUGS = {
     var ml = mg ? round(mg/10, 2) : null;
     return rcCard({
       name:'Rocuronium — RSI', generic:'Stock 100 mg / 10 mL vial (10 mg/mL) — PHI formulary', cat:'RSI',
-      form:'vial',
+      form:'vial', line:'adj',
       indication:'Peds RSI paralysis', color:'var(--rose)',
       giveBox: w ? {label:'Give MAX IV push', mL:ml, mg:mg+' mg', conc:'10 mg/mL stock (100 mg / 10 mL vial)', rule:'1.2 mg/kg max IV (RSI dose)'} : {needsWt:true},
       rows:[
@@ -2367,7 +2585,7 @@ var DRUGS = {
     var mgIM = w ? round(4*w, 0) : null;
     return rcCard({
       name:'Succinylcholine — Caution in <5 yr', generic:'Stock 200 mg / 10 mL vial (20 mg/mL)', cat:'RSI',
-      form:'vial',
+      form:'vial', line:'adj',
       indication:'Peds RSI alternative to roc. Caution under age 5.', color:'var(--red)',
       rows:[
         {k:'IV dose', v:'1 to ' + mx('2') + ' mg/kg'},
@@ -2387,7 +2605,7 @@ var DRUGS = {
     var maxMgHr = w ? round(4*w, 1) : null;  // PHI practice ceiling (extrapolated from Ch 6)
     return rcCard({
       name:'Ketamine Drip — Sedation', generic:'Mix 500 mg in 100 mL NS = 5 mg/mL', cat:'RSI',
-      form:'vialmix',
+      form:'vialmix', line:'1st',
       indication:'Post-intubation sedation', color:'var(--orange)',
       rows:[
         {k:'Mix prep', v:'500 mg (10 mL of 50 mg/mL) into 100 mL NS = 5 mg/mL', cls:'calc'},
@@ -2406,7 +2624,7 @@ var DRUGS = {
     var hiMgHr = w ? round(0.2*w, 2) : null;
     return rcCard({
       name:'Midazolam Drip — Sedation', generic:'Mix 50 mg in 100 mL NS = 0.5 mg/mL', cat:'RSI',
-      form:'vialmix',
+      form:'vialmix', line:'2nd',
       indication:'Post-intubation sedation (alternative or adjunct)', color:'var(--amber)',
       rows:[
         {k:'Mix prep', v:'50 mg (10 mL of 5 mg/mL) into 100 mL NS = 0.5 mg/mL', cls:'calc'},
@@ -2422,7 +2640,7 @@ var DRUGS = {
     var hiMcgHr = w ? round(2*w, 0) : null;
     return rcCard({
       name:'Fentanyl Drip — Analgesia', generic:'Mix 1000 mcg in 100 mL NS = 10 mcg/mL', cat:'RSI',
-      form:'vialmix',
+      form:'vialmix', line:'1st',
       indication:'Post-intubation analgesia', color:'var(--amber)',
       rows:[
         {k:'Mix prep', v:'1000 mcg (20 mL of 50 mcg/mL) into 100 mL NS = 10 mcg/mL', cls:'calc'},
@@ -2489,7 +2707,7 @@ var DRUGS = {
     var ml = mg ? round(mg/100, 1) : null;
     return rcCard({
       name:'Calcium Gluconate 10%', generic:'Stock 100 mg/mL vial', cat:'TOX',
-      form:'vial', line:'alt',
+      form:'vial', line:'1st',
       indication:'Peripheral alternative to CaCl for hyperK/hypocalcemia/CCB OD — same clinical effect, lower phlebitis risk — PHI Ch 5', color:'var(--rose)',
       giveBox: w ? {label:'Slow IV push', mL:ml, mg:mg+' mg'+(mg===3000?' (max)':''), conc:'100 mg/mL stock', rule:'60 mg/kg per PHI, max 3 g'} : {needsWt:true},
       rows:[
@@ -2505,7 +2723,7 @@ var DRUGS = {
     var mg = w ? round(0.05*w, 2) : null;
     return rcCard({
       name:'Glucagon — CCB / β-blocker OD', generic:'Stock 1 mg vial reconstituted', cat:'TOX',
-      form:'vialmix', mc:true, line:'2nd',
+      form:'vialmix', mdControl:true, line:'2nd',
       indication:'2nd-line for CCB / β-blocker overdose (after Ca + fluids) — PHI Ch 5', color:'var(--purple)',
       rows:[
         {k:'Dose', v:'0.05 mg/kg IV bolus'},
@@ -2539,12 +2757,62 @@ var DRUGS = {
     var mg = w ? Math.min(round(0.15*w, 1), 4) : null;
     return rcCard({
       name:'Ondansetron', generic:'Stock 2 mg/mL vial', cat:'NAUSEA',
-      form:'vial',
+      form:'vial', line:'adj',
       indication:'Nausea / vomiting', color:'var(--sky)',
       rows:[
         {k:'Dose', v:'0.1 to ' + mx('0.15') + ' mg/kg IV'},
         {k:'Calc dose', v:w ? round(0.1*w, 1) + ' to ' + mx(mg + ' mg') : '--', cls:'calc'},
         {k:'Max single', v:mx('4 mg'), cls:'warn'}
+      ]
+    });
+  },
+  // TRAUMA — OPEN FRACTURE
+  cefazolin: function(){
+    var w = dosingWt();
+    var mg = w ? round(25*w, 0) : null;
+    return rcCard({
+      name:'Cefazolin', generic:'Ancef', cat:'TRAUMA — OPEN FX',
+      form:'vialmix', line:'1st-line abx',
+      indication:'Open fracture — early abx reduces morbidity (PHI Trauma 8-11). Single dose. Select ONLY ONE.', color:'var(--teal)',
+      giveBox: w ? {label:'Give IV/IM over 3-5 min', mg:mg+' mg', rule:'25 mg/kg'} : {needsWt:true},
+      rows:[
+        {k:'Dose', v:'25 mg/kg IV/IM over 3-5 min'},
+        {k:'Source', v:'PHI Trauma 8-11 (Rev 22, 01May2024)'},
+        {k:'Allergy alt', v:'Use Clindamycin if cephalosporin/PCN allergy'}
+      ]
+    });
+  },
+  clindamycin: function(){
+    var w = dosingWt();
+    var raw = w ? round(10*w, 0) : null;
+    var mg = raw != null ? Math.min(raw, 900) : null;
+    return rcCard({
+      name:'Clindamycin', generic:'For cephalosporin/PCN allergy', cat:'TRAUMA — OPEN FX',
+      form:'vialmix', line:'2nd-line abx',
+      indication:'Open fracture — alternative when patient is allergic to cephalosporins or PCN (PHI Trauma 8-11).', color:'var(--teal)',
+      giveBox: w ? {label:'Give IV over 10-30 min', mg:mg+' mg (max 900 mg)', rule:'10 mg/kg, max 900 mg'} : {needsWt:true},
+      rows:[
+        {k:'Dose', v:'10 mg/kg IV over 10-30 min'},
+        {k:'Max', v:'900 mg per dose'},
+        {k:'Rate', v:'Infusion ≤ 30 mg/min'},
+        {k:'Source', v:'PHI Trauma 8-11 (Rev 22, 01May2024)'}
+      ]
+    });
+  },
+  cyanokit: function(){
+    var w = dosingWt();
+    var g = w ? Math.min(round(70*w/1000, 1), 5) : null;
+    return rcCard({
+      name:'Hydroxocobalamin (Cyanokit)', generic:'Vial 2.5 g in 100 mL D5W or NS', cat:'TOX — CYANIDE',
+      form:'vialmix', line:'1st', mdControl:true,
+      indication:'Cyanide poisoning — suspect in fire victims, closed-space explosions, industrial exposure (PHI Trauma 8-15).', color:'var(--rose)',
+      giveBox: w ? {label:'IV infusion over 15 min', g:g+' g'+(g===5?' (max, can repeat to 10 g)':''), rule:'70 mg/kg IV, max 5 g per dose'} : {needsWt:true},
+      rows:[
+        {k:'Dose', v:'70 mg/kg IV (max 5 g per dose)'},
+        {k:'Calc dose', v:g ? g + ' g' : '--', cls:'calc'},
+        {k:'Infusion', v:'15 minutes'},
+        {k:'Repeat', v:'May repeat to max total 10 g if needed'},
+        {k:'Note', v:'Turns urine red—inform patient/family. Can give second dose if signs persist.'}
       ]
     });
   }
@@ -2573,16 +2841,29 @@ var DX_DRUGS = {
   trauma:     ['fluidBolus','txa','fentanylBolus'],
   burn:       ['fluidBolus','fentanylBolus'],
   hyperK:     ['caClPeds','caGlucPeds','bicarbTox','albuterol'],
-  open_fracture: ['fentanylBolus','fluidBolus','txa'],
+  pelvic_fracture: ['fluidBolus','txa','fentanylBolus','cefazolin','clindamycin'],
+  open_fracture: ['cefazolin','clindamycin','fentanylBolus','fluidBolus','txa'],
   laceration: ['fentanylBolus','midazolamSeizure','fluidBolus'],
   aaa:        ['fluidBolus','fentanylBolus','txa'],
   dissection: ['fentanylBolus'],
   herniation: ['fentanylBolus','ketamineInduction','mannitol','hypertonic'],
   hemshock:   ['fluidBolus','txa','caGlucPeds'],
   stroke_ich: ['lorazepamSeizure','d10'],
+  undif_stroke:['d10'],
   post_intubation: ['fentanylBolus','ketamineDripPeds','midazolamDripPeds'],
   agitation:  ['ketamineInduction','midazolamSeizure'],
-  anxiolysis: ['midazolamSeizure','lorazepamSeizure','fentanylBolus']
+  anxiolysis: ['midazolamSeizure','lorazepamSeizure','fentanylBolus'],
+  amputation: ['fentanylBolus','txa','fluidBolus','cefazolin','clindamycin'],
+  impaled:    ['fentanylBolus','fluidBolus','txa'],
+  femur_fracture: ['fentanylBolus','fluidBolus','txa'],
+  ocular:     ['fentanylBolus'],
+  crush:      ['fluidBolus','caGlucPeds','caClPeds','fentanylBolus'],
+  co_poison:  ['cyanokit'],
+  electrical_burn: ['fluidBolus','fentanylBolus','caGlucPeds'],
+  chemical_burn: ['fentanylBolus','fluidBolus'],
+  hypothermia: ['fluidBolus'],
+  frostbite:  ['fentanylBolus'],
+  heat_illness: ['fluidBolus']
 };
 
 function renderDxDrugs(){
@@ -2648,6 +2929,8 @@ var ALL_DRUGS = [
   {cat:'tox',         key:'caGlucPeds',        form:'vial'},
   {cat:'tox',         key:'glucagonCCB',       form:'vialmix'},
   {cat:'trauma',      key:'txa',               form:'vialmix'},
+  {cat:'trauma',      key:'cefazolin',         form:'vialmix'},
+  {cat:'trauma',      key:'clindamycin',       form:'vialmix'},
   {cat:'nv',          key:'ondansetronPeds',   form:'vial'}
 ];
 
@@ -2998,6 +3281,8 @@ safeRun('renderBurnMap', renderBurnMap);
     </button>
     <div class="pdf-title" id="pdfOverlayTitle">Protocol</div>
     <div class="pdf-nav">
+      <button class="pdf-nav-btn" id="pdfZoomOut" type="button" onclick="pdfZoomOut()" aria-label="Zoom out">−</button>
+      <button class="pdf-nav-btn" id="pdfZoomIn" type="button" onclick="pdfZoomIn()" aria-label="Zoom in">+</button>
       <button class="pdf-nav-btn" id="pdfPrevBtn" type="button" onclick="pdfPrevPage()" aria-label="Previous page">‹</button>
       <div class="pdf-page-info">
         <input class="pdf-page-input" id="pdfPageInput" type="number" min="1" inputmode="numeric" onchange="pdfGoToPage()" />

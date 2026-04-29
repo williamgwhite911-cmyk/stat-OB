@@ -173,6 +173,8 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .rv.calc .max,.rv.calc .mx{color:#ff7e87 !important}
 .rc-note{margin-top:8px;padding:7px 10px;background:rgba(0,212,245,.05);border:1px solid rgba(0,212,245,.18);border-radius:7px;font-size:.68rem;color:var(--tx1);line-height:1.5}
 .rc-warn{margin-top:8px;padding:7px 10px;background:rgba(255,95,109,.07);border:1px solid rgba(255,95,109,.28);border-radius:7px;font-size:.68rem;color:var(--rose);line-height:1.5;font-weight:600}
+.rc-mdctrl{background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.45);color:var(--rose);font-family:var(--mono);font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 9px;border-radius:6px;margin:8px 0 4px;display:flex;align-items:center;gap:6px}
+.rc-line{font-family:var(--mono);font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--cyan);margin:6px 0 0;padding:4px 0}
 
 /* Diagnosis grid */
 .dx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:8px}
@@ -184,6 +186,8 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .proto-label{font-family:var(--mono);font-size:.7rem;font-weight:900;letter-spacing:.13em;color:#e9d5ff;text-transform:uppercase;text-shadow:0 0 6px rgba(168,85,247,.4)}
 .proto-cite{font-size:.72rem;color:var(--tx2);margin-top:2px;font-style:italic}
 .proto-chev{font-size:1.4rem;color:#c084fc;font-weight:900;opacity:.7}
+.dx-cat-header{grid-column:1/-1;font-family:var(--mono);font-size:.62rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);padding:14px 4px 6px;border-bottom:1px solid var(--bd0);margin-top:10px}
+.dx-cat-header:first-child{margin-top:0}
 .dx-card{background:var(--bg2);border:1px solid var(--bd1);border-radius:9px;padding:10px 12px;cursor:pointer;transition:all .13s}
 .dx-card:hover{border-color:var(--bd2);transform:translateY(-1px)}
 .dx-card.on{background:rgba(244,114,182,.08);border-color:var(--rose);box-shadow:0 0 0 1px var(--rose)}
@@ -638,6 +642,8 @@ function openPdfOverlay(url, title){
   });
 }
 
+var __pdfZoom = 1.4;  // default zoom (1.0 = fit to width, 1.4 = ~140% of fit width)
+
 function renderPdfPage(num){
   var loading = document.getElementById('pdfLoading');
   if(!__pdfDoc) return Promise.resolve();
@@ -648,7 +654,7 @@ function renderPdfPage(num){
     if(!canvas || !wrap) return;
     var availW = wrap.clientWidth - 16;
     var rawViewport = page.getViewport({scale: 1});
-    var fitScale = availW / rawViewport.width;
+    var fitScale = (availW / rawViewport.width) * __pdfZoom;
     var dpr = window.devicePixelRatio || 1;
     var viewport = page.getViewport({scale: fitScale * dpr});
     canvas.width = Math.floor(viewport.width);
@@ -666,6 +672,16 @@ function renderPdfPage(num){
     if(err && err.name === 'RenderingCancelledException') return;
     console.error('PDF render failed:', err);
   });
+}
+
+function pdfZoomIn(){
+  __pdfZoom = Math.min(4.0, __pdfZoom + 0.25);
+  if(__pdfDoc) renderPdfPage(__pdfCurrentPage);
+}
+
+function pdfZoomOut(){
+  __pdfZoom = Math.max(0.6, __pdfZoom - 0.25);
+  if(__pdfDoc) renderPdfPage(__pdfCurrentPage);
 }
 
 function updatePdfNavButtons(){
@@ -712,6 +728,7 @@ function closePdfOverlay(){
   if(__pdfRenderTask){ try{ __pdfRenderTask.cancel(); }catch(e){} __pdfRenderTask = null; }
   if(__pdfDoc){ try{ __pdfDoc.destroy(); }catch(e){} __pdfDoc = null; }
   __pdfCurrentPage = 1;
+  __pdfZoom = 1.4;
   if(loading){ loading.classList.remove('hidden'); loading.textContent = 'Loading…'; }
   document.documentElement.style.overflow='';
   document.body.style.overflow='';
@@ -1013,15 +1030,31 @@ var PROTOCOL_PAGES = {
   thyroid:       { src: 'ob',        label: 'OB 10.8 — Thyroid Storm',                           page: 17 },
   cord_prolapse: { src: 'ob',        label: 'OB 10.1 — Standard OB Transport (Cord Prolapse)',   page: 1  },
   precipitous:   { src: 'ob',        label: 'OB 10.1.3 — During Patient Transport',              page: 3  },
+  undif_stroke:  { src: 'neuro',     label: 'Neuro 7.4 — Undifferentiated Stroke (Maternal)',    page: 8  },
   // Newborn / Neonate Ch 11
   newborn:       { src: 'neonate',   label: 'Neonate 11.1 — Care Guidelines & NRP',              page: 1  },
+  // Trauma Ch 8
+  open_fracture: { src: 'trauma',    label: 'Trauma 8-11 — Open Fractures (Maternal)',           page: 11 },
+  pelvic_fracture:{ src: 'trauma',    label: 'Trauma 8-10 — Pelvic Fracture (Maternal)',           page: 10 },
   // Pain / sedation / anxiety -> Analgesia Ch 5
   pain:          { src: 'analgesia', label: 'Analgesia 5.1.2 — Analgesia',                       page: 4  },
   anxiety:       { src: 'analgesia', label: 'Analgesia 5.1.4 — Anxiolysis',                      page: 6  },
   // Mag tox -> Drugs Ch 1 (calcium rescue) / OB special considerations
   mag_tox:       { src: 'drugs',     label: 'Drugs 1.12 — Calcium Chloride (Mag rescue)',        page: 15 },
   // Nausea -> Medical 6.14
-  nv:            { src: 'medical',   label: 'Medical 6.14 — Nausea & Vomiting',                  page: 38 }
+  nv:            { src: 'medical',   label: 'Medical 6.14 — Nausea & Vomiting',                  page: 38 },
+  // PHI Trauma chapters 8-9 to 8-19 (Maternal context)
+  amputation:    { src: 'trauma',    label: 'Trauma 8-9 — Amputation (Maternal)',                page: 9 },
+  impaled:       { src: 'trauma',    label: 'Trauma 8-9 — Impaled Object (Maternal)',            page: 9 },
+  femur_fracture:{ src: 'trauma',    label: 'Trauma 8-10 — Femur Fracture (Maternal)',           page: 10 },
+  ocular:        { src: 'trauma',    label: 'Trauma 8-11 — Ocular Injuries',                     page: 11 },
+  crush:         { src: 'trauma',    label: 'Trauma 8-12 — Crush Injury (Maternal)',             page: 12 },
+  co_poison:     { src: 'trauma',    label: 'Trauma 8-15 — CO & Cyanide (Maternal)',             page: 15 },
+  electrical_burn:{ src: 'trauma',   label: 'Trauma 8-16 — Electrical Burns (Maternal)',         page: 16 },
+  chemical_burn: { src: 'trauma',    label: 'Trauma 8-17 — Chemical Burns (Maternal)',           page: 17 },
+  hypothermia:   { src: 'trauma',    label: 'Trauma 8-19 — Hypothermia (Maternal)',              page: 19 },
+  frostbite:     { src: 'trauma',    label: 'Trauma 8-19 — Frostbite (Maternal)',                page: 19 },
+  heat_illness:  { src: 'trauma',    label: 'Trauma 8-19 — Heat-Related Illness (Maternal)',     page: 19 }
 };
 
 // Per-file availability check (avoids click-time race conditions)
@@ -1082,37 +1115,69 @@ function openProtocolGeneric(e, srcKey){
 }
 
 var DIAGNOSES = [
-  {id:'ptl', name:'Preterm / Active Labor', sub:'Tocolysis indicated'},
-  {id:'prom', name:'PROM', sub:'Premature ROM'},
-  {id:'bleeding', name:'Vaginal Bleeding', sub:'Previa / abruption'},
-  {id:'pph', name:'Postpartum Hemorrhage', sub:'>500 mL vag / >1000 mL CS'},
-  {id:'postpartum', name:'Routine Postpartum', sub:'Standard care'},
-  {id:'pih', name:'PIH / Mild Preeclampsia', sub:'Seizure prophylaxis'},
-  {id:'severe_pre', name:'Severe Preeclampsia', sub:'SBP >160 / DBP >110'},
-  {id:'eclampsia', name:'Eclamptic Seizure', sub:'Active convulsion'},
-  {id:'thyroid', name:'Thyroid Storm', sub:'Hypermetabolic state'},
-  {id:'pain', name:'Labor Pain', sub:'Unrelieved by tocolysis'},
-  {id:'nv', name:'Nausea / Vomiting', sub:''},
-  {id:'anxiety', name:'Anxiety', sub:''},
-  {id:'mag_tox', name:'Magnesium Toxicity', sub:'Calcium rescue'},
-  {id:'cord_prolapse', name:'Cord Prolapse', sub:'Obstetric emergency'},
-  {id:'precipitous', name:'Precipitous Delivery', sub:'Imminent delivery'},
-  {id:'newborn', name:'Newborn Resuscitation', sub:'Post-delivery'},
-  {id:'open_fracture', name:'Open Fracture (Maternal)', sub:'Trauma in pregnancy · L lateral tilt'},
-  {id:'aaa', name:'AAA / Aortic Catastrophe', sub:'Rare in pregnancy · connective tissue dz'},
-  {id:'dissection', name:'Aortic Dissection (Maternal)', sub:'Connective tissue dz · 3rd trimester'},
-  {id:'herniation', name:'Brain Herniation (Maternal)', sub:'Eclampsia · ICH · severe pre-eclampsia'},
-  {id:'hemshock', name:'Hemorrhagic Shock (Maternal)', sub:'Pregnancy compensates · then crashes'},
-  {id:'post_intubation', name:'Post-Intubation Sedation (Maternal)', sub:'Analgesia first · pregnancy-safe agents'},
-  {id:'anxiolysis_extra', name:'Anxiolysis (Pre-flight)', sub:'Treat before loading'},
-  {id:'agitation', name:'Dangerous Agitation (Maternal)', sub:'Pregnancy-safe sedation'}
+  {id:'ptl', cat:'LABOR', name:'Preterm / Active Labor', sub:'Tocolysis indicated'},
+  {id:'prom', cat:'LABOR', name:'PROM', sub:'Premature ROM'},
+  {id:'precipitous', cat:'LABOR', name:'Precipitous Delivery', sub:'Imminent delivery'},
+  {id:'cord_prolapse', cat:'LABOR', name:'Cord Prolapse', sub:'Obstetric emergency'},
+  {id:'postpartum', cat:'POSTPARTUM', name:'Routine Postpartum', sub:'Standard care'},
+  {id:'pph', cat:'POSTPARTUM', name:'Postpartum Hemorrhage', sub:'>500 mL vag / >1000 mL CS'},
+  {id:'pih', cat:'HYPERTENSIVE / PREECLAMPSIA', name:'PIH / Mild Preeclampsia', sub:'Seizure prophylaxis'},
+  {id:'severe_pre', cat:'HYPERTENSIVE / PREECLAMPSIA', name:'Severe Preeclampsia', sub:'SBP >160 / DBP >110'},
+  {id:'eclampsia', cat:'HYPERTENSIVE / PREECLAMPSIA', name:'Eclamptic Seizure', sub:'Active convulsion'},
+  {id:'bleeding', cat:'OB BLEEDING', name:'Vaginal Bleeding', sub:'Previa / abruption'},
+  {id:'thyroid', cat:'OB MEDICAL', name:'Thyroid Storm', sub:'Hypermetabolic state'},
+  {id:'mag_tox', cat:'OB MEDICAL', name:'Magnesium Toxicity', sub:'Calcium rescue'},
+  {id:'pain', cat:'OB SUPPORT', name:'Labor Pain', sub:'Unrelieved by tocolysis'},
+  {id:'nv', cat:'OB SUPPORT', name:'Nausea / Vomiting', sub:''},
+  {id:'anxiety', cat:'OB SUPPORT', name:'Anxiety', sub:''},
+  {id:'anxiolysis_extra', cat:'OB SUPPORT', name:'Anxiolysis (Pre-flight)', sub:'Treat before loading'},
+  {id:'herniation', cat:'NEURO', name:'Brain Herniation (Maternal)', sub:'Eclampsia · ICH · severe pre-eclampsia'},
+  {id:'undif_stroke', cat:'NEURO', name:'Undifferentiated Stroke (Maternal)', sub:'BP control · L lateral tilt'},
+  {id:'open_fracture', cat:'TRAUMA', name:'Open Fracture (Maternal)', sub:'Trauma in pregnancy · L lateral tilt'},
+  {id:'pelvic_fracture', cat:'TRAUMA', name:'Pelvic Fracture (Maternal)', sub:'Trauma in pregnancy · L lateral tilt'},
+  {id:'amputation', cat:'TRAUMA', name:'Amputation (Maternal)', sub:'L lateral tilt · re-implantation'},
+  {id:'impaled', cat:'TRAUMA', name:'Impaled Object (Maternal)', sub:'Stabilize · do not remove'},
+  {id:'femur_fracture', cat:'TRAUMA', name:'Femur Fracture (Maternal)', sub:'Traction splint · L lateral tilt'},
+  {id:'ocular', cat:'TRAUMA', name:'Ocular Injury (Maternal)', sub:'Eye shield · cover both'},
+  {id:'crush', cat:'TRAUMA', name:'Crush Injury (Maternal)', sub:'Aggressive fluid · hyperK · L lateral'},
+  {id:'electrical_burn', cat:'TRAUMA', name:'Electrical Burn (Maternal)', sub:'EKG · fetal monitor'},
+  {id:'chemical_burn', cat:'TRAUMA', name:'Chemical Burn (Maternal)', sub:'PPE · decon · L lateral'},
+  {id:'aaa', cat:'VASCULAR', name:'AAA / Aortic Catastrophe', sub:'Rare in pregnancy · connective tissue dz'},
+  {id:'dissection', cat:'VASCULAR', name:'Aortic Dissection (Maternal)', sub:'Connective tissue dz · 3rd trimester'},
+  {id:'hypothermia', cat:'ENVIRONMENTAL', name:'Hypothermia (Maternal)', sub:'Active rewarming · fetal HR'},
+  {id:'frostbite', cat:'ENVIRONMENTAL', name:'Frostbite (Maternal)', sub:'No partial thaw'},
+  {id:'heat_illness', cat:'ENVIRONMENTAL', name:'Heat Illness (Maternal)', sub:'Cool aggressively · fetal HR'},
+  {id:'hemshock', cat:'CRITICAL CARE', name:'Hemorrhagic Shock (Maternal)', sub:'Pregnancy compensates · then crashes'},
+  {id:'post_intubation', cat:'CRITICAL CARE', name:'Post-Intubation Sedation (Maternal)', sub:'Analgesia first · pregnancy-safe agents'},
+  {id:'agitation', cat:'CRITICAL CARE', name:'Dangerous Agitation (Maternal)', sub:'Pregnancy-safe sedation'},
+  {id:'newborn', cat:'NEONATAL', name:'Newborn Resuscitation', sub:'Post-delivery'}
 ];
 
 function renderDxGrid(){
+  var CAT_ORDER = ['LABOR','POSTPARTUM','HYPERTENSIVE / PREECLAMPSIA','OB BLEEDING','OB MEDICAL','OB SUPPORT','NEURO','TRAUMA','VASCULAR','ENVIRONMENTAL','CRITICAL CARE','NEONATAL'];
+  var groups = {};
+  DIAGNOSES.forEach(function(dx){
+    var cat = dx.cat || 'OTHER';
+    if(!groups[cat]) groups[cat] = [];
+    groups[cat].push(dx);
+  });
   var grid = document.getElementById('dxGrid');
-  grid.innerHTML = DIAGNOSES.map(function(d){
-    return '<div class="dx-card' + (state.m.dx===d.id?' on':'') + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
-  }).join('');
+  var html = '';
+  CAT_ORDER.forEach(function(cat){
+    if(!groups[cat] || !groups[cat].length) return;
+    html += '<div class="dx-cat-header">' + cat + '</div>';
+    groups[cat].forEach(function(d){
+      html += '<div class="dx-card' + (state.m.dx===d.id?' on':'') + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
+    });
+  });
+  Object.keys(groups).forEach(function(cat){
+    if(CAT_ORDER.indexOf(cat) !== -1) return;
+    html += '<div class="dx-cat-header">' + cat + '</div>';
+    groups[cat].forEach(function(d){
+      html += '<div class="dx-card' + (state.m.dx===d.id?' on':'') + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
+    });
+  });
+  grid.innerHTML = html;
   grid.querySelectorAll('.dx-card').forEach(function(el){
     el.onclick = function(){
       state.m.dx = el.dataset.id === state.m.dx ? '' : el.dataset.id;
@@ -1143,20 +1208,22 @@ function formBadge(form){
   return '<div class="fb fb-' + form + '">' + (FORM_LABELS[form] || form) + '</div>';
 }
 function rcCard(opts){
-  // opts: name, generic, indication, color, form, rows[{k,v,cls}], note, warn
+  // opts: name, generic, indication, color, form, rows[{k,v,cls}], note, warn, line, mdControl
   var rows = (opts.rows||[]).map(function(r){
     return '<div class="rr"><span class="rk">' + r.k + '</span><span class="rv ' + (r.cls||'dose') + '">' + r.v + '</span></div>';
   }).join('');
   var note = opts.note ? '<div class="rc-note">' + opts.note + '</div>' : '';
   var warn = opts.warn ? '<div class="rc-warn">' + opts.warn + '</div>' : '';
+  var mdctrl = opts.mdControl ? '<div class="rc-mdctrl">⚠ MEDICAL DIRECTION REQUIRED</div>' : '';
   var ind = opts.indication ? '<div class="rc-ind">' + opts.indication + '</div>' : '';
   var sub = opts.generic ? '<div class="rc-names">' + opts.generic + '</div>' : '';
+  var line = opts.line ? '<div class="rc-line">' + opts.line + '</div>' : '';
   var formCls = opts.form ? ' form-' + opts.form : '';
   var badge = formBadge(opts.form);
   return '<div class="rc' + formCls + '"><div class="rc-bar" style="background:' + (opts.color || 'var(--cyan)') + '"></div>' +
     '<div class="rc-cat">' + (opts.cat || '') + '</div>' +
     '<div class="rc-name">' + opts.name + '</div>' +
-    sub + badge + ind + rows + note + warn + '</div>';
+    sub + badge + line + ind + mdctrl + rows + note + warn + '</div>';
 }
 
 // ──── Maternal drugs ────
@@ -1174,6 +1241,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Magnesium Sulfate', generic:'Mg2+ infusion — Stock 5 g / 10 mL vial (50% = 500 mg/mL)', cat:'SEIZURE / MAG',
       form:'vialmix',
+      line:'1st line',
       indication:'Seizure prophylaxis in preeclampsia / PIH', color:'var(--purple)',
       rows:[
         {k:'Mix premix bag', v:'4 vials (20 g / 40 mL) into 500 mL NS bag = 40 mg/mL', cls:'calc'},
@@ -1192,6 +1260,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Magnesium Sulfate', generic:'Eclampsia load — Stock 5 g / 10 mL vial (50%)', cat:'SEIZURE / MAG',
       form:'vialmix',
+      line:'1st line',
       indication:'Active eclamptic seizure', color:'var(--rose)',
       rows:[
         {k:'Loading', v:'6 gm IV over 15-20 min'},
@@ -1211,6 +1280,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Magnesium Sulfate', generic:'Tocolysis dose — Stock 5 g / 10 mL vial (50%)', cat:'TOCOLYSIS',
       form:'vialmix',
+      line:'1st line',
       indication:'Preterm labor / tocolysis in active bleeding', color:'var(--purple)',
       rows:[
         {k:'Loading', v:'6 gm IV over 20-30 min'},
@@ -1232,6 +1302,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Labetalol', generic:'Combined α/β blocker — Stock 100 mg / 20 mL vial (5 mg/mL)', cat:'HTN',
       form:'vial',
+      line:'1st line',
       indication:'Severe-range BP (2 SBP > 160 OR 2 DBP > 110 in 15 min)', color:'var(--cyan)',
       rows:[
         {k:'Mix', v:'Push undiluted from 100 mg/20 mL vial — or dilute 100 mg in 100 mL NS = 1 mg/mL drip', cls:'calc'},
@@ -1251,6 +1322,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Hydralazine', generic:'Direct vasodilator (Stock 20 mg/mL — dilute to 1 mg/mL)', cat:'HTN',
       form:'vial',
+      line:'2nd line',
       indication:'Severe-range BP (alternative to labetalol)', color:'var(--cyan)',
       rows:[
         {k:'Dose 1', v:'10 mg IV over 2 min'},
@@ -1269,6 +1341,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Nifedipine', generic:'Calcium channel blocker (10 mg IR caps)', cat:'HTN',
       form:'po',
+      line:'2nd line',
       indication:'Severe-range BP (PO option)', color:'var(--cyan)',
       rows:[
         {k:'Dose 1', v:'10 mg PO'},
@@ -1286,6 +1359,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Lorazepam', generic:'Benzodiazepine - eclampsia (Stock 2 mg/mL)', cat:'SEIZURE',
       form:'vial',
+      line:'2nd line',
       indication:'Eclamptic seizure control', color:'var(--rose)',
       rows:[
         {k:'Dose', v:'2 mg IV / IM / IN'},
@@ -1299,6 +1373,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Midazolam', generic:'Benzodiazepine - eclampsia (alt)', cat:'SEIZURE',
       form:'vial',
+      line:'2nd line',
       indication:'Eclamptic seizure control if no lorazepam', color:'var(--rose)',
       rows:[
         {k:'Dose', v:'5 mg IV / IM / IN'},
@@ -1311,6 +1386,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Terbutaline', generic:'β2 agonist - fast tocolysis (Stock 1 mg/mL)', cat:'TOCOLYSIS',
       form:'vial',
+      line:'1st line',
       indication:'Contractions more frequent than q 6 min (bridge while mag prepared)', color:'var(--orange)',
       rows:[
         {k:'Dose', v:'0.25 mg SQ'},
@@ -1325,6 +1401,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Ketorolac', generic:'NSAID alternative tocolytic (Stock 30 mg/mL)', cat:'TOCOLYSIS',
       form:'vial',
+      line:'adjunct',
       indication:'Tocolysis when terbutaline contraindicated', color:'var(--orange)',
       rows:[
         {k:'Dose', v:'30 mg IV over 30-60 sec'},
@@ -1338,6 +1415,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Oxytocin', generic:'Pitocin (10 u/mL stock — Mix 30 u / 500 mL = 0.06 u/mL)', cat:'HEMORRHAGE',
       form:'vialmix',
+      line:'1st line',
       indication:'Postpartum atony / PPH (after placenta delivers)', color:'var(--teal)',
       rows:[
         {k:'Mix', v:'30 units in 500 mL NS/LR'},
@@ -1354,6 +1432,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Tranexamic Acid (TXA)', generic:'Antifibrinolytic (Stock 100 mg/mL)', cat:'HEMORRHAGE',
       form:'vialmix',
+      line:'1st line',
       indication:'Postpartum hemorrhage', color:'var(--teal)',
       rows:[
         {k:'1st dose', v:'1 gm IV over 10 min'},
@@ -1378,6 +1457,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Fentanyl', generic:'Opioid analgesic (Stock 50 mcg/mL)', cat:'PAIN',
       form:'vial',
+      line:'1st line',
       indication:'Labor pain unrelieved by tocolysis; headache; non-labor pain', color:'var(--amber)',
       rows:[
         {k:'Dose', v:'0.5-1 mcg/kg IBW'},
@@ -1394,6 +1474,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Acetaminophen', generic:'APAP (325 mg or 500 mg tabs)', cat:'PAIN',
       form:'po',
+      line:'1st line',
       indication:'Pain or fever', color:'var(--amber)',
       rows:[
         {k:'Dose', v:'650 to ' + mx('1000') + ' mg PO'},
@@ -1406,6 +1487,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Ondansetron', generic:'5-HT3 antagonist (Stock 2 mg/mL)', cat:'NAUSEA',
       form:'vial',
+      line:'1st line',
       indication:'Nausea / vomiting (first line)', color:'var(--sky)',
       rows:[
         {k:'Dose', v:'4 mg IV over 2-5 min'},
@@ -1420,6 +1502,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Promethazine', generic:'Phenergan (Stock 25 mg/mL)', cat:'NAUSEA',
       form:'vial',
+      line:'2nd line',
       indication:'N/V (alternative)', color:'var(--sky)',
       rows:[
         {k:'IV', v:'12.5 mg, dilute in 10 mL NS, over 2 min'},
@@ -1435,6 +1518,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Midazolam', generic:'Benzodiazepine - anxiety', cat:'PAIN',
       form:'vial',
+      line:'1st line',
       indication:'Anxiety', color:'var(--amber)',
       rows:[
         {k:'Dose', v:'2 to ' + mx('5') + ' mg IV/IM/IN'},
@@ -1449,6 +1533,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Lorazepam', generic:'Benzodiazepine - anxiety (Stock 2 mg/mL)', cat:'PAIN',
       form:'vial',
+      line:'2nd line',
       indication:'Anxiety', color:'var(--amber)',
       rows:[
         {k:'Dose', v:'0.5 to ' + mx('1') + ' mg IV'},
@@ -1460,6 +1545,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Calcium Chloride', generic:'CaCl2 10% (100 mg/mL — 10 mL pre-filled syringe / Bristojet)', cat:'OTHER',
       form:'syringe',
+      line:'1st line',
       indication:'Magnesium toxicity (loss of DTRs, weakness, RR < 12)', color:'var(--rose)',
       rows:[
         {k:'Dose', v:'0.5 to ' + mx('1') + ' gm IV over 3 min'},
@@ -1473,6 +1559,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Calcium Gluconate', generic:'Ca gluconate 10% (100 mg/mL — 1 g per 10 mL vial)', cat:'OTHER',
       form:'vial',
+      line:'1st line',
       indication:'Magnesium toxicity (peripheral IV friendly)', color:'var(--rose)',
       rows:[
         {k:'Dose', v:'0.5 to ' + mx('1') + ' gm IV over 3 min'},
@@ -1486,6 +1573,8 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Propylthiouracil', generic:'PTU (50 mg tabs)', cat:'OTHER',
       form:'po',
+      line:'1st line',
+      mdControl:true,
       indication:'Thyroid storm in pregnancy', color:'var(--lime)',
       rows:[
         {k:'Loading', v:'300 to ' + mx('600') + ' mg PO'},
@@ -1493,7 +1582,7 @@ var DRUGS_MATERNAL = {
         {k:'Maintenance', v:'150 to ' + mx('200') + ' mg PO q 4-6 hr'},
         {k:'Maint tabs', v:'3 to ' + mx('4') + ' × 50 mg', cls:'calc'}
       ],
-      warn:'REQUIRES online physician order. NG tube if patient cannot swallow.'
+      warn:'MEDICAL DIRECTION REQUIRED prior to administration'
     });
   },
   fluidBolus: function(){
@@ -1508,6 +1597,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Crystalloid (LR or NS)', generic:'IV fluid (1000 mL bag — ready to hang)', cat:'HEMORRHAGE',
       form:'premix',
+      line:'1st line',
       indication:'Hypovolemia, hemorrhage, fetal resuscitation', color:'var(--teal)',
       rows:[
         {k:'Maintenance', v:'LR 50-100 mL/hr (total intake 125-150 mL/hr)'},
@@ -1530,6 +1620,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Ketamine — Induction', generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — PHI preferred RSI agent', cat:'INDUCTION',
       form:'vial',
+      line:'1st line',
       indication:'RSI induction in pregnancy — preferred for hemodynamic instability, hemorrhage, or asthma', color:'var(--orange)',
       rows:[
         {k:'PHI dose (RSI)', v:'1.5 to ' + mx('2') + ' mg/kg IV push over 30 sec'},
@@ -1552,6 +1643,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Etomidate — REFERENCE ONLY', generic:'Stock 20 mg / 10 mL vial (2 mg/mL) — NOT on PHI formulary', cat:'INDUCTION',
       form:'vial',
+      line:'2nd line',
       indication:'Alternative RSI induction agent (not standing order — listed for reference only)', color:'var(--tx2)',
       rows:[
         {k:'Standard dose', v:'0.3 mg/kg IV push'},
@@ -1577,6 +1669,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Rocuronium — RSI', generic:'Stock 100 mg / 10 mL vial (10 mg/mL) — PHI formulary', cat:'PARALYTIC',
       form:'vial',
+      line:'1st line',
       indication:'RSI paralysis — preferred over succinylcholine in eclamptic/preeclamptic patients on magnesium', color:'var(--rose)',
       rows:[
         {k:'PHI dose IV', v:'1.5 mg/kg IBW IV push'},
@@ -1603,6 +1696,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Succinylcholine — Caution in OB', generic:'Stock 200 mg / 10 mL vial (20 mg/mL) — PHI formulary for DANGEROUS AGITATION only', cat:'PARALYTIC',
       form:'vial',
+      line:'rescue',
       indication:'PHI standing order is dangerous agitation 4 mg/kg IM. Not PHI standing order for routine RSI.', color:'var(--red)',
       rows:[
         {k:'PHI dose (Dangerous Agitation)', v:'4 mg/kg IBW IM (onset 3-4 min)'},
@@ -1631,6 +1725,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Ketamine Drip — Sedation', generic:'Mix 500 mg (10 mL of 50 mg/mL) into 100 mL NS = 5 mg/mL', cat:'SEDATION',
       form:'vialmix',
+      line:'1st line',
       indication:'Post-intubation sedation — esp. when hemodynamically tenuous', color:'var(--orange)',
       rows:[
         {k:'Mix prep', v:'500 mg (1 vial / 10 mL) into 100 mL NS bag = 5 mg/mL', cls:'calc'},
@@ -1655,6 +1750,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Midazolam Drip — Sedation', generic:'Mix 50 mg (10 mL of 5 mg/mL) into 100 mL NS = 0.5 mg/mL', cat:'SEDATION',
       form:'vialmix',
+      line:'2nd line',
       indication:'Post-intubation sedation — alternative or adjunct', color:'var(--amber)',
       rows:[
         {k:'Mix prep', v:'50 mg (10 mL of 5 mg/mL) into 100 mL NS = 0.5 mg/mL', cls:'calc'},
@@ -1675,6 +1771,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Fentanyl Drip — Analgesia', generic:'Mix 1000 mcg (20 mL of 50 mcg/mL) into 100 mL NS = 10 mcg/mL', cat:'SEDATION',
       form:'vialmix',
+      line:'1st line',
       indication:'Post-intubation analgesia — pair with sedation', color:'var(--amber)',
       rows:[
         {k:'Mix prep', v:'1000 mcg (20 mL of 50 mcg/mL) into 100 mL NS = 10 mcg/mL', cls:'calc'},
@@ -1693,12 +1790,15 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Naloxone (Newborn)', generic:'Narcan', cat:'NEWBORN',
       form:'vial',
+      line:'1st line',
+      mdControl:true,
       indication:'Newborn respiratory depression with maternal opioid within 4 hr', color:'var(--purple)',
       rows:[
         {k:'Dose', v:'0.1 mg/kg IV/IM/IN'},
         {k:'Calculated', v:calc, cls:'calc'}
       ],
-      note:'PPV remains primary intervention. Naloxone is adjunct.'
+      note:'PPV remains primary intervention. Naloxone is adjunct.',
+      warn:'MEDICAL DIRECTION REQUIRED prior to administration'
     });
   },
   epiNeo: function(){
@@ -1710,6 +1810,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Epinephrine (Newborn)', generic:'1:10,000 (0.1 mg/mL — pre-filled syringe / Bristojet)', cat:'NEWBORN',
       form:'syringe',
+      line:'1st line',
       indication:'Newborn HR < 60 despite 30 sec effective PPV + chest compressions', color:'var(--rose)',
       rows:[
         {k:'Dose', v:'0.01 to ' + mx('0.03') + ' mg/kg IV/IO'},
@@ -1727,6 +1828,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Volume Expansion (Newborn)', generic:'NS or LR (250 mL bag)', cat:'NEWBORN',
       form:'premix',
+      line:'1st line',
       indication:'Newborn shock, hypovolemia, blood loss', color:'var(--teal)',
       rows:[
         {k:'Dose', v:'10 mL/kg IV/IO over 5-10 min'},
@@ -1742,6 +1844,7 @@ var DRUGS_MATERNAL = {
     return rcCard({
       name:'Dextrose 10% (Newborn)', generic:'D10W (premix bag — ready to use)', cat:'NEWBORN',
       form:'premix',
+      line:'1st line',
       indication:'Neonatal hypoglycemia (glucose < 50 mg/dL)', color:'var(--amber)',
       rows:[
         {k:'Dose', v:'2 mL/kg D10W IV (0.2 gm/kg)'},
@@ -1772,14 +1875,27 @@ var DX_DRUG_MAP = {
   cord_prolapse: ['terbutaline'],
   precipitous: ['oxytocin','naloxoneNeo'],
   newborn: ['epiNeo','nsBolusNeo','d10Neo','naloxoneNeo'],
+  pelvic_fracture: ['fluidBolus','txa','fentanyl'],
   open_fracture: ['fentanyl','fluidBolus','txa'],
   aaa: ['fluidBolus','fentanyl','txa'],
   dissection: ['labetalol','fentanyl'],
   herniation: ['magEclampsia','lorazepamSeizure','fentanyl'],
+  undif_stroke:['labetalol','magEclampsia'],
   hemshock: ['fluidBolus','txa','oxytocin'],
   post_intubation: ['fentanyl','ketamineDrip'],
   anxiolysis_extra: ['fentanyl'],
-  agitation: ['magEclampsia','fentanyl']
+  agitation: ['magEclampsia','fentanyl'],
+  amputation: ['fentanyl','fluidBolus','txa'],
+  impaled: ['fentanyl','fluidBolus','txa'],
+  femur_fracture: ['fentanyl','fluidBolus','txa'],
+  ocular: ['fentanyl'],
+  crush: ['fluidBolus','caGluc','caCl','fentanyl'],
+  co_poison: [],
+  electrical_burn: ['fluidBolus','fentanyl','caCl'],
+  chemical_burn: ['fentanyl','fluidBolus'],
+  hypothermia: ['fluidBolus'],
+  frostbite: ['fentanyl'],
+  heat_illness: ['fluidBolus']
 };
 
 var DX_NOTES = {
@@ -2006,6 +2122,8 @@ var DX_PLAN = {
       'D10 2 mL/kg if glucose < 50; naloxone 0.1 mg/kg if maternal opioids'
     ]
   },
+  pelvic_fracture:{picture:'Maternal pelvic fracture — pregnancy increases pelvic vascularity → catastrophic hemorrhage risk. LEFT LATERAL TILT (PHI Trauma 8-10).',
+    plan:['LEFT LATERAL TILT >20 wk','Stabilize pelvis with SAM sling at level of greater trochanters','Neurovascular exam BEFORE and AFTER stabilization','DO NOT insert urinary catheter if pelvic fracture suspected','Two large-bore IVs/IO; prefer blood products over crystalloid','Permissive hypotension to radial pulse / normal mentation UNLESS TBI','TXA 1-2 g IV per protocol if within 3 hr','Fetal HR check after maternal stabilization','Pre-alert OB + trauma','Consider perimortem c-section if maternal arrest >20 wk']},
   open_fracture: {
     picture:'Open (compound) fracture in maternal patient. Pregnancy considerations: increased blood volume masks shock, supine hypotension after 20 wk requires LEFT LATERAL TILT, fetus is the second patient — fetal HR check is part of secondary survey.',
     plan:[
@@ -2061,6 +2179,8 @@ var DX_PLAN = {
       'Notify receiving OB/neurosurgery; consider c-section criteria if maternal arrest >20 wk'
     ]
   },
+  undif_stroke:{picture:'Maternal stroke symptoms without head CT — could also be eclampsia/PRES. Manage BP per PHI Neuro 7.4 + maternal considerations.',
+    plan:['LEFT LATERAL TILT >20 wk','Check glucose FIRST — hypoglycemia mimics stroke','Consider eclampsia — magnesium 4-6 g IV load if BP HTN + neurologic + pregnant','BP treatment criteria (PHI Neuro 7.4): positive stroke + glucose ≥60 + SBP target <185','Manage with online medical direction when practicable','Labetalol 20 mg IV over 2 min, repeat 40 mg in 10-20, then 80 mg q10-20 min, max 300 mg (preferred in pregnancy)','Nicardipine 5 mg/hr IV alt, max 15 mg/hr','Avoid acute BP lowering unless meets PHI criteria','Fetal HR check after maternal stabilization','Pre-alert OB + neuro/stroke at receiving']},
   hemshock: {
     picture:'Maternal hemorrhagic shock — pregnancy increases blood volume 30-50%, so vital sign changes appear LATE. By the time SBP drops, blood loss is substantial. Sources: PPH, placental abruption, uterine rupture, ectopic, trauma.',
     plan:[
@@ -2110,6 +2230,156 @@ var DX_PLAN = {
       'Or midazolam 2-5 mg IV/IM/IN (minimize if delivery anticipated)',
       'BVM, I-gel at head of bed; continuous SpO2/EtCO2',
       'Pilot notification before sedation if flight risk'
+    ]
+  },
+  amputation: {
+    picture:'Maternal traumatic amputation — pregnancy increases blood volume but masks shock. LEFT LATERAL TILT >20 wk (PHI Trauma 8-9).',
+    plan:[
+      'LEFT LATERAL TILT (15° wedge under right hip) >20 wk',
+      'Control stump hemorrhage: direct pressure → tourniquet',
+      'Amputated part: rinse with sterile saline, wrap in saline-moistened gauze',
+      'Bag part, then place in cool water with ice (NOT direct ice, NOT freeze)',
+      'Transport part WITH patient',
+      'Pain: fentanyl 0.5-1 mcg/kg IV',
+      'TXA 1-2 g IV — pregnancy-safe',
+      'Pre-alert OB + re-implantation receiving'
+    ]
+  },
+  impaled: {
+    picture:'Maternal impaled object. DO NOT remove — stabilize in place (PHI Trauma 8-9). LEFT LATERAL TILT >20 wk.',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'DO NOT remove impaled object',
+      'Stabilize with bulky dressings',
+      'Direct pressure around (not on) object',
+      'Shorten only if absolutely needed for transport',
+      'Pain: fentanyl IV',
+      'Distal NV check before/after stabilization',
+      'Pre-alert OB + trauma — likely OR'
+    ]
+  },
+  femur_fracture: {
+    picture:'Maternal midshaft femur fracture — significant blood loss possible. LEFT LATERAL TILT >20 wk (PHI Trauma 8-10).',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'Neurovascular exam (CMS) before AND after',
+      'Apply femoral traction device for midshaft femur fx',
+      'CONTRAINDICATED: elbow, hip, lower leg injuries',
+      'Severe angulation or absent pulse: realign up to 2 attempts',
+      'Pain: fentanyl IV',
+      'Reassess CMS q15 min',
+      'Pre-alert OB + trauma'
+    ]
+  },
+  ocular: {
+    picture:'Maternal eye injury — pregnancy doesn\'t change ocular protocol. Avoid pressure on globe (PHI Trauma 8-11).',
+    plan:[
+      'LEFT LATERAL TILT >20 wk if other injuries',
+      'Remove contact lenses PRN',
+      'Apply LOOSE sterile dressing — NO pressure',
+      'Cover with rigid eye shield PRN',
+      'Cover BOTH eyes PRN to limit eye movement',
+      'Do NOT remove impaled objects',
+      'Chemical exposure: irrigate per chemical burn protocol',
+      'Pain control'
+    ]
+  },
+  crush: {
+    picture:'Maternal crush injury — torso/extremity crushed >1 hour. K+ release on extrication = VF risk. LEFT LATERAL TILT >20 wk (PHI Trauma 8-12, 8-13).',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'BEFORE extrication: aggressive IV fluids',
+      'NS 0.9% — 40 mL/kg IBW initial bolus, then 20 mL/kg/hr',
+      'Calcium gluconate 3 g IV over 2-10 min — repeat q10 min up to 3× as bridge against hyperK',
+      'Faster Ca if cardiac instability/arrest',
+      'Cardiac monitor — peaked T, wide QRS',
+      'Tourniquet only if unable to fluid-resuscitate',
+      'Pain: fentanyl IV',
+      'Fetal monitoring after maternal stabilization',
+      'Pre-alert OB + trauma — anticipate dialysis'
+    ]
+  },
+  co_poison: {
+    picture:'Maternal CO poisoning — fetus is HIGHLY sensitive (fetal Hgb has higher CO affinity). Lower threshold for hyperbaric (PHI Trauma 8-15).',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      '100% FiO2 via NRB at 15-25 L/min',
+      'Decreased LOC or severe sx: intubate',
+      'SpCO via rainbow sensor — standard SpO2 unreliable',
+      'Hyperbaric O2 has LOWER threshold in pregnancy (any maternal sx, OR fetal distress, OR maternal CO >15-20%)',
+      'Suspect concurrent cyanide in fire victims',
+      'Continue 100% O2 throughout transport',
+      'Fetal monitoring'
+    ]
+  },
+  electrical_burn: {
+    picture:'Maternal electrical burn — current may pass through uterus → fetal injury. Continuous fetal monitoring (PHI Trauma 8-16).',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      '12-lead EKG (mom)',
+      'TBSA >20%: LR 4 mL/kg/TBSA',
+      'Urinary catheter if available',
+      'Assess compartment syndrome',
+      'Urine target: 30-50 mL/hr (mom)',
+      'Continuous fetal HR monitoring — current may have caused fetal demise/arrhythmia',
+      'Pain: fentanyl IV',
+      'Pre-alert OB + burn center'
+    ]
+  },
+  chemical_burn: {
+    picture:'Maternal chemical burn — PPE for crew, decon before transport. Some chemicals cross placenta (PHI Trauma 8-17).',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'DON PPE before patient contact',
+      'Remove ALL clothing, jewelry, contacts',
+      'Brush off DRY chemicals first',
+      'Irrigate with running water 20+ min',
+      'Do NOT transport undecontaminated',
+      'Identify chemical → notify receiving (some teratogens)',
+      'Pain after decon',
+      'Fetal monitoring'
+    ]
+  },
+  hypothermia: {
+    picture:'Maternal hypothermia — Mild 32-35°C, Moderate 28-32°C, Severe <28°C. Fetal HR will be bradycardic in severe maternal hypothermia (PHI Trauma 8-19).',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'Remove wet clothing, dry, insulate',
+      'Mild (32-35°C): warm IV fluids (40°C)',
+      'Moderate (28-32°C): minimize stimulation, thermal blanket, warm humidified O2',
+      'Severe (<28°C): heated O2, warm IV',
+      'Handle gently — VF risk in severe hypothermia',
+      'Cardiac arrest in hypothermia: continue CPR — "not dead until warm and dead"',
+      'Continuous fetal monitoring (will be bradycardic)',
+      'Withhold meds/defib if core <30°C; defib ×1 then warm before further attempts',
+      'Consider perimortem c-section if maternal arrest >20 wk and unable to warm'
+    ]
+  },
+  frostbite: {
+    picture:'Maternal frostbite — pregnancy doesn\'t change protocol. Treat associated maternal hypothermia first (PHI Trauma 8-19).',
+    plan:[
+      'Treat hypothermia first if present',
+      'Gentle handling — frozen tissue fragile',
+      'Loose sterile dressing',
+      'Pad and protect',
+      'DO NOT thaw if any chance of refreezing',
+      'Definitive thaw: warm-water bath 37-39°C for 15-30 min',
+      'Pain: fentanyl during/after thawing'
+    ]
+  },
+  heat_illness: {
+    picture:'Maternal heat illness — pregnancy increases heat illness risk (cardiac output, body temp baseline higher). Heat stroke risks fetal demise (PHI Trauma 8-19).',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'Move to cool environment',
+      'Remove excess clothing',
+      'Cold packs to chest, groin, axilla',
+      'Mist + fan for evaporative cooling',
+      'Cold IV fluids if heat stroke',
+      'Continuous maternal core temp monitoring',
+      'Stop cooling at 38-39°C to avoid overshoot',
+      'Continuous fetal HR monitoring',
+      'Pre-alert OB'
     ]
   }
 };
@@ -2553,6 +2823,8 @@ safeRun('renderIntubation',function(){ renderIntubation(); });
     </button>
     <div class="pdf-title" id="pdfOverlayTitle">Protocol</div>
     <div class="pdf-nav">
+      <button class="pdf-nav-btn" id="pdfZoomOut" type="button" onclick="pdfZoomOut()" aria-label="Zoom out">−</button>
+      <button class="pdf-nav-btn" id="pdfZoomIn" type="button" onclick="pdfZoomIn()" aria-label="Zoom in">+</button>
       <button class="pdf-nav-btn" id="pdfPrevBtn" type="button" onclick="pdfPrevPage()" aria-label="Previous page">‹</button>
       <div class="pdf-page-info">
         <input class="pdf-page-input" id="pdfPageInput" type="number" min="1" inputmode="numeric" onchange="pdfGoToPage()" />
