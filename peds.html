@@ -268,6 +268,23 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .pdf-text-layer > span{position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%}
 .pdf-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--tx1);font-family:var(--mono);font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;background:rgba(0,0,0,.6);padding:8px 14px;border-radius:6px}
 .pdf-loading.hidden{display:none}
+
+/* PDF chapter/protocol browser panel */
+.pdf-sections-btn{background:var(--s1);border:1px solid var(--bd2);color:var(--tx0);font-family:var(--mono);font-size:.7rem;font-weight:700;letter-spacing:.06em;padding:8px 10px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s;flex-shrink:0;text-transform:uppercase}
+.pdf-sections-btn:hover,.pdf-sections-btn:active{background:var(--s2);border-color:var(--cyan);color:var(--cyan)}
+.pdf-sections-btn.active{background:var(--cyan);color:var(--bg0);border-color:var(--cyan)}
+.pdf-sections-icon{font-size:1rem;line-height:1}
+.pdf-sections-panel{position:absolute;top:52px;left:0;bottom:0;width:280px;max-width:80vw;background:var(--bg1);border-right:1px solid var(--bd1);overflow-y:auto;transform:translateX(-100%);transition:transform .2s ease;z-index:10;display:flex;flex-direction:column}
+.pdf-sections-panel.show{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,.5)}
+.pdf-sections-group{padding:10px 0}
+.pdf-sections-group-label{font-family:var(--mono);font-size:.62rem;font-weight:800;letter-spacing:.14em;color:var(--cyan);padding:8px 14px 6px;text-transform:uppercase;background:rgba(34,211,238,.04);border-bottom:1px solid var(--bd0)}
+.pdf-sections-item{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid var(--bd0);cursor:pointer;transition:background .1s;-webkit-tap-highlight-color:transparent}
+.pdf-sections-item:hover,.pdf-sections-item:active{background:var(--s1)}
+.pdf-sections-item.current{background:rgba(34,211,238,.08);border-left:3px solid var(--cyan);padding-left:11px}
+.pdf-sections-item-label{font-family:var(--body);font-size:.78rem;color:var(--tx0);line-height:1.35;flex:1;min-width:0}
+.pdf-sections-item-page{font-family:var(--mono);font-size:.65rem;color:var(--tx2);font-weight:700;white-space:nowrap;flex-shrink:0;padding-top:1px}
+.pdf-sections-empty{padding:20px 14px;font-size:.75rem;color:var(--tx2);text-align:center;font-style:italic}
+
 .rc-targets{background:rgba(34,211,238,.08);border:1px solid var(--cyan);border-radius:8px;padding:10px 12px;margin:10px 0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;align-items:center}
 .rc-targets-label{font-family:var(--mono);font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);white-space:nowrap}
 .rc-targets-label.stop{color:var(--rose)}
@@ -558,6 +575,7 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 var __pdfjsReady = null;
 var __pdfDoc = null;
 var __pdfCurrentPage = 1;
+var __pdfCurrentSrc = null;  // chapter key (e.g., 'trauma') of currently-loaded PDF
 var __pdfRenderTask = null;
 var __pdfZoom = 1.0;       // 1.0 = fit-to-width baseline
 var __pdfMinZoom = 0.5;
@@ -797,15 +815,119 @@ function attachPinchHandlers(){
   });
 }
 
+function togglePdfSections(){
+  var panel = document.getElementById('pdfSectionsPanel');
+  var btn = document.getElementById('pdfSectionsBtn');
+  if(!panel) return;
+  var isOpen = panel.classList.toggle('show');
+  if(btn) btn.classList.toggle('active', isOpen);
+  panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+  if(isOpen) renderPdfSections();
+}
+
+function closePdfSections(){
+  var panel = document.getElementById('pdfSectionsPanel');
+  var btn = document.getElementById('pdfSectionsBtn');
+  if(panel) panel.classList.remove('show');
+  if(btn) btn.classList.remove('active');
+  if(panel) panel.setAttribute('aria-hidden', 'true');
+}
+
+function renderPdfSections(){
+  var current = document.getElementById('pdfSectionsCurrent');
+  var others = document.getElementById('pdfSectionsOthers');
+  if(!current || !others) return;
+  if(typeof PROTOCOL_PAGES === 'undefined' || typeof PROTOCOL_FILES === 'undefined'){
+    current.innerHTML = '';
+    others.innerHTML = '<div class="pdf-sections-empty">PHI chapter list not available in this app.</div>';
+    return;
+  }
+  // In this chapter
+  var sectionItems = [];
+  if(__pdfCurrentSrc){
+    Object.keys(PROTOCOL_PAGES).forEach(function(dxId){
+      var p = PROTOCOL_PAGES[dxId];
+      if(p && p.src === __pdfCurrentSrc){
+        sectionItems.push({label: p.label, page: p.page || 1, dxId: dxId});
+      }
+    });
+    sectionItems.sort(function(a,b){ return (a.page||1) - (b.page||1); });
+  }
+  var srcLabel = __pdfCurrentSrc ? ('In this chapter (' + __pdfCurrentSrc.toUpperCase() + ')') : 'In this chapter';
+  var ch = '<div class="pdf-sections-group-label">' + srcLabel + '</div>';
+  if(sectionItems.length){
+    sectionItems.forEach(function(it){
+      var isCurrent = (it.page === __pdfCurrentPage) ? ' current' : '';
+      ch += '<div class="pdf-sections-item' + isCurrent + '" onclick="jumpToPdfSection(' + it.page + ')">';
+      ch += '<div class="pdf-sections-item-label">' + escapeHtml(it.label) + '</div>';
+      ch += '<div class="pdf-sections-item-page">p. ' + it.page + '</div>';
+      ch += '</div>';
+    });
+  } else {
+    ch += '<div class="pdf-sections-empty">No protocol sections registered for this chapter.</div>';
+  }
+  current.innerHTML = ch;
+
+  // Switch chapter
+  var oh = '<div class="pdf-sections-group-label">Switch chapter</div>';
+  Object.keys(PROTOCOL_FILES).forEach(function(srcKey){
+    if(srcKey === __pdfCurrentSrc) return;
+    var fname = PROTOCOL_FILES[srcKey].replace(/^protocols\//,'').replace(/\.pdf$/i,'');
+    var label = srcKey.charAt(0).toUpperCase() + srcKey.slice(1) + ' chapter';
+    oh += '<div class="pdf-sections-item" onclick="switchPdfChapter(\'' + srcKey + '\')">';
+    oh += '<div class="pdf-sections-item-label">' + escapeHtml(label) + '<div style="font-size:.65rem;color:var(--tx2);margin-top:2px;font-family:var(--mono)">' + escapeHtml(fname) + '.pdf</div></div>';
+    oh += '<div class="pdf-sections-item-page">›</div>';
+    oh += '</div>';
+  });
+  others.innerHTML = oh;
+}
+
+function jumpToPdfSection(page){
+  if(!__pdfDoc) return;
+  var n = Math.min(Math.max(1, page), __pdfDoc.numPages);
+  __pdfCurrentPage = n;
+  var inp = document.getElementById('pdfPageInput');
+  if(inp) inp.value = n;
+  renderPdfPage(n);
+  closePdfSections();
+}
+
+function switchPdfChapter(srcKey){
+  if(typeof PROTOCOL_FILES === 'undefined') return;
+  var file = PROTOCOL_FILES[srcKey];
+  if(!file) return;
+  if(typeof PROTOCOL_AVAILABLE !== 'undefined' && PROTOCOL_AVAILABLE[srcKey] === false){
+    var fileBare = file.replace(/^protocols\//,'');
+    alert('PHI Protocol PDF "' + fileBare + '" is not installed.');
+    return;
+  }
+  var url = file + '#page=1&zoom=page-fit';
+  var label = srcKey.charAt(0).toUpperCase() + srcKey.slice(1) + ' chapter';
+  __pdfCurrentSrc = srcKey;
+  // Reuse existing openPdfOverlay (will reload doc + reset state)
+  openPdfOverlay(url, label);
+  closePdfSections();
+}
+
+// Tiny helper if not already defined
+if(typeof escapeHtml !== 'function'){
+  window.escapeHtml = function(s){
+    if(s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  };
+}
+
 function closePdfOverlay(){
   var ov = document.getElementById('pdfOverlay');
   var loading = document.getElementById('pdfLoading');
   if(!ov) return;
   ov.classList.remove('show');
+  closePdfSections();
   if(__pdfRenderTask){ try{ __pdfRenderTask.cancel(); }catch(e){} __pdfRenderTask = null; }
   if(__pdfDoc){ try{ __pdfDoc.destroy(); }catch(e){} __pdfDoc = null; }
   __pdfCurrentPage = 1;
   __pdfZoom = 1.0;
+  __pdfCurrentSrc = null;
   if(loading){ loading.classList.remove('hidden'); loading.textContent = 'Loading…'; }
   document.documentElement.style.overflow='';
   document.body.style.overflow='';
@@ -1401,10 +1523,11 @@ var DX_PLAN = {
     picture:'Viral laryngotracheitis with stridor at rest. Severe: stridor at rest, retractions, ± agitation/AMS.',
     plan:[
       '1st: Keep child calm — agitation worsens stridor; let parent hold',
-      '1st: Dexamethasone 0.6 mg/kg PO/IM/IV (max 16 mg) — give to ALL even mild',
+      '1st: Methylprednisolone (Solu-Medrol) 2 mg/kg IBW IV over 1 min — max 125 mg (PHI standing order)',
       '2nd (stridor at rest): Nebulized racemic epinephrine 2.25% — <15 kg: 0.25 mL; ≥15 kg: 0.5 mL in 3 mL NS (PHI)',
       'Alt 2nd: L-epinephrine 5 mL of 1 mg/mL (1:1000) neb',
       'Adjunct: observe 2-4 hr after racemic — rebound stridor possible',
+      '⚠ Dexamethasone or Prednisone use REQUIRES MEDICAL CONTROL (not on PHI standing order for croup)',
       '3rd (impending failure): prepare for awake intubation by experienced provider — ETT 0.5-1 size SMALLER than predicted for age'
     ]
   },
@@ -2193,7 +2316,9 @@ function openProtocolViaOverlay(e, dx, url, title){
     alert('PHI Protocol PDF "' + fileBare + '" is not installed.\n\nDrop the matching chapter into protocols/<chapter>/ and re-run merge.py.');
     return false;
   }
+  __pdfCurrentSrc = ref.src;
   openPdfOverlay(url, title);
+  renderPdfSections();
   return false;
 }
 
@@ -2568,14 +2693,15 @@ var DRUGS = {
     var w = dosingWt();
     var mg = w ? Math.min(round(2*w, 0), 125) : null;
     return rcCard({
-      name:'Methylprednisolone', generic:'Solu-Medrol — Stock 125 mg vial reconstituted', cat:'ANAPHYLAXIS',
-      form:'vialmix', line:'adj',
-      indication:'Adjunct steroid for anaphylaxis or severe asthma — onset 4-6 hr, give AFTER epi/albuterol — PHI Ch 5', color:'var(--lime)',
-      giveBox: w ? {label:'Give IV/IM (after reconstitution)', mL:'~2', mg:mg+' mg'+(mg===125?' (max = full vial)':''), conc:'Reconstitute 125 mg vial with 2 mL diluent', rule:'2 mg/kg, max 125 mg'} : {needsWt:true},
+      name:'Methylprednisolone', generic:'Solu-Medrol — Stock 125 mg vial reconstituted', cat:'RESPIRATORY / ANAPHYLAXIS',
+      form:'vialmix', line:'1st (croup) · adj (asthma/ana)',
+      indication:'1st-line steroid for croup (PHI standing order — give over 1 min IBW). Also adjunct for anaphylaxis / severe asthma — onset 4-6 hr, give AFTER epi/albuterol.', color:'var(--lime)',
+      giveBox: w ? {label:'Give IV/IM over 1 min (after reconstitution)', mL:'~2', mg:mg+' mg'+(mg===125?' (max = full vial)':''), conc:'Reconstitute 125 mg vial with 2 mL diluent', rule:'2 mg/kg IBW, max 125 mg'} : {needsWt:true},
       rows:[
-        {k:'Dose', v:'2 mg/kg IV/IM'},
+        {k:'Dose', v:'2 mg/kg IBW IV over 1 min'},
         {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
-        {k:'Max', v:mx('125 mg'), cls:'warn'}
+        {k:'Max', v:mx('125 mg'), cls:'warn'},
+        {k:'PHI source', v:'Standing order for croup (Medical 6.11)'}
       ]
     });
   },
@@ -2629,8 +2755,10 @@ var DRUGS = {
     var mg = w ? Math.min(round(0.6*w, 1), 16) : null;
     return rcCard({
       name:'Dexamethasone', generic:'Stock 4 mg/mL or 10 mg/mL vial', cat:'RESPIRATORY',
-      form:'vial', line:'1st',
-      indication:'1st-line for croup (give to ALL — even mild). Also asthma adjunct — PHI Ch 5', color:'var(--lime)',
+      form:'vial', line:'2nd (croup)',
+      indication:'For croup: NOT on PHI standing order — methylpred is 1st-line. Asthma adjunct.', color:'var(--lime)',
+      mdControl: true,
+      warn:'For CROUP: Methylprednisolone is the PHI 1st-line. Use of dexamethasone (or prednisone) for croup REQUIRES MEDICAL CONTROL.',
       rows:[
         {k:'Dose', v:'0.6 mg/kg PO/IM/IV'},
         {k:'Calc dose', v:mg ? mg + ' mg' : '--', cls:'calc'},
@@ -3149,7 +3277,7 @@ var DX_DRUGS = {
   seizure:    ['midazolamSeizure','lorazepamSeizure','levetiracetam','fosphenytoin','phenytoin','d10'],
   anaphylaxis:['epiAnaphylaxis','fluidBolus','albuterol','diphenhydramine','methylpred'],
   asthma:     ['albuterol','ipratropium','methylpred','magAsthma','epiAnaphylaxis','ketamineInduction'],
-  croup:      ['dexamethasone','racEpiCroup'],
+  croup:      ['methylpred','racEpiCroup','dexamethasone'],
   bronchio:   ['albuterol','fluidBolus'],
   sepsis:     ['fluidBolus','epiInfusionShock','norepiInfusion','hydrocortisone'],
   dka:        ['fluidBolus'],
@@ -3640,6 +3768,9 @@ safeRun('renderBurnMap', renderBurnMap);
     <button class="pdf-back" type="button" onclick="closePdfOverlay()" aria-label="Back to app">
       <span class="pdf-back-icon">‹</span>BACK TO APP
     </button>
+    <button class="pdf-sections-btn" id="pdfSectionsBtn" type="button" onclick="togglePdfSections()" aria-label="Browse sections">
+      <span class="pdf-sections-icon">≡</span>SECTIONS
+    </button>
     <div class="pdf-title" id="pdfOverlayTitle">Protocol</div>
     <div class="pdf-nav">
       <button class="pdf-nav-btn" id="pdfZoomOut" type="button" onclick="pdfZoomOut()" aria-label="Zoom out">−</button>
@@ -3653,6 +3784,10 @@ safeRun('renderBurnMap', renderBurnMap);
       </div>
       <button class="pdf-nav-btn" id="pdfNextBtn" type="button" onclick="pdfNextPage()" aria-label="Next page">›</button>
     </div>
+  </div>
+  <div class="pdf-sections-panel" id="pdfSectionsPanel" aria-hidden="true">
+    <div class="pdf-sections-group" id="pdfSectionsCurrent"></div>
+    <div class="pdf-sections-group" id="pdfSectionsOthers"></div>
   </div>
   <div class="pdf-frame-wrap" id="pdfFrameWrap">
     <div class="pdf-page-container" id="pdfPageContainer">
