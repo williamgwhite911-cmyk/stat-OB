@@ -246,6 +246,28 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .rc-targets-label.stop{color:var(--rose)}
 .rc-targets-val{font-size:1.05rem;font-weight:800;color:var(--tx0);line-height:1.2}
 .rc-targets-val.lg{font-size:1.15rem}
+
+/* SAFER Airway Checklist */
+.safer-card{background:var(--s0);border:1px solid var(--bd1);border-radius:12px;padding:14px;margin:14px 0}
+.safer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--bd0);gap:10px;flex-wrap:wrap}
+.safer-title{font-family:var(--mono);font-size:.78rem;font-weight:800;letter-spacing:.1em;color:var(--cyan);text-transform:uppercase}
+.safer-cite{font-family:var(--mono);font-size:.62rem;color:var(--tx2);letter-spacing:.05em;text-transform:uppercase;margin-top:3px}
+.safer-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.safer-progress{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--tx0)}
+.safer-progress .done{color:var(--teal)}
+.safer-reset{background:transparent;border:1px solid var(--bd2);color:var(--tx1);font-family:var(--mono);font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .12s}
+.safer-reset:hover,.safer-reset:active{color:var(--rose);border-color:var(--rose)}
+.safer-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.safer-cols{grid-template-columns:1fr}}
+.safer-col-label{font-family:var(--mono);font-size:.7rem;font-weight:800;letter-spacing:.14em;color:var(--cyan);padding:8px 10px;background:rgba(34,211,238,.08);border-radius:8px 8px 0 0;text-align:center;text-transform:uppercase;border:1px solid rgba(34,211,238,.25);border-bottom:none}
+.safer-col-body{display:flex;flex-direction:column;gap:8px;padding:10px 0 0}
+.safer-step{background:var(--s1);border:1px solid var(--bd1);border-left:4px solid var(--bd2);padding:10px 12px;border-radius:8px;cursor:pointer;transition:all .12s;user-select:none;-webkit-tap-highlight-color:transparent;position:relative}
+.safer-step:hover,.safer-step:active{border-color:var(--cyan);transform:translateY(-1px)}
+.safer-step.done{background:rgba(0,232,176,.1);border-color:var(--teal);border-left-color:var(--teal)}
+.safer-step.done .safer-step-label{color:var(--teal);text-decoration:line-through;opacity:.75}
+.safer-step.done::after{content:"✓";position:absolute;top:10px;right:12px;color:var(--teal);font-weight:900;font-size:1.2rem;line-height:1}
+.safer-step-label{font-family:var(--mono);font-size:.78rem;font-weight:800;color:var(--tx0);letter-spacing:.05em;padding-right:24px}
+.safer-step-detail{font-size:.72rem;color:var(--tx1);margin-top:4px;line-height:1.4}
 </style>
 </head>
 <body>
@@ -1086,7 +1108,8 @@ var PROTOCOL_PAGES = {
   chemical_burn: { src: 'trauma',    label: 'Trauma 8-17 — Chemical Burns (Maternal)',           page: 17 },
   hypothermia:   { src: 'trauma',    label: 'Trauma 8-19 — Hypothermia (Maternal)',              page: 19 },
   frostbite:     { src: 'trauma',    label: 'Trauma 8-19 — Frostbite (Maternal)',                page: 19 },
-  heat_illness:  { src: 'trauma',    label: 'Trauma 8-19 — Heat-Related Illness (Maternal)',     page: 19 }
+  heat_illness:  { src: 'trauma',    label: 'Trauma 8-19 — Heat-Related Illness (Maternal)',     page: 19 },
+  safer_checklist:{ src: 'safer',    label: 'SAFER 2.2.3 — Airway Checklist', page: 6 }
 };
 
 // Per-file availability check (avoids click-time race conditions)
@@ -1182,6 +1205,7 @@ var DIAGNOSES = [
   {id:'hemshock', cat:'CRITICAL CARE', name:'Hemorrhagic Shock (Maternal)', sub:'Pregnancy compensates · then crashes'},
   {id:'post_intubation', cat:'CRITICAL CARE', name:'Post-Intubation Sedation (Maternal)', sub:'Analgesia first · pregnancy-safe agents'},
   {id:'agitation', cat:'CRITICAL CARE', name:'Dangerous Agitation (Maternal)', sub:'Pregnancy-safe sedation'},
+  {id:'safer_checklist', cat:'CRITICAL CARE', name:'SAFER Airway Checklist', sub:'PHI 2-6 · Crew 1 + Crew 2 walkthrough'},
   {id:'post_rosc', cat:'CRITICAL CARE', name:'Post-ROSC (Maternal)', sub:'L lateral · perimortem c/s if no ROSC'},
   {id:'post_lytics', cat:'CRITICAL CARE', name:'Post-Thrombolytics (Maternal)', sub:'BP control + ICH watch · L lateral'},
   {id:'newborn', cat:'NEONATAL', name:'Newborn Resuscitation', sub:'Post-delivery'}
@@ -1933,6 +1957,7 @@ var DX_DRUG_MAP = {
   post_intubation: ['fentanyl','ketamineDrip'],
   anxiolysis_extra: ['fentanyl'],
   agitation: ['magEclampsia','fentanyl'],
+  safer_checklist:['ketamineInduction','rocuroniumRSI','fentanyl'],
   post_rosc: ['fluidBolus','fentanyl','magEclampsia'],
   post_lytics: ['labetalol'],
   amputation: ['fentanyl','fluidBolus','txa'],
@@ -2435,13 +2460,78 @@ var DX_PLAN = {
       'Continuous fetal HR monitoring',
       'Pre-alert OB'
     ]
-  }
+  },
+  safer_checklist:{picture:'SAFER airway preparation checklist — Crew 1 (operator) + Crew 2 (assist) parallel workflow.', plan:['Tap each step to mark complete','See PHI SAFER chapter for full protocol detail']}
 };
+
+/* SAFER Airway Checklist — PHI 2.2.3 (page 2-6) */
+var SAFER_STATE = {};
+var SAFER_STEPS = {
+  crew1: [
+    {id:'c1-1', label:'SET UP', detail:'SAFER Airway Assessment · Set up airway equipment'},
+    {id:'c1-2', label:'MASK CONTROL', detail:'Take over airway management · i-gel or PROTECT BVM'},
+    {id:'c1-3', label:'OPTIMIZE VENTILATION', detail:'Breath-to-breath EtCO2 · Bag squeeze or no squeeze'},
+    {id:'c1-4', label:'OBTAIN IBW', detail:'Determine weight · ID Handtevy page'},
+    {id:'c1-5', label:'OXYGENATION', detail:'3 minutes · PROTECT BVM & cannula'},
+    {id:'c1-6', label:'TUBE DELIVERY', detail:'Suction first · Call out airway landmarks'},
+    {id:'c1-7', label:'HOLD', detail:'Maintain view · ETT @ teeth, cuff inflation, EtCO2'}
+  ],
+  crew2: [
+    {id:'c2-1', label:'MONITOR', detail:'Set up monitoring · Set up and confirm O2'},
+    {id:'c2-2', label:'ACCESS & PERFUSION', detail:'Obtain & confirm IV access · Assess for and treat shock'},
+    {id:'c2-3', label:'TUBES & SUCTION', detail:'Set up airway equipment · Test suction'},
+    {id:'c2-4', label:'THERAPEUTIC PREP', detail:'Determine and confirm dose · Prepare medications'},
+    {id:'c2-5', label:'EMERGENCY PLAN & COMM', detail:'Time out / briefing · Primary and failed airway plan'},
+    {id:'c2-6', label:'RX ADMINISTRATION', detail:'Drug administration'},
+    {id:'c2-7', label:'SAFETY', detail:'Peri-procedure monitoring · Call-outs · Post-procedure tasks · Confirm placement'}
+  ]
+};
+function renderSaferChecklist(){
+  var totalSteps = SAFER_STEPS.crew1.length + SAFER_STEPS.crew2.length;
+  var doneCount = Object.keys(SAFER_STATE).filter(function(k){ return SAFER_STATE[k]; }).length;
+  var html = '<div class="safer-card">';
+  html += '<div class="safer-head">';
+  html += '<div><div class="safer-title">SAFER · Smooth Matters</div><div class="safer-cite">PHI 2.2.3 — page 2-6 · Tap any step to mark complete</div></div>';
+  html += '<div class="safer-actions">';
+  html += '<div class="safer-progress"><span class="done">' + doneCount + '</span> / ' + totalSteps + '</div>';
+  html += '<button class="safer-reset" type="button" onclick="resetSafer()">Reset</button>';
+  html += '</div></div>';
+  html += '<div class="safer-cols">';
+  ['crew1','crew2'].forEach(function(crew){
+    html += '<div class="safer-col">';
+    html += '<div class="safer-col-label">' + (crew === 'crew1' ? 'Crew 1' : 'Crew 2') + '</div>';
+    html += '<div class="safer-col-body">';
+    SAFER_STEPS[crew].forEach(function(step){
+      var done = SAFER_STATE[step.id] ? ' done' : '';
+      html += '<div class="safer-step' + done + '" onclick="toggleSafer(\'' + step.id + '\')" role="button" tabindex="0">';
+      html += '<div class="safer-step-label">' + step.label + '</div>';
+      html += '<div class="safer-step-detail">' + step.detail + '</div>';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  });
+  html += '</div></div>';
+  return html;
+}
+function toggleSafer(id){
+  SAFER_STATE[id] = !SAFER_STATE[id];
+  if(typeof renderPlan === 'function') renderPlan();
+}
+function resetSafer(){
+  SAFER_STATE = {};
+  if(typeof renderPlan === 'function') renderPlan();
+}
 
 function renderPlan(){
   var ventOut = document.getElementById('planOutput');
   var motherOut = document.getElementById('mPlanOutput');
   var dx = state.m.dx;
+  if(dx === 'safer_checklist'){
+    var ref = (typeof PROTOCOL_PAGES !== 'undefined' && PROTOCOL_PAGES[dx]) ? PROTOCOL_PAGES[dx] : null;
+    var protoBtn = (typeof renderProtocolBtn === 'function') ? renderProtocolBtn(dx) : '';
+    document.getElementById('mPlanOutput').innerHTML = renderSaferChecklist() + protoBtn;
+    return;
+  }
 
   // Update Vent-tab parameter chips
   var w = state.m.weightKg, h = state.m.heightCm, ibwH = state.m.ibwFromHeight;
