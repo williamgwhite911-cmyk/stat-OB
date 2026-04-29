@@ -978,20 +978,29 @@ var BROSELOW_COLORS = {
   '33 kg':   {name:'Green',            hex:'#22c55e',text:'#fff',age:'10 yr (30-36 kg)',        wt:33,   htCm:'130.7-143.3',ageYrLo:10, ageYrHi:11.99,ageYrPick:10}
 };
 // Handtevy: same colors as Broselow through Green, plus Black + Adult tiers for ages 11-13.
+// PHI Air Medical Handtevy weight tiers — exact match to PHI Handtevy app v6.0.0
+// Each entry corresponds to one row in the PHI Handtevy New Pediatric Patient screen.
 var HANDTEVY_COLORS = {
-  '1 kg':  {name:'Gray (Preemie 1)',hex:'#475569',text:'#fff',age:'24-28 wk',     wt:1,    ageYrLo:-0.30,ageYrHi:-0.18,ageYrPick:-0.25, preterm:true},
-  '1.5 kg':{name:'Gray (Preemie 2)',hex:'#64748b',text:'#fff',age:'28-32 wk',     wt:1.5,  ageYrLo:-0.18,ageYrHi:-0.10,ageYrPick:-0.15, preterm:true},
-  '2 kg':  {name:'Gray (Preemie 3)',hex:'#94a3b8',text:'#111',age:'32-36 wk',     wt:2,    ageYrLo:-0.10,ageYrHi:-0.04,ageYrPick:-0.07, preterm:true},
-  '2.5 kg':{name:'Gray (LBW Term)', hex:'#cbd5e1',text:'#111',age:'36-40 wk LBW', wt:2.5,  ageYrLo:-0.04,ageYrHi:0,    ageYrPick:-0.02, preterm:true},
-  '4 kg':  {name:'Gray',  hex:'#9ca3af',text:'#fff',age:'Newborn (3-5 kg)',   wt:4,    ageYrLo:0,    ageYrHi:0.25, ageYrPick:0.04},
-  '6.5 kg':{name:'Pink',  hex:'#f472b6',text:'#fff',age:'3-6 mo (6-7 kg)',    wt:6.5,  ageYrLo:0.25, ageYrHi:0.5,  ageYrPick:0.4},
-  '8.5 kg':{name:'Red',   hex:'#ef4444',text:'#fff',age:'6-12 mo (8-9 kg)',  wt:8.5,  ageYrLo:0.5,  ageYrHi:1,    ageYrPick:0.75},
-  '10.5 kg':{name:'Purple',hex:'#a855f7',text:'#fff',age:'~1 yr (10-11 kg)', wt:10.5, ageYrLo:1,    ageYrHi:1.49, ageYrPick:1},
-  '13 kg': {name:'Yellow',hex:'#fbbf24',text:'#111',age:'~2 yr (12-14 kg)',  wt:13,   ageYrLo:1.5,  ageYrHi:2.99, ageYrPick:2},
-  '16.5 kg':{name:'White',hex:'#e2e8f0',text:'#111',age:'3-4 yr (15-18 kg)', wt:16.5, ageYrLo:3,    ageYrHi:4.99, ageYrPick:3.5},
-  '21 kg': {name:'Blue',  hex:'#3b82f6',text:'#fff',age:'5-6 yr (19-23 kg)', wt:21,   ageYrLo:5,    ageYrHi:6.99, ageYrPick:5.5},
-  '26.5 kg':{name:'Orange',hex:'#f97316',text:'#fff',age:'7-8 yr (24-29 kg)',wt:26.5, ageYrLo:7,    ageYrHi:8.99, ageYrPick:7.5},
-  '40 kg': {name:'Green', hex:'#22c55e',text:'#fff',age:'9-13 yr (30-50 kg)',wt:40,   ageYrLo:9,    ageYrHi:14,   ageYrPick:11}
+  'PREEMIE 1':  {name:'Gray (Preemie)',  hex:'#94a3b8', text:'#111', age:'PREEMIE',  wt:1,  ageYrLo:-0.30, ageYrHi:-0.16, ageYrPick:-0.23, preterm:true},
+  'PREEMIE 2':  {name:'Gray (Preemie)',  hex:'#94a3b8', text:'#111', age:'PREEMIE',  wt:2,  ageYrLo:-0.16, ageYrHi:-0.04, ageYrPick:-0.10, preterm:true},
+  'NB 3':       {name:'Gray (Newborn)',  hex:'#94a3b8', text:'#111', age:'NB',       wt:3,  ageYrLo:-0.04, ageYrHi:0.04,  ageYrPick:0.00},
+  'NB 4':       {name:'Gray (Newborn)',  hex:'#94a3b8', text:'#111', age:'NB',       wt:4,  ageYrLo:0.04,  ageYrHi:0.13,  ageYrPick:0.08},
+  '2 mo':       {name:'Pink',            hex:'#f9a8d4', text:'#111', age:'2 mo',     wt:5,  ageYrLo:0.13,  ageYrHi:0.29,  ageYrPick:0.17},
+  '4 mo':       {name:'Pink',            hex:'#f9a8d4', text:'#111', age:'4 mo',     wt:6,  ageYrLo:0.29,  ageYrHi:0.42,  ageYrPick:0.33},
+  '6 mo':       {name:'Red',             hex:'#ef4444', text:'#fff', age:'6 mo',     wt:8,  ageYrLo:0.42,  ageYrHi:0.79,  ageYrPick:0.50},
+  '1 yr':       {name:'Purple',          hex:'#7c3aed', text:'#fff', age:'1 YR',     wt:10, ageYrLo:0.79,  ageYrHi:1.49,  ageYrPick:1.00},
+  '2 yr':       {name:'Yellow',          hex:'#facc15', text:'#111', age:'2 YR',     wt:12, ageYrLo:1.50,  ageYrHi:2.49,  ageYrPick:2.00},
+  '3 yr':       {name:'White',           hex:'#f1f5f9', text:'#111', age:'3 YR',     wt:15, ageYrLo:2.50,  ageYrHi:3.49,  ageYrPick:3.00},
+  '4 yr':       {name:'White',           hex:'#f1f5f9', text:'#111', age:'4 YR',     wt:17, ageYrLo:3.50,  ageYrHi:4.49,  ageYrPick:4.00},
+  '5 yr':       {name:'Blue',            hex:'#3b82f6', text:'#fff', age:'5 YR',     wt:20, ageYrLo:4.50,  ageYrHi:5.49,  ageYrPick:5.00},
+  '6 yr':       {name:'Blue',            hex:'#3b82f6', text:'#fff', age:'6 YR',     wt:22, ageYrLo:5.50,  ageYrHi:6.49,  ageYrPick:6.00},
+  '7 yr':       {name:'Orange',          hex:'#f97316', text:'#fff', age:'7 YR',     wt:25, ageYrLo:6.50,  ageYrHi:7.49,  ageYrPick:7.00},
+  '8 yr':       {name:'Orange',          hex:'#f97316', text:'#fff', age:'8 YR',     wt:27, ageYrLo:7.50,  ageYrHi:8.49,  ageYrPick:8.00},
+  '9 yr':       {name:'Green',           hex:'#22c55e', text:'#fff', age:'9 YR',     wt:30, ageYrLo:8.50,  ageYrHi:9.49,  ageYrPick:9.00},
+  '10 yr':      {name:'Green',           hex:'#22c55e', text:'#fff', age:'10 YR',    wt:35, ageYrLo:9.50,  ageYrHi:10.49, ageYrPick:10.00},
+  '11 yr':      {name:'Green',           hex:'#22c55e', text:'#fff', age:'11 YR',    wt:40, ageYrLo:10.50, ageYrHi:11.49, ageYrPick:11.00},
+  '12 yr':      {name:'Green',           hex:'#22c55e', text:'#fff', age:'12 YR',    wt:50, ageYrLo:11.50, ageYrHi:12.49, ageYrPick:12.00},
+  '13 yr':      {name:'Green',           hex:'#22c55e', text:'#fff', age:'13 YR',    wt:60, ageYrLo:12.50, ageYrHi:14.00, ageYrPick:13.00}
 };
 
 // Find the color tier whose age range contains the given age in years
@@ -1047,7 +1056,9 @@ function renderColorStrip(){
     div.innerHTML = '<span class="cc-age">' + ageShort + '</span><span class="cc-wt">' + wtDetail + '</span>';
     div.onclick = function(){
       state.tier = k;
-      state.tierWt = c.wt;
+      // PHI / user pref: round Broselow/Handtevy tier weight UP to whole kg for dosing
+      // (preemie tiers <3 kg keep precision since rounding up materially changes dose)
+      state.tierWt = (c.wt < 3) ? c.wt : Math.ceil(c.wt);
       state.tierAge = c.age;
       // Push the tier's age into the age input
       var ageInput = document.getElementById('pAge');
@@ -1184,7 +1195,8 @@ function recompute(){
     if(matchedKey && state.tier !== matchedKey){
       var map = getColorMap();
       state.tier = matchedKey;
-      state.tierWt = map[matchedKey].wt;
+      // Round Broselow/Handtevy tier weight UP to whole kg (preemie tiers <3 kg keep precision)
+      state.tierWt = (map[matchedKey].wt < 3) ? map[matchedKey].wt : Math.ceil(map[matchedKey].wt);
       state.tierAge = map[matchedKey].age;
       renderColorStrip();  // re-highlight the matched tier
     }

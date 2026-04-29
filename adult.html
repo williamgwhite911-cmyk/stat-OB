@@ -1999,9 +1999,18 @@ var DRUGS = {
   },
   // TRAUMA
   txa: function(){
-    return rcCard({name:'Tranexamic Acid (TXA)',generic:'Stock 100 mg/mL vial',cat:'TRAUMA',form:'vialmix',line:'1st line',
-      indication:'Hemorrhagic trauma within 3 hr OR PPH',color:'var(--teal)',
-      rows:[{k:'Loading',v:'1 g IV over 10 min'},{k:'Volume',v:'10 mL',cls:'calc'},{k:'Mix',v:'Dilute in 100 mL NS, run @ 600 mL/hr × 10 min',cls:'calc'},{k:'Maintenance',v:'1 g IV over 8 hr (at receiving)'}]});
+    return rcCard({name:'Tranexamic Acid (TXA)',generic:'Stock 1 g/10 mL vial (100 mg/mL) — typically 2 vials',cat:'TRAUMA',form:'vialmix',line:'1st line',
+      indication:'Hemorrhagic trauma — significant hemorrhage with SBP < 90 OR HR > 110, within 3 hr of injury (PHI Resusc 4.9)',color:'var(--teal)',
+      giveBox:{label:'Give IV over 1 min', mL:'20', mg:'2 g', conc:'100 mg/mL stock (2 × 1 g vials)', rule:'PHI Adult standard — 2 g'},
+      rows:[
+        {k:'PHI Adult dose',v:'2 g IV over 1 min'},
+        {k:'Volume',v:'20 mL (2 vials of 1 g/10 mL)',cls:'calc'},
+        {k:'Alt infusion mix',v:'2 g in 100 mL D5W (20 mg/mL); local practice may give over longer'},
+        {k:'⚠ Do NOT mix',v:'with blood for transfusion or PCN-containing solutions'},
+        {k:'Window',v:'Within 3 hr of injury / bleeding onset'},
+        {k:'NOT indicated',v:'GI hemorrhage'},
+        {k:'Source',v:'PHI Resusc 4.9 (page 4-25, Rev 23 23Jan2025)'}
+      ]});
   },
   // PHI 4.9.1 — Blood Administration (Hemorrhagic shock)
   bloodAdmin: function(){
