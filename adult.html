@@ -460,6 +460,18 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 </div>
 
 <div class="card">
+  <div class="slbl">SAFER Smooth Matters — Crew Roles Diagram (PHI 2.2.3 · p. 2-6)</div>
+  <button type="button" class="safer-diagram-btn" onclick="openImgOverlay('./images/safer-smooth-matters.jpg', 'SAFER Smooth Matters — Crew 1 + Crew 2 (PHI 2-6)')">
+    <span class="safer-diagram-icon">🗺️</span>
+    <span class="safer-diagram-text">
+      <span class="safer-diagram-label">View Smooth Matters Diagram</span>
+      <span class="safer-diagram-sub">Crew 1 + Crew 2 duties at-a-glance · Full-screen view</span>
+    </span>
+    <span class="safer-diagram-chev">›</span>
+  </button>
+</div>
+
+<div class="card">
   <div class="slbl">SAFER Pre-Intubation Checklist (PHI Chapter 2)</div>
   <div class="safer-grid" id="saferGrid"></div>
   <div class="safer-actions">
@@ -906,6 +918,7 @@ var PROTOCOL_PAGES = {
   post_intubation:{ src: 'analgesia', label: 'Analgesia 5.x — Post-Intubation Sedation',         page: 1  },
   anxiolysis:  { src: 'analgesia', label: 'Analgesia 5.x — Anxiolysis',                          page: 1  },
   safer_checklist:{ src: 'safer', label: 'SAFER 2.2.3 — Airway Checklist', page: 6 },
+  safer_diagram:{ src: 'safer', label: 'SAFER 2.2.3 — Smooth Matters Diagram', page: 6 },
   // Trauma Ch 8
   pelvic_fracture:{ src: 'trauma',  label: 'Trauma 8-10 — Pelvic Fracture',                       page: 10 },
   amputation:  { src: 'trauma',  label: 'Trauma 8-9 — Amputation',                               page: 9  },
@@ -1045,13 +1058,14 @@ var DIAGNOSES = [
   {id:'agitation',  cat:'SEDATION / BEHAVIORAL', name:'Dangerous Agitation',    sub:'Excited delirium'},
   {id:'anxiolysis', cat:'SEDATION / BEHAVIORAL', name:'Anxiolysis',             sub:'Treat early · prevent escalation'},
   {id:'post_intubation',cat:'SEDATION / BEHAVIORAL', name:'Post-Intubation Sedation',sub:'Analgesia-first · paralytic outlives sedative'},
-  {id:'safer_checklist', cat:'SEDATION / BEHAVIORAL', name:'SAFER Airway Checklist', sub:'PHI 2-6 · Crew 1 + Crew 2 walkthrough'},
+  {id:'safer_checklist', cat:'AIRWAY / INTUBATION', name:'SAFER Airway Checklist', sub:'PHI 2-6 · Crew 1 + Crew 2 walkthrough'},
+  {id:'safer_diagram', cat:'AIRWAY / INTUBATION', name:'SAFER Smooth Matters Diagram', sub:'PHI 2-6 · Tap to view full-screen'},
   {id:'post_rosc', cat:'CARDIAC', name:'Post-ROSC Care', sub:'After return of circulation'},
   {id:'post_lytics', cat:'CARDIAC', name:'Post-Thrombolytics', sub:'BP control + ICH watch'}
 ];
 
 function renderDxGrid(){
-  var CAT_ORDER = ['CARDIAC','VASCULAR','RESPIRATORY','NEURO','METABOLIC','ALLERGIC / SHOCK','TOXICOLOGY','TRAUMA','ENVIRONMENTAL','SEDATION / BEHAVIORAL'];
+  var CAT_ORDER = ['CARDIAC','VASCULAR','RESPIRATORY','AIRWAY / INTUBATION','NEURO','METABOLIC','ALLERGIC / SHOCK','TOXICOLOGY','TRAUMA','ENVIRONMENTAL','SEDATION / BEHAVIORAL'];
   var groups = {};
   DIAGNOSES.forEach(function(dx){
     var cat = dx.cat || 'OTHER';
@@ -1149,6 +1163,7 @@ var DX_PLAN = {
   anxiolysis:{picture:'Anxious patient pre-loading or in-flight. Untreated anxiety can escalate to dangerous agitation. Treat anxiety AFTER pain control (treat pain with opioid first).',
     plan:['Address pain first — fentanyl titrated','Verbal de-escalation, environment control (calm, quiet, dim cabin)','Midazolam 0.5-2 mg IV/IM/IN q5 min PRN to effect (max ~5 mg single dose)','Or lorazepam 0.5-2 mg IV/IM/IN q10-20 min PRN','CAUTION: benzo + opioid combo — monitor closely for respiratory depression','Have BVM, I-gel, suction at head of bed','If escalates to dangerous agitation, switch to droperidol/ketamine pathway','Consider pilot notification for at-risk patients']},
   safer_checklist:{picture:'SAFER airway preparation checklist — Crew 1 (operator) + Crew 2 (assist) parallel workflow.', plan:['Tap each step to mark complete','See PHI SAFER chapter for full protocol detail']},
+  safer_diagram:{picture:'PHI SAFER Crew 1 + Crew 2 duties diagram. Tap below to view full-screen.', plan:['View the diagram for at-a-glance airway prep workflow','Use SAFER Airway Checklist for tap-to-complete walkthrough']},
   pelvic_fracture:{picture:'Suspected pelvic fracture — high risk of occult hemorrhage from pelvic vascular plexus. Stabilize with SAM sling/binder (PHI Trauma 8-10).',
     plan:['Stabilize pelvis with SAM sling at level of greater trochanters','Neurovascular exam BEFORE and AFTER stabilization','DO NOT insert urinary catheter if pelvic fracture suspected','Two large-bore IVs/IO; minimize crystalloid, prefer blood products','Permissive hypotension (radial pulse / normal mentation) UNLESS concomitant TBI','TXA per protocol if within 3 hr of injury','Pain control','Pre-alert receiving trauma center']},
   amputation:{picture:'Traumatic amputation. Priorities: hemorrhage control of stump, care of amputated part for re-implantation (PHI Trauma 8-9).',
@@ -1253,6 +1268,22 @@ function renderPlan(){
     var ref = (typeof PROTOCOL_PAGES !== 'undefined' && PROTOCOL_PAGES[dx]) ? PROTOCOL_PAGES[dx] : null;
     var protoBtn = (typeof renderProtocolBtn === 'function') ? renderProtocolBtn(dx) : '';
     document.getElementById('planOutput').innerHTML = renderSaferChecklist() + protoBtn;
+    return;
+  }
+  if(dx === 'safer_diagram'){
+    var protoBtn = (typeof renderProtocolBtn === 'function') ? renderProtocolBtn(dx) : '';
+    var html = '<div class="safer-card">';
+    html += '<button type="button" class="safer-diagram-btn" onclick="openImgOverlay(\'./images/safer-smooth-matters.jpg\', \'SAFER Smooth Matters — Crew 1 + Crew 2 (PHI 2-6)\')">';
+    html += '<span class="safer-diagram-icon">🗺️</span>';
+    html += '<span class="safer-diagram-text">';
+    html += '<span class="safer-diagram-label">View Smooth Matters Diagram</span>';
+    html += '<span class="safer-diagram-sub">PHI 2.2.3 page 2-6 · Crew 1 + Crew 2 duties at-a-glance · Full-screen view</span>';
+    html += '</span>';
+    html += '<span class="safer-diagram-chev">›</span>';
+    html += '</button>';
+    html += '<div style="font-size:.75rem;color:var(--tx1);line-height:1.5;padding:0 4px">For an interactive tap-to-complete version of these steps, select <strong style="color:var(--cyan)">SAFER Airway Checklist</strong> from the diagnosis list.</div>';
+    html += '</div>';
+    document.getElementById('planOutput').innerHTML = html + protoBtn;
     return;
   }
   if(document.getElementById('vWt')){
@@ -1818,6 +1849,7 @@ var DX_DRUGS = {
   hemshock:['fluidBolus','txa','cacl'],
   post_intubation:['fentanylBolus','ketamineDrip','midazolamDrip'],
   safer_checklist:['ketamineInd','rocRSI','succRSI','fentanylBolus'],
+  safer_diagram:[],
   anxiolysis:['midazolamSeizure','lorazepamSeizure','fentanylBolus'],
   pelvic_fracture:['fluidBolus','txa','fentanylBolus','cefazolin','clindamycin'],
   amputation:['fentanylBolus','txa','fluidBolus','cefazolin','clindamycin'],

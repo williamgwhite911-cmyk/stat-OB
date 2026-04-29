@@ -531,6 +531,18 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 </div>
 
 <div class="card">
+  <div class="slbl">SAFER Smooth Matters — Crew Roles Diagram (PHI 2.2.3 · p. 2-6)</div>
+  <button type="button" class="safer-diagram-btn" onclick="openImgOverlay('./images/safer-smooth-matters.jpg', 'SAFER Smooth Matters — Crew 1 + Crew 2 (PHI 2-6)')">
+    <span class="safer-diagram-icon">🗺️</span>
+    <span class="safer-diagram-text">
+      <span class="safer-diagram-label">View Smooth Matters Diagram</span>
+      <span class="safer-diagram-sub">Crew 1 + Crew 2 duties at-a-glance · Full-screen view</span>
+    </span>
+    <span class="safer-diagram-chev">›</span>
+  </button>
+</div>
+
+<div class="card">
   <div class="slbl">SAFER Pre-Intubation Checklist (PHI Chapter 2)</div>
   <div class="safer-grid" id="saferGrid"></div>
   <div class="safer-actions">
@@ -1132,7 +1144,8 @@ var PROTOCOL_PAGES = {
   hypothermia:   { src: 'trauma',    label: 'Trauma 8-19 — Hypothermia (Maternal)',              page: 19 },
   frostbite:     { src: 'trauma',    label: 'Trauma 8-19 — Frostbite (Maternal)',                page: 19 },
   heat_illness:  { src: 'trauma',    label: 'Trauma 8-19 — Heat-Related Illness (Maternal)',     page: 19 },
-  safer_checklist:{ src: 'safer',    label: 'SAFER 2.2.3 — Airway Checklist', page: 6 }
+  safer_checklist:{ src: 'safer',    label: 'SAFER 2.2.3 — Airway Checklist', page: 6 },
+  safer_diagram:{ src: 'safer', label: 'SAFER 2.2.3 — Smooth Matters Diagram', page: 6 }
 };
 
 // Per-file availability check (avoids click-time race conditions)
@@ -1228,14 +1241,15 @@ var DIAGNOSES = [
   {id:'hemshock', cat:'CRITICAL CARE', name:'Hemorrhagic Shock (Maternal)', sub:'Pregnancy compensates · then crashes'},
   {id:'post_intubation', cat:'CRITICAL CARE', name:'Post-Intubation Sedation (Maternal)', sub:'Analgesia first · pregnancy-safe agents'},
   {id:'agitation', cat:'CRITICAL CARE', name:'Dangerous Agitation (Maternal)', sub:'Pregnancy-safe sedation'},
-  {id:'safer_checklist', cat:'CRITICAL CARE', name:'SAFER Airway Checklist', sub:'PHI 2-6 · Crew 1 + Crew 2 walkthrough'},
+  {id:'safer_checklist', cat:'AIRWAY / INTUBATION', name:'SAFER Airway Checklist', sub:'PHI 2-6 · Crew 1 + Crew 2 walkthrough'},
+  {id:'safer_diagram', cat:'AIRWAY / INTUBATION', name:'SAFER Smooth Matters Diagram', sub:'PHI 2-6 · Tap to view full-screen'},
   {id:'post_rosc', cat:'CRITICAL CARE', name:'Post-ROSC (Maternal)', sub:'L lateral · perimortem c/s if no ROSC'},
   {id:'post_lytics', cat:'CRITICAL CARE', name:'Post-Thrombolytics (Maternal)', sub:'BP control + ICH watch · L lateral'},
   {id:'newborn', cat:'NEONATAL', name:'Newborn Resuscitation', sub:'Post-delivery'}
 ];
 
 function renderDxGrid(){
-  var CAT_ORDER = ['LABOR','POSTPARTUM','HYPERTENSIVE / PREECLAMPSIA','OB BLEEDING','OB MEDICAL','OB SUPPORT','NEURO','TRAUMA','VASCULAR','ENVIRONMENTAL','CRITICAL CARE','NEONATAL'];
+  var CAT_ORDER = ['LABOR','POSTPARTUM','HYPERTENSIVE / PREECLAMPSIA','OB BLEEDING','OB MEDICAL','OB SUPPORT','NEURO','TRAUMA','VASCULAR','ENVIRONMENTAL','AIRWAY / INTUBATION','CRITICAL CARE','NEONATAL'];
   var groups = {};
   DIAGNOSES.forEach(function(dx){
     var cat = dx.cat || 'OTHER';
@@ -1981,6 +1995,7 @@ var DX_DRUG_MAP = {
   anxiolysis_extra: ['fentanyl'],
   agitation: ['magEclampsia','fentanyl'],
   safer_checklist:['ketamineInduction','rocuroniumRSI','fentanyl'],
+  safer_diagram:[],
   post_rosc: ['fluidBolus','fentanyl','magEclampsia'],
   post_lytics: ['labetalol'],
   amputation: ['fentanyl','fluidBolus','txa'],
@@ -2484,7 +2499,8 @@ var DX_PLAN = {
       'Pre-alert OB'
     ]
   },
-  safer_checklist:{picture:'SAFER airway preparation checklist — Crew 1 (operator) + Crew 2 (assist) parallel workflow.', plan:['Tap each step to mark complete','See PHI SAFER chapter for full protocol detail']}
+  safer_checklist:{picture:'SAFER airway preparation checklist — Crew 1 (operator) + Crew 2 (assist) parallel workflow.', plan:['Tap each step to mark complete','See PHI SAFER chapter for full protocol detail']},
+  safer_diagram:{picture:'PHI SAFER Crew 1 + Crew 2 duties diagram. Tap below to view full-screen.', plan:['View the diagram for at-a-glance airway prep workflow','Use SAFER Airway Checklist for tap-to-complete walkthrough']}
 };
 
 /* SAFER Airway Checklist — PHI 2.2.3 (page 2-6) */
@@ -2561,6 +2577,22 @@ function renderPlan(){
     var ref = (typeof PROTOCOL_PAGES !== 'undefined' && PROTOCOL_PAGES[dx]) ? PROTOCOL_PAGES[dx] : null;
     var protoBtn = (typeof renderProtocolBtn === 'function') ? renderProtocolBtn(dx) : '';
     document.getElementById('mPlanOutput').innerHTML = renderSaferChecklist() + protoBtn;
+    return;
+  }
+  if(dx === 'safer_diagram'){
+    var protoBtn = (typeof renderProtocolBtn === 'function') ? renderProtocolBtn(dx) : '';
+    var html = '<div class="safer-card">';
+    html += '<button type="button" class="safer-diagram-btn" onclick="openImgOverlay(\'./images/safer-smooth-matters.jpg\', \'SAFER Smooth Matters — Crew 1 + Crew 2 (PHI 2-6)\')">';
+    html += '<span class="safer-diagram-icon">🗺️</span>';
+    html += '<span class="safer-diagram-text">';
+    html += '<span class="safer-diagram-label">View Smooth Matters Diagram</span>';
+    html += '<span class="safer-diagram-sub">PHI 2.2.3 page 2-6 · Crew 1 + Crew 2 duties at-a-glance · Full-screen view</span>';
+    html += '</span>';
+    html += '<span class="safer-diagram-chev">›</span>';
+    html += '</button>';
+    html += '<div style="font-size:.75rem;color:var(--tx1);line-height:1.5;padding:0 4px">For an interactive tap-to-complete version of these steps, select <strong style="color:var(--cyan)">SAFER Airway Checklist</strong> from the diagnosis list.</div>';
+    html += '</div>';
+    document.getElementById('mPlanOutput').innerHTML = html + protoBtn;
     return;
   }
 
