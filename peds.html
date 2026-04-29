@@ -295,6 +295,29 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .safer-step.done::after{content:"✓";position:absolute;top:10px;right:12px;color:var(--teal);font-weight:900;font-size:1.2rem;line-height:1}
 .safer-step-label{font-family:var(--mono);font-size:.78rem;font-weight:800;color:var(--tx0);letter-spacing:.05em;padding-right:24px}
 .safer-step-detail{font-size:.72rem;color:var(--tx1);margin-top:4px;line-height:1.4}
+
+/* Image overlay viewer (for SAFER diagram and other reference images) */
+.img-overlay{position:fixed;inset:0;background:rgba(3,7,16,.97);z-index:9998;display:none;flex-direction:column;animation:imgFadeIn .15s ease}
+.img-overlay.show{display:flex}
+@keyframes imgFadeIn{from{opacity:0}to{opacity:1}}
+.img-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg1);border-bottom:1px solid var(--bd1);flex-shrink:0;min-height:52px}
+.img-back{background:var(--s1);border:1px solid var(--bd2);color:var(--tx0);font-family:var(--mono);font-size:.78rem;font-weight:600;letter-spacing:.04em;padding:8px 14px 8px 10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s;flex-shrink:0}
+.img-back:hover,.img-back:active{background:var(--s2);border-color:var(--cyan);color:var(--cyan)}
+.img-back-icon{font-size:1.1rem;line-height:1}
+.img-title{flex:1;min-width:0;font-family:var(--mono);font-size:.7rem;color:var(--tx1);letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.img-frame-wrap{flex:1;background:#1a1a1a;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:8px}
+.img-frame{max-width:100%;height:auto;display:block;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.img-missing{color:var(--rose);font-family:var(--mono);font-size:.85rem;text-align:center;padding:40px 20px;line-height:1.6}
+.img-missing strong{display:block;color:var(--tx0);font-size:1.05rem;margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase}
+
+/* SAFER diagram button (renders inside SAFER checklist) */
+.safer-diagram-btn{display:flex;align-items:center;gap:10px;width:100%;background:linear-gradient(135deg,rgba(34,211,238,.12),rgba(34,211,238,.04));border:1px solid var(--cyan);border-radius:10px;padding:12px 14px;margin-bottom:14px;cursor:pointer;color:var(--tx0);text-align:left;font-family:var(--body);transition:all .12s}
+.safer-diagram-btn:hover,.safer-diagram-btn:active{background:linear-gradient(135deg,rgba(34,211,238,.18),rgba(34,211,238,.08));transform:translateY(-1px)}
+.safer-diagram-icon{font-size:1.4rem;flex-shrink:0}
+.safer-diagram-text{flex:1;min-width:0}
+.safer-diagram-label{font-family:var(--mono);font-size:.78rem;font-weight:800;color:var(--cyan);letter-spacing:.06em;text-transform:uppercase}
+.safer-diagram-sub{font-size:.7rem;color:var(--tx1);margin-top:2px}
+.safer-diagram-chev{font-size:1.3rem;color:var(--cyan);font-weight:300;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -1905,6 +1928,14 @@ function renderSaferChecklist(){
   var totalSteps = SAFER_STEPS.crew1.length + SAFER_STEPS.crew2.length;
   var doneCount = Object.keys(SAFER_STATE).filter(function(k){ return SAFER_STATE[k]; }).length;
   var html = '<div class="safer-card">';
+  html += '<button type="button" class="safer-diagram-btn" onclick="openImgOverlay(\'./images/safer-smooth-matters.jpg\', \'SAFER Smooth Matters — Crew 1 + Crew 2 (PHI 2-6)\')">';
+  html += '<span class="safer-diagram-icon">🗺️</span>';
+  html += '<span class="safer-diagram-text">';
+  html += '<span class="safer-diagram-label">View Smooth Matters Diagram</span>';
+  html += '<span class="safer-diagram-sub">PHI 2.2.3 page 2-6 · Crew 1 + Crew 2 duties at-a-glance</span>';
+  html += '</span>';
+  html += '<span class="safer-diagram-chev">›</span>';
+  html += '</button>';
   html += '<div class="safer-head">';
   html += '<div><div class="safer-title">SAFER · Smooth Matters</div><div class="safer-cite">PHI 2.2.3 — page 2-6 · Tap any step to mark complete</div></div>';
   html += '<div class="safer-actions">';
@@ -3411,6 +3442,47 @@ document.querySelectorAll('#medTabs .tab').forEach(function(t){
   if(el) el.addEventListener('change', recompute);
 });
 
+/* Image overlay viewer */
+function openImgOverlay(url, title){
+  var ov = document.getElementById('imgOverlay');
+  var img = document.getElementById('imgOverlayImg');
+  var tt = document.getElementById('imgOverlayTitle');
+  var wrap = document.getElementById('imgFrameWrap');
+  if(!ov || !img) return;
+  // Reset any prior missing-state
+  var missing = wrap ? wrap.querySelector('.img-missing') : null;
+  if(missing) missing.remove();
+  img.style.display = '';
+  img.src = url;
+  if(tt) tt.textContent = title || 'Image';
+  ov.classList.add('show');
+  document.documentElement.style.overflow='hidden';
+  document.body.style.overflow='hidden';
+}
+function closeImgOverlay(){
+  var ov = document.getElementById('imgOverlay');
+  var img = document.getElementById('imgOverlayImg');
+  if(!ov) return;
+  ov.classList.remove('show');
+  if(img){ img.src = ''; img.style.display = ''; }
+  document.documentElement.style.overflow='';
+  document.body.style.overflow='';
+}
+function showImgMissing(imgEl){
+  var wrap = imgEl && imgEl.parentNode;
+  if(!wrap) return;
+  imgEl.style.display = 'none';
+  if(wrap.querySelector('.img-missing')) return;
+  var div = document.createElement('div');
+  div.className = 'img-missing';
+  div.innerHTML = '<strong>Image not found</strong>Add <code>safer-smooth-matters.jpg</code> to the <code>images/</code> folder of your repo and reload.';
+  wrap.appendChild(div);
+}
+document.addEventListener('keydown', function(e){
+  var ov = document.getElementById('imgOverlay');
+  if(ov && ov.classList.contains('show') && e.key === 'Escape') closeImgOverlay();
+});
+
 // Init with safe wrapper
 function safeRun(name, fn){
   try{ fn(); }catch(e){
@@ -3469,6 +3541,18 @@ safeRun('renderBurnMap', renderBurnMap);
       <div class="pdf-text-layer" id="pdfTextLayer"></div>
     </div>
     <div class="pdf-loading hidden" id="pdfLoading">Loading…</div>
+  </div>
+</div>
+
+<div id="imgOverlay" class="img-overlay" role="dialog" aria-label="Reference image">
+  <div class="img-bar">
+    <button class="img-back" type="button" onclick="closeImgOverlay()" aria-label="Back to app">
+      <span class="img-back-icon">‹</span>BACK TO APP
+    </button>
+    <div class="img-title" id="imgOverlayTitle">Image</div>
+  </div>
+  <div class="img-frame-wrap" id="imgFrameWrap">
+    <img class="img-frame" id="imgOverlayImg" alt="" src="" onerror="showImgMissing(this)" />
   </div>
 </div>
 
