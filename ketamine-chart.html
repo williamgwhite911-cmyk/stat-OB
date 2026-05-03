@@ -154,6 +154,15 @@
   /* Hide non-active columns */
   .col-hidden{display:none !important}
   
+
+  /* Back to app button */
+  .back-bar{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,var(--bg0) 70%,rgba(10,14,26,.85));padding:10px 0 6px;margin-bottom:6px;border-bottom:1px solid rgba(34,211,238,.18)}
+  .back-btn{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(34,211,238,.18),rgba(34,211,238,.05));border:2px solid var(--accent);color:var(--accent);font-family:"Courier New",monospace;font-size:.85rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;padding:11px 16px;border-radius:9px;cursor:pointer;width:100%;justify-content:center;-webkit-tap-highlight-color:transparent;transition:all .15s;text-decoration:none}
+  .back-btn:hover,.back-btn:active{background:var(--accent);color:var(--bg0);box-shadow:0 0 18px rgba(34,211,238,.4)}
+  .back-arrow{font-size:1.3rem;font-weight:900}
+  .back-bar-foot{margin:24px 0 8px}
+  @media print{.back-bar,.back-bar-foot{display:none !important}}
+
   /* Chart toggle — hide static tables by default */
   .chart-toggle{display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,rgba(168,85,247,.18),rgba(124,58,237,.05));border:2px solid rgba(168,85,247,.5);color:#e9d5ff;font-family:"Courier New",monospace;font-size:.85rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;padding:14px 18px;border-radius:11px;cursor:pointer;width:100%;max-width:880px;margin:0 auto 14px;-webkit-tap-highlight-color:transparent;transition:all .15s}
   .chart-toggle:hover,.chart-toggle:active{background:linear-gradient(135deg,rgba(168,85,247,.28),rgba(124,58,237,.10));transform:translateY(-1px);box-shadow:0 0 18px rgba(168,85,247,.3)}
@@ -208,6 +217,12 @@
 </head>
 <body>
 <div class="wrap">
+
+  <div class="back-bar">
+    <button class="back-btn" type="button" onclick="returnToApp()">
+      <span class="back-arrow">‹</span> Back to App
+    </button>
+  </div>
 
   <h1>Ketamine + Rocuronium RSI Quick-Reference</h1>
   <div class="subtitle">Color-coordinated by Handtevy tier (peds) and sex (adult)</div>
@@ -693,6 +708,12 @@
     <br>• <span class="warn">PHI:</span> Pediatric ketamine for agitation requires medical control (no peds standing orders per PHI Dangerous Agitation 6.3).
   </div>
 
+  <div class="back-bar back-bar-foot" style="position:static;background:none;border:none;padding:0">
+    <button class="back-btn" type="button" onclick="returnToApp()">
+      <span class="back-arrow">‹</span> Back to App
+    </button>
+  </div>
+
 </div>
 <script>
 var HANDTEVY = [
@@ -884,6 +905,27 @@ document.addEventListener('DOMContentLoaded', function(){
 </script>
 
 <script>
+
+function returnToApp(){
+  // 1) Try to close the tab (works if opened via window.open)
+  try {
+    window.close();
+  } catch(e){}
+  // 2) If still here after a tick, try history back
+  setTimeout(function(){
+    if(!window.closed){
+      if(document.referrer && document.referrer.indexOf(window.location.host) >= 0){
+        window.location.href = document.referrer;
+      } else if(window.history.length > 1){
+        window.history.back();
+      } else {
+        // Fallback: go to launcher
+        window.location.href = './index.html';
+      }
+    }
+  }, 100);
+}
+
 function toggleChart(){
   var btn = document.getElementById('chartToggle');
   var box = document.getElementById('chartCollapse');
