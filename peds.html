@@ -499,6 +499,29 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 </div>
 
 <div class="card">
+  <div class="slbl">Ketamine + Rocuronium RSI Quick Chart (Color-Coordinated)</div>
+  <a href="./ketamine-chart.html" target="_blank" rel="noopener" class="safer-diagram-btn" style="text-decoration:none" onclick="return openKetChart(event)">
+    <span class="safer-diagram-icon">💊</span>
+    <span class="safer-diagram-text">
+      <span class="safer-diagram-label">Open Ketamine + Roc Chart</span>
+      <span class="safer-diagram-sub">Auto-pulls patient weight (ABW or Handtevy tier) · per-kg dosing</span>
+    </span>
+    <span class="safer-diagram-chev">›</span>
+  </a>
+  <script>
+    function openKetChart(e){
+      e.preventDefault();
+      var params = new URLSearchParams();
+      var w = (typeof state !== 'undefined') ? (state.weightKg || state.tierWt) : null;
+      if(w) params.set('w', w);
+      params.set('from','peds');
+      window.open('./ketamine-chart.html?' + params.toString(), '_blank');
+      return false;
+    }
+  </script>
+</div>
+
+<div class="card">
   <div class="slbl">SAFER Pre-Intubation Checklist (PHI Chapter 2)</div>
   <div id="tubeSaferProto"></div>
   <div class="safer-grid" id="saferGrid"></div>
@@ -1530,16 +1553,17 @@ var DX_PLAN = {
     ]
   },
   seizure: {
-    picture:'Status epilepticus: seizure > 5 min OR 2+ seizures without full recovery. ABCs first; antiepileptic ladder second.',
+    picture:'Seizure / Status epilepticus: seizure > 5 min OR 2+ seizures without full recovery. ABCs first; antiepileptic ladder second. Same per-kg benzo dosing as adults (PHI).',
     plan:[
       '1st: Position lateral, suction, NRB at 15 L/min — protect airway',
-      '1st: Check glucose — treat hypoglycemia immediately if low',
-      '1st: Midazolam IV/IO 0.1 mg/kg (max 5 mg) — or IM/IN 0.2 mg/kg (max 10 mg) per PHI',
+      '1st: Check glucose — treat hypoglycemia immediately (D10 5 mL/kg)',
+      '1st: Midazolam 0.1 mg/kg IV/IO (max 5 mg single dose) — repeat q 2-3 min until seizure stops',
+      'Or if NO IV: Midazolam 0.2 mg/kg IM/NAS (max 10 mg single dose) — repeat q 2-3 min',
       'Alt 1st: Lorazepam 0.1 mg/kg IV/IO/IM (max 4 mg) per PHI',
-      'If still seizing at 5-10 min: repeat benzo dose (2nd benzo)',
       '2nd (refractory ≥ 15-20 min): Levetiracetam 60 mg/kg IV (max 4500 mg) over 5 min',
       'Alt 2nd: Fosphenytoin 15 mg PE/kg IV (max 1 g PE) — or Phenytoin 15 mg/kg IV (max 1 g) per PHI',
-      '3rd (refractory): prepare for intubation + continuous infusion'
+      '3rd (refractory): prepare for intubation + continuous infusion',
+      '⚠ Do NOT use paralytics to treat seizures — they only MASK seizure activity without treating the underlying cause. Continued seizing under paralysis = ongoing brain injury.'
     ]
   },
   anaphylaxis: {
@@ -2683,7 +2707,8 @@ var DRUGS = {
         {k:'Calc IM/IN dose', v:im ? im + ' mg' + (im===10?' (max)':'') : '--', cls:'calc'},
         {k:'Calc IM/IN volume', v:imMl ? imMl + ' mL' : '--', cls:'calc'},
         {k:'IN', v:'Use atomizer; split between nares'}
-      ]
+      ],
+      warn:'Do NOT use paralytics to treat seizures — they only MASK seizure activity without treating the underlying cause. Continued seizing under paralysis = ongoing brain injury.'
     });
   },
   lorazepamSeizure: function(){

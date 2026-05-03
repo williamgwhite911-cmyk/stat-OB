@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0e1a">
+<title>Ketamine + Rocuronium Quick Chart</title>
+<style>
+  :root{
+    --bg0:#0a0e1a; --bg1:#0f172a; --bg2:#1e293b;
+    --tx0:#f1f5f9; --tx1:#cbd5e1; --tx2:#94a3b8;
+    --bd0:#334155; --bd1:#475569;
+    --accent:#22d3ee; --rose:#fb7185;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg0);color:var(--tx0);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.4;-webkit-text-size-adjust:100%}
+  .wrap{max-width:1100px;margin:0 auto;padding:14px}
+  h1{font-size:1.4rem;font-weight:900;letter-spacing:-0.02em;text-align:center;margin-bottom:4px}
+  .subtitle{text-align:center;font-size:.78rem;color:var(--tx2);margin-bottom:6px;letter-spacing:.05em}
+  .conc{text-align:center;font-family:"Courier New",monospace;font-size:.95rem;font-weight:800;color:var(--accent);background:rgba(34,211,238,.08);border:1.5px solid rgba(34,211,238,.4);border-radius:8px;padding:8px 12px;margin:10px auto 18px;max-width:520px}
+  .conc .big{font-size:1.2rem}
+
+  .doses-key{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:720px;margin:0 auto 18px}
+  .dk{background:var(--bg1);border:1px solid var(--bd0);border-radius:8px;padding:8px 10px;text-align:center}
+  .dk .lbl{font-family:"Courier New",monospace;font-size:.62rem;color:var(--tx2);letter-spacing:.13em;text-transform:uppercase}
+  .dk .val{font-size:.95rem;font-weight:800;margin-top:2px}
+  .dk.rsi{border-color:#fb923c;background:linear-gradient(135deg,rgba(251,146,60,.12),transparent)}
+  .dk.rsi .val{color:#fb923c}
+  .dk.agit{border-color:#a855f7;background:linear-gradient(135deg,rgba(168,85,247,.12),transparent)}
+  .dk.agit .val{color:#c084fc}
+  .dk.inf{border-color:#22c55e;background:linear-gradient(135deg,rgba(34,197,94,.12),transparent)}
+  .dk.roc{border-color:#fb7185;background:linear-gradient(135deg,rgba(251,113,133,.14),transparent)}
+  .dk.roc .val{color:#fb7185}
+  .dk.inf .val{color:#4ade80}
+
+  h2{font-size:1.05rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);margin:24px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--bd1);display:flex;align-items:center;gap:8px}
+  h2 .pop{font-size:.7rem;color:var(--tx2);font-weight:600;letter-spacing:.05em;text-transform:none}
+
+  table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:.78rem;background:var(--bg1);border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px var(--bd0)}
+  thead{background:var(--bg2)}
+  th,td{padding:7px 8px;text-align:center;border-bottom:1px solid var(--bd0);vertical-align:middle}
+  th{font-family:"Courier New",monospace;font-size:.62rem;font-weight:900;letter-spacing:.1em;color:var(--tx1);text-transform:uppercase;padding:9px 6px;line-height:1.25}
+  th.indic{color:#fff}
+  th.indic.rsi{background:linear-gradient(135deg,#c2410c,#ea580c)}
+  th.indic.agit{background:linear-gradient(135deg,#7c3aed,#a855f7)}
+  th.indic.inf{background:linear-gradient(135deg,#15803d,#22c55e)}
+  th.indic.roc{background:linear-gradient(135deg,#9f1239,#e11d48)}
+  td.tier-name{text-align:left;font-weight:800;font-family:"Courier New",monospace;font-size:.75rem;padding-left:12px;border-left:6px solid;letter-spacing:.04em}
+  td.wt{font-family:"Courier New",monospace;font-weight:800;font-size:.85rem;color:var(--tx0)}
+  td.dose{font-family:"Courier New",monospace}
+  td.dose .mg{font-weight:800;font-size:.92rem;color:var(--tx0);display:block;line-height:1.2}
+  td.dose .ml{font-size:.74rem;color:var(--accent);font-weight:700;line-height:1.2}
+  tr:hover td{background:rgba(34,211,238,.04)}
+
+  /* Handtevy tier colors */
+  .gray  {background:rgba(148,163,184,.18); border-left-color:#94a3b8}
+  .pink  {background:rgba(249,168,212,.18); border-left-color:#f9a8d4}
+  .red   {background:rgba(239,68,68,.20);   border-left-color:#ef4444}
+  .purple{background:rgba(124,58,237,.22);  border-left-color:#7c3aed}
+  .yellow{background:rgba(250,204,21,.20);  border-left-color:#facc15}
+  .white {background:rgba(241,245,249,.16); border-left-color:#cbd5e1}
+  .blue  {background:rgba(59,130,246,.20);  border-left-color:#3b82f6}
+  .orange{background:rgba(249,115,22,.22);  border-left-color:#f97316}
+  .green {background:rgba(34,197,94,.20);   border-left-color:#22c55e}
+
+  /* Adult M/F highlights */
+  .mrow td.tier-name{background:rgba(59,130,246,.18); border-left-color:#3b82f6}
+  .frow td.tier-name{background:rgba(244,114,182,.18); border-left-color:#f472b6}
+
+
+  /* Patient input panel */
+  .calc-panel{background:linear-gradient(135deg,rgba(34,211,238,.06),rgba(34,211,238,.02));border:2px solid var(--accent);border-radius:14px;padding:14px;margin:0 auto 16px;max-width:920px;box-shadow:0 0 22px rgba(34,211,238,.15)}
+  .calc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+  @media(max-width:600px){.calc-row{grid-template-columns:1fr}}
+  .calc-block{background:var(--bg1);border:1px solid var(--bd0);border-radius:10px;padding:10px}
+  .calc-block-lbl{font-family:"Courier New",monospace;font-size:.6rem;color:var(--tx2);letter-spacing:.13em;text-transform:uppercase;margin-bottom:6px;display:block}
+  .calc-input{width:100%;background:var(--bg0);border:1px solid var(--bd1);color:var(--tx0);font-family:"Courier New",monospace;font-size:1.05rem;font-weight:800;text-align:center;padding:10px 12px;border-radius:8px;-webkit-appearance:none;appearance:none}
+  .calc-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(34,211,238,.3)}
+  .calc-row-2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .calc-sex-btn,.calc-mode-btn{background:var(--bg0);border:1px solid var(--bd1);color:var(--tx1);font-family:"Courier New",monospace;font-size:.75rem;font-weight:800;letter-spacing:.06em;padding:9px 8px;border-radius:7px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .12s;text-transform:uppercase}
+  .calc-sex-btn.active{background:var(--accent);color:var(--bg0);border-color:var(--accent)}
+  .calc-sex-btn[data-sex="m"].active{background:#3b82f6;border-color:#3b82f6;color:#fff}
+  .calc-sex-btn[data-sex="f"].active{background:#f472b6;border-color:#f472b6;color:#fff}
+  .calc-mode-btn.active{background:var(--accent);color:var(--bg0);border-color:var(--accent)}
+  /* Handtevy quick-pick */
+  .handtevy-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:6px}
+  @media(max-width:600px){.handtevy-grid{grid-template-columns:repeat(4,1fr)}}
+  .htbtn{padding:8px 4px;border:none;border-radius:6px;font-family:"Courier New",monospace;font-size:.65rem;font-weight:800;cursor:pointer;text-align:center;line-height:1.15;-webkit-tap-highlight-color:transparent;transition:transform .1s, box-shadow .1s}
+  .htbtn:active{transform:scale(.95)}
+  .htbtn.selected{box-shadow:0 0 0 3px var(--accent), 0 0 14px rgba(34,211,238,.4)}
+  .htbtn .age{display:block;font-size:.58rem;opacity:.85;letter-spacing:.05em}
+  .htbtn .wt{display:block;font-size:.85rem;font-weight:900;margin-top:1px}
+  .ht-gray{background:#94a3b8;color:#0f172a}
+  .ht-pink{background:#f9a8d4;color:#7c2d4f}
+  .ht-red{background:#ef4444;color:#fff}
+  .ht-purple{background:#7c3aed;color:#fff}
+  .ht-yellow{background:#facc15;color:#7c2d12}
+  .ht-white{background:#f1f5f9;color:#0f172a;border:1px solid #94a3b8}
+  .ht-blue{background:#3b82f6;color:#fff}
+  .ht-orange{background:#f97316;color:#fff}
+  .ht-green{background:#22c55e;color:#fff}
+
+  /* Big result card */
+  .result-card{background:linear-gradient(135deg,rgba(34,211,238,.10),rgba(34,211,238,.02));border:3px solid var(--accent);border-radius:14px;padding:14px;margin-top:12px;box-shadow:0 0 24px rgba(34,211,238,.2)}
+  .result-card.empty{display:none}
+  .result-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(34,211,238,.3)}
+  .result-pt{font-family:"Courier New",monospace;font-size:.95rem;font-weight:900;color:var(--accent);letter-spacing:.04em;text-transform:uppercase}
+  .result-pt .wtbig{color:#fff;font-size:1.4rem;margin-left:8px}
+  .result-cite{font-family:"Courier New",monospace;font-size:.65rem;color:var(--tx2);letter-spacing:.05em}
+  .result-doses{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:600px){.result-doses{grid-template-columns:1fr}}
+  .rdose{padding:14px 16px;border-radius:11px;border:2px solid;text-align:center;background:rgba(0,0,0,.18)}
+  .rdose .lbl{font-family:"Courier New",monospace;font-size:.62rem;letter-spacing:.16em;font-weight:900;text-transform:uppercase;margin-bottom:6px}
+  .rdose .ml{font-family:"Courier New",monospace;font-size:2.4rem;font-weight:900;line-height:1;color:#fff;text-shadow:0 0 16px rgba(255,255,255,.3)}
+  .rdose .mg{font-family:"Courier New",monospace;font-size:1rem;font-weight:800;color:rgba(255,255,255,.85);margin-top:6px;letter-spacing:.04em}
+  .rdose .rule{font-size:.65rem;color:rgba(255,255,255,.7);margin-top:6px;font-style:italic}
+
+  /* GIVE annotation styling — explicit mg = mL @ concentration format */
+  .rdose .give-line{font-family:"Courier New",monospace;display:flex;align-items:baseline;justify-content:center;gap:10px;margin:10px 0 6px;flex-wrap:wrap}
+  .rdose .give-word{font-size:.85rem;font-weight:900;letter-spacing:.2em;color:rgba(255,255,255,.9);text-transform:uppercase}
+  .rdose .give-mg{font-size:2.6rem;font-weight:900;color:#fff;line-height:1;text-shadow:0 0 18px rgba(255,255,255,.3)}
+  .rdose .equals{font-family:"Courier New",monospace;font-size:2.4rem;font-weight:900;color:#fff;line-height:1.05;margin:8px 0 8px;text-shadow:0 0 20px rgba(255,255,255,.35)}
+  .rdose .equals .give-ml{font-size:3.4rem;font-weight:900;color:#fff;letter-spacing:.01em;text-shadow:0 0 22px rgba(255,255,255,.45)}
+  .rdose .lbl{font-size:.85rem !important;letter-spacing:.12em;font-weight:900}
+  .rdose .rule{font-size:.78rem !important;color:rgba(255,255,255,.85) !important;margin-top:8px;font-weight:600}
+  @media(max-width:520px){
+    .rdose .give-mg{font-size:2rem}
+    .rdose .equals{font-size:1.8rem}
+    .rdose .equals .give-ml{font-size:2.6rem}
+    .rdose .lbl{font-size:.78rem !important}
+    .rdose .give-word{font-size:.78rem}
+  }
+  .rdose.rsi{border-color:#fb923c;background:linear-gradient(135deg,rgba(251,146,60,.28),rgba(0,0,0,.2))}
+  .rdose.rsi .lbl{color:#fed7aa}
+  .rdose.roc{border-color:#fb7185;background:linear-gradient(135deg,rgba(251,113,133,.28),rgba(0,0,0,.2))}
+  .rdose.roc .lbl{color:#fecdd3}
+  .rdose.agit{border-color:#a855f7;background:linear-gradient(135deg,rgba(168,85,247,.28),rgba(0,0,0,.2))}
+  .rdose.agit .lbl{color:#e9d5ff}
+  .rdose.inf{border-color:#22c55e;background:linear-gradient(135deg,rgba(34,197,94,.28),rgba(0,0,0,.2))}
+  .rdose.inf .lbl{color:#bbf7d0}
+
+  /* Highlight matching row in tables */
+  tr.row-match{outline:3px solid var(--accent);outline-offset:-2px;background:rgba(34,211,238,.10) !important}
+  tr.row-match td{background:rgba(34,211,238,.08) !important}
+
+  /* Tab nav for filtering views */
+  .tab-nav{display:flex;gap:6px;max-width:880px;margin:0 auto 18px;padding:6px;background:var(--bg1);border:1px solid var(--bd0);border-radius:10px;flex-wrap:wrap;justify-content:center}
+  .tab-btn{flex:1;min-width:80px;background:transparent;border:1px solid transparent;color:var(--tx1);font-family:"Courier New",monospace;font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:9px 14px;border-radius:7px;cursor:pointer;transition:all .12s;-webkit-tap-highlight-color:transparent}
+  .tab-btn:hover{background:rgba(34,211,238,.06);color:var(--accent)}
+  .tab-btn.active{background:var(--accent);color:var(--bg0);box-shadow:0 0 12px rgba(34,211,238,.4)}
+  .tab-btn[data-tab="rsi"].active{background:#ea580c;color:#fff;box-shadow:0 0 12px rgba(234,88,12,.5)}
+  .tab-btn[data-tab="agit"].active{background:#a855f7;color:#fff;box-shadow:0 0 12px rgba(168,85,247,.5)}
+  .tab-btn[data-tab="inf"].active{background:#22c55e;color:#fff;box-shadow:0 0 12px rgba(34,197,94,.5)}
+  /* Hide non-active columns */
+  .col-hidden{display:none !important}
+  
+  /* Chart toggle — hide static tables by default */
+  .chart-toggle{display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,rgba(168,85,247,.18),rgba(124,58,237,.05));border:2px solid rgba(168,85,247,.5);color:#e9d5ff;font-family:"Courier New",monospace;font-size:.85rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;padding:14px 18px;border-radius:11px;cursor:pointer;width:100%;max-width:880px;margin:0 auto 14px;-webkit-tap-highlight-color:transparent;transition:all .15s}
+  .chart-toggle:hover,.chart-toggle:active{background:linear-gradient(135deg,rgba(168,85,247,.28),rgba(124,58,237,.10));transform:translateY(-1px);box-shadow:0 0 18px rgba(168,85,247,.3)}
+  .chart-toggle .chev{font-size:1.2rem;font-weight:900;transition:transform .2s}
+  .chart-toggle.open .chev{transform:rotate(90deg)}
+  .chart-collapse{display:none}
+  .chart-collapse.open{display:block;animation:slideDown .25s ease}
+  @keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+  .footnote{font-size:.7rem;color:var(--tx2);background:var(--bg1);border:1px solid var(--bd0);border-radius:8px;padding:10px 12px;margin-top:14px;line-height:1.55}
+  .footnote strong{color:var(--tx0)}
+  .warn{color:#fb923c;font-weight:700}
+
+  @media print{
+    html,body{background:#fff;color:#000}
+    .wrap{padding:0}
+    h1,h2{color:#000}
+    h2{border-color:#999}
+    table{box-shadow:none;background:#fff;border:1px solid #999}
+    thead{background:#eee}
+    th,td{border-color:#ccc;color:#000;font-size:9pt;padding:4px 5px}
+    th{color:#000}
+    th.indic.rsi{background:#fed7aa;color:#9a3412}
+    th.indic.agit{background:#e9d5ff;color:#6b21a8}
+    th.indic.inf{background:#bbf7d0;color:#166534}
+    th.indic.roc{background:#fecdd3;color:#9f1239}
+    td.dose .ml{color:#0e7490}
+    .conc{background:#fff;color:#000;border-color:#000}
+    .gray  {background:#f1f5f9}
+    .pink  {background:#fce7f3}
+    .red   {background:#fee2e2}
+    .purple{background:#ede9fe}
+    .yellow{background:#fef9c3}
+    .white {background:#f8fafc}
+    .blue  {background:#dbeafe}
+    .orange{background:#ffedd5}
+    .green {background:#dcfce7}
+    .mrow td.tier-name{background:#dbeafe}
+    .frow td.tier-name{background:#fce7f3}
+    h2,table{break-inside:avoid}
+  }
+
+  @media (max-width:520px){
+    h1{font-size:1.15rem}
+    .doses-key{grid-template-columns:1fr;gap:6px}
+    th,td{padding:5px 4px;font-size:.72rem}
+    td.dose .mg{font-size:.85rem}
+    td.dose .ml{font-size:.7rem}
+    td.tier-name{font-size:.7rem;padding-left:8px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Ketamine + Rocuronium RSI Quick-Reference</h1>
+  <div class="subtitle">Color-coordinated by Handtevy tier (peds) and sex (adult)</div>
+
+  <div class="conc" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:680px">
+    <div style="border-right:1px solid rgba(34,211,238,.4);padding:4px 8px"><div style="font-size:.65rem;color:var(--tx2);letter-spacing:.1em">KETAMINE</div><span class="big">50 mg / mL</span><div style="font-size:.7rem;color:var(--tx2);margin-top:2px">500 mg / 10 mL stock</div></div>
+    <div style="padding:4px 8px"><div style="font-size:.65rem;color:var(--tx2);letter-spacing:.1em">ROCURONIUM</div><span class="big" style="color:#fb7185">10 mg / mL</span><div style="font-size:.7rem;color:var(--tx2);margin-top:2px">100 mg / 10 mL stock</div></div>
+  </div>
+
+  <div class="doses-key" style="grid-template-columns:repeat(4,1fr);max-width:880px">
+    <div class="dk rsi">
+      <div class="lbl">Ketamine RSI</div>
+      <div class="val">2 mg/kg</div>
+    </div>
+    <div class="dk roc">
+      <div class="lbl">Rocuronium RSI</div>
+      <div class="val">1.5 mg/kg</div>
+    </div>
+    <div class="dk agit">
+      <div class="lbl">Ketamine Agitation</div>
+      <div class="val">3 mg/kg</div>
+    </div>
+    <div class="dk inf">
+      <div class="lbl">Ketamine Infusion</div>
+      <div class="val">4 mg/kg/hr</div>
+    </div>
+  </div>
+
+
+  <div class="calc-panel">
+    <div class="calc-block-lbl" style="text-align:center;color:var(--accent);font-size:.7rem;letter-spacing:.18em">Patient Auto-Dose Calculator</div>
+    <div class="calc-row" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:10px">
+      <button class="calc-mode-btn active" data-mode="peds" onclick="setMode('peds')">Peds (Handtevy)</button>
+      <button class="calc-mode-btn" data-mode="adult-m" onclick="setMode('adult-m')">Adult Male</button>
+      <button class="calc-mode-btn" data-mode="adult-f" onclick="setMode('adult-f')">Adult Female</button>
+    </div>
+
+    <div id="modePeds" class="mode-panel">
+      <div class="calc-block-lbl">Tap age tier (or enter weight below)</div>
+      <div class="handtevy-grid" id="htGrid"></div>
+      <div class="calc-block" style="margin-top:10px">
+        <span class="calc-block-lbl">Or enter weight (kg)</span>
+        <input class="calc-input" id="pedsWt" type="number" inputmode="decimal" placeholder="Weight in kg" oninput="onWtInput()">
+      </div>
+    </div>
+
+    <div id="modeAdultM" class="mode-panel" style="display:none">
+      <div class="calc-block">
+        <span class="calc-block-lbl">Adult Male — height</span>
+        <div class="calc-row" style="grid-template-columns:1fr 1fr">
+          <input class="calc-input" id="amFt" type="number" inputmode="numeric" placeholder="ft (4-7)" min="4" max="7" oninput="onHeightInput('m')">
+          <input class="calc-input" id="amIn" type="number" inputmode="numeric" placeholder="in (0-11)" min="0" max="11" oninput="onHeightInput('m')">
+        </div>
+      </div>
+    </div>
+
+    <div id="modeAdultF" class="mode-panel" style="display:none">
+      <div class="calc-block">
+        <span class="calc-block-lbl">Adult Female — height</span>
+        <div class="calc-row" style="grid-template-columns:1fr 1fr">
+          <input class="calc-input" id="afFt" type="number" inputmode="numeric" placeholder="ft (4-7)" min="4" max="7" oninput="onHeightInput('f')">
+          <input class="calc-input" id="afIn" type="number" inputmode="numeric" placeholder="in (0-11)" min="0" max="11" oninput="onHeightInput('f')">
+        </div>
+      </div>
+    </div>
+
+    <div class="result-card empty" id="resultCard">
+      <div class="result-head">
+        <div class="result-pt"><span id="rPtLbl">Patient</span><span class="wtbig" id="rPtWt">—</span></div>
+        <div class="result-cite">Tap a tier or enter wt/height</div>
+      </div>
+      <div class="result-doses">
+        <div class="rdose rsi">
+          <div class="lbl">Ketamine RSI · 2 mg/kg</div>
+          <div class="give-line"><span class="give-word">GIVE</span> <span class="give-mg" id="rRsiMg">— mg</span></div>
+          <div class="equals">= <span class="give-ml" id="rRsiMl">— mL</span></div>
+          <div class="rule">concentration 50 mg/mL</div>
+        </div>
+        <div class="rdose roc">
+          <div class="lbl">Rocuronium RSI · 1.5 mg/kg</div>
+          <div class="give-line"><span class="give-word">GIVE</span> <span class="give-mg" id="rRocMg">— mg</span></div>
+          <div class="equals">= <span class="give-ml" id="rRocMl">— mL</span></div>
+          <div class="rule">concentration 10 mg/mL</div>
+        </div>
+        <div class="rdose agit">
+          <div class="lbl">Ketamine Agitation · 3 mg/kg</div>
+          <div class="give-line"><span class="give-word">GIVE</span> <span class="give-mg" id="rAgitMg">— mg</span></div>
+          <div class="equals">= <span class="give-ml" id="rAgitMl">— mL</span></div>
+          <div class="rule">concentration 50 mg/mL</div>
+        </div>
+        <div class="rdose inf">
+          <div class="lbl">Ketamine Infusion · 4 mg/kg/hr</div>
+          <div class="give-line"><span class="give-word">GIVE</span> <span class="give-mg" id="rInfMg">— mg/hr</span></div>
+          <div class="equals">= <span class="give-ml" id="rInfMl">— mL/hr</span></div>
+          <div class="rule">concentration 50 mg/mL</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="chart-toggle" id="chartToggle" type="button" onclick="toggleChart()">
+    <span id="chartToggleLabel">Show Entire Chart (Peds + Adult M/F Tables)</span>
+    <span class="chev">›</span>
+  </button>
+
+  <div class="chart-collapse" id="chartCollapse">
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="all" onclick="switchTab('all')">All</button>
+    <button class="tab-btn" data-tab="rsi" onclick="switchTab('rsi')">RSI / Roc</button>
+    <button class="tab-btn" data-tab="agit" onclick="switchTab('agit')">Agitation</button>
+    <button class="tab-btn" data-tab="inf" onclick="switchTab('inf')">Infusion</button>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- PEDIATRIC HANDTEVY CHART -->
+  <!-- ============================================== -->
+  <h2>Pediatric — Handtevy Color Tiers <span class="pop">(20 weight bands · age × weight)</span></h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:left;padding-left:12px">Color · Age</th>
+        <th>Wt (kg)</th>
+        <th class="indic rsi" data-col="rsi">KET RSI<br>2 mg/kg</th>
+        <th class="indic roc" data-col="rsi">ROC RSI<br>1.5 mg/kg</th>
+        <th class="indic agit" data-col="agit">KET AGIT<br>3 mg/kg</th>
+        <th class="indic inf" data-col="inf">KET INF<br>4 mg/kg/hr</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="tier-name gray">Gray · PREEMIE</td><td class="wt">1</td>
+        <td class="dose" data-col="rsi"><span class="mg">2 mg</span><span class="ml">0.0 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">1.5 mg</span><span class="ml">0.1 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">3 mg</span><span class="ml">0.1 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">4 mg/hr</span><span class="ml">0.1 mL/hr</span></td></tr>
+      <tr><td class="tier-name gray">Gray · PREEMIE</td><td class="wt">2</td>
+        <td class="dose" data-col="rsi"><span class="mg">4 mg</span><span class="ml">0.1 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">3 mg</span><span class="ml">0.3 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">6 mg</span><span class="ml">0.1 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">8 mg/hr</span><span class="ml">0.2 mL/hr</span></td></tr>
+      <tr><td class="tier-name gray">Gray · NB</td><td class="wt">3</td>
+        <td class="dose" data-col="rsi"><span class="mg">6 mg</span><span class="ml">0.1 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">4.5 mg</span><span class="ml">0.5 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">9 mg</span><span class="ml">0.2 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">12 mg/hr</span><span class="ml">0.2 mL/hr</span></td></tr>
+      <tr><td class="tier-name gray">Gray · NB</td><td class="wt">4</td>
+        <td class="dose" data-col="rsi"><span class="mg">8 mg</span><span class="ml">0.2 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">6 mg</span><span class="ml">0.6 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">12 mg</span><span class="ml">0.2 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">16 mg/hr</span><span class="ml">0.3 mL/hr</span></td></tr>
+      <tr><td class="tier-name pink">Pink · 2 mo</td><td class="wt">5</td>
+        <td class="dose" data-col="rsi"><span class="mg">10 mg</span><span class="ml">0.2 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">7.5 mg</span><span class="ml">0.8 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">15 mg</span><span class="ml">0.3 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">20 mg/hr</span><span class="ml">0.4 mL/hr</span></td></tr>
+      <tr><td class="tier-name pink">Pink · 4 mo</td><td class="wt">6</td>
+        <td class="dose" data-col="rsi"><span class="mg">12 mg</span><span class="ml">0.2 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">9 mg</span><span class="ml">0.9 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">18 mg</span><span class="ml">0.4 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">24 mg/hr</span><span class="ml">0.5 mL/hr</span></td></tr>
+      <tr><td class="tier-name red">Red · 6 mo</td><td class="wt">8</td>
+        <td class="dose" data-col="rsi"><span class="mg">16 mg</span><span class="ml">0.3 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">12 mg</span><span class="ml">1.2 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">24 mg</span><span class="ml">0.5 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">32 mg/hr</span><span class="ml">0.6 mL/hr</span></td></tr>
+      <tr><td class="tier-name purple">Purple · 1 YR</td><td class="wt">10</td>
+        <td class="dose" data-col="rsi"><span class="mg">20 mg</span><span class="ml">0.4 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">15 mg</span><span class="ml">1.5 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">30 mg</span><span class="ml">0.6 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">40 mg/hr</span><span class="ml">0.8 mL/hr</span></td></tr>
+      <tr><td class="tier-name yellow">Yellow · 2 YR</td><td class="wt">12</td>
+        <td class="dose" data-col="rsi"><span class="mg">24 mg</span><span class="ml">0.5 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">18 mg</span><span class="ml">1.8 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">36 mg</span><span class="ml">0.7 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">48 mg/hr</span><span class="ml">1.0 mL/hr</span></td></tr>
+      <tr><td class="tier-name white">White · 3 YR</td><td class="wt">15</td>
+        <td class="dose" data-col="rsi"><span class="mg">30 mg</span><span class="ml">0.6 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">22.5 mg</span><span class="ml">2.2 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">45 mg</span><span class="ml">0.9 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">60 mg/hr</span><span class="ml">1.2 mL/hr</span></td></tr>
+      <tr><td class="tier-name white">White · 4 YR</td><td class="wt">17</td>
+        <td class="dose" data-col="rsi"><span class="mg">34 mg</span><span class="ml">0.7 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">25.5 mg</span><span class="ml">2.5 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">51 mg</span><span class="ml">1.0 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">68 mg/hr</span><span class="ml">1.4 mL/hr</span></td></tr>
+      <tr><td class="tier-name blue">Blue · 5 YR</td><td class="wt">20</td>
+        <td class="dose" data-col="rsi"><span class="mg">40 mg</span><span class="ml">0.8 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">30 mg</span><span class="ml">3.0 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">60 mg</span><span class="ml">1.2 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">80 mg/hr</span><span class="ml">1.6 mL/hr</span></td></tr>
+      <tr><td class="tier-name blue">Blue · 6 YR</td><td class="wt">22</td>
+        <td class="dose" data-col="rsi"><span class="mg">44 mg</span><span class="ml">0.9 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">33 mg</span><span class="ml">3.3 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">66 mg</span><span class="ml">1.3 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">88 mg/hr</span><span class="ml">1.8 mL/hr</span></td></tr>
+      <tr><td class="tier-name orange">Orange · 7 YR</td><td class="wt">25</td>
+        <td class="dose" data-col="rsi"><span class="mg">50 mg</span><span class="ml">1.0 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">37.5 mg</span><span class="ml">3.8 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">75 mg</span><span class="ml">1.5 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">100 mg/hr</span><span class="ml">2.0 mL/hr</span></td></tr>
+      <tr><td class="tier-name orange">Orange · 8 YR</td><td class="wt">27</td>
+        <td class="dose" data-col="rsi"><span class="mg">54 mg</span><span class="ml">1.1 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">40.5 mg</span><span class="ml">4.0 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">81 mg</span><span class="ml">1.6 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">108 mg/hr</span><span class="ml">2.2 mL/hr</span></td></tr>
+      <tr><td class="tier-name green">Green · 9 YR</td><td class="wt">30</td>
+        <td class="dose" data-col="rsi"><span class="mg">60 mg</span><span class="ml">1.2 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">45 mg</span><span class="ml">4.5 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">90 mg</span><span class="ml">1.8 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">120 mg/hr</span><span class="ml">2.4 mL/hr</span></td></tr>
+      <tr><td class="tier-name green">Green · 10 YR</td><td class="wt">35</td>
+        <td class="dose" data-col="rsi"><span class="mg">70 mg</span><span class="ml">1.4 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">52.5 mg</span><span class="ml">5.2 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">105 mg</span><span class="ml">2.1 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">140 mg/hr</span><span class="ml">2.8 mL/hr</span></td></tr>
+      <tr><td class="tier-name green">Green · 11 YR</td><td class="wt">40</td>
+        <td class="dose" data-col="rsi"><span class="mg">80 mg</span><span class="ml">1.6 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">60 mg</span><span class="ml">6.0 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">120 mg</span><span class="ml">2.4 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">160 mg/hr</span><span class="ml">3.2 mL/hr</span></td></tr>
+      <tr><td class="tier-name green">Green · 12 YR</td><td class="wt">50</td>
+        <td class="dose" data-col="rsi"><span class="mg">100 mg</span><span class="ml">2.0 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">75 mg</span><span class="ml">7.5 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">150 mg</span><span class="ml">3.0 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">200 mg/hr</span><span class="ml">4.0 mL/hr</span></td></tr>
+      <tr><td class="tier-name green">Green · 13 YR</td><td class="wt">60</td>
+        <td class="dose" data-col="rsi"><span class="mg">120 mg</span><span class="ml">2.4 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">90 mg</span><span class="ml">9.0 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">180 mg</span><span class="ml">3.6 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">240 mg/hr</span><span class="ml">4.8 mL/hr</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============================================== -->
+  <!-- ADULT MALE CHART -->
+  <!-- ============================================== -->
+  <h2>Adult Male — by Height (IBW dosing) <span class="pop">(Devine: 50 kg + 2.3 kg/in over 5 ft)</span></h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:left;padding-left:12px">Height</th>
+        <th>IBW (kg)</th>
+        <th class="indic rsi" data-col="rsi">KET RSI<br>2 mg/kg</th>
+        <th class="indic roc" data-col="rsi">ROC RSI<br>1.5 mg/kg</th>
+        <th class="indic agit" data-col="agit">KET AGIT<br>3 mg/kg</th>
+        <th class="indic inf" data-col="inf">KET INF<br>4 mg/kg/hr</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="mrow"><td class="tier-name">4&prime;9&Prime;</td><td class="wt">43</td>
+        <td class="dose" data-col="rsi"><span class="mg">86 mg</span><span class="ml">1.7 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">64.5 mg</span><span class="ml">6.5 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">129 mg</span><span class="ml">2.6 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">172 mg/hr</span><span class="ml">3.4 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">4&prime;10&Prime;</td><td class="wt">45</td>
+        <td class="dose" data-col="rsi"><span class="mg">90 mg</span><span class="ml">1.8 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">67.5 mg</span><span class="ml">6.8 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">135 mg</span><span class="ml">2.7 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">180 mg/hr</span><span class="ml">3.6 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">4&prime;11&Prime;</td><td class="wt">48</td>
+        <td class="dose" data-col="rsi"><span class="mg">96 mg</span><span class="ml">1.9 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">72 mg</span><span class="ml">7.2 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">144 mg</span><span class="ml">2.9 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">192 mg/hr</span><span class="ml">3.8 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">5&prime;0&Prime;</td><td class="wt">50</td>
+        <td class="dose" data-col="rsi"><span class="mg">100 mg</span><span class="ml">2.0 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">75 mg</span><span class="ml">7.5 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">150 mg</span><span class="ml">3.0 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">200 mg/hr</span><span class="ml">4.0 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">5&prime;1&Prime;</td><td class="wt">52</td>
+        <td class="dose" data-col="rsi"><span class="mg">105 mg</span><span class="ml">2.1 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">78 mg</span><span class="ml">7.8 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">157 mg</span><span class="ml">3.1 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">209 mg/hr</span><span class="ml">4.2 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">5&prime;2&Prime;</td><td class="wt">55</td>
+        <td class="dose" data-col="rsi"><span class="mg">109 mg</span><span class="ml">2.2 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">82.5 mg</span><span class="ml">8.2 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">164 mg</span><span class="ml">3.3 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">218 mg/hr</span><span class="ml">4.4 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">5&prime;3&Prime;</td><td class="wt">57</td>
+        <td class="dose" data-col="rsi"><span class="mg">114 mg</span><span class="ml">2.3 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">85.5 mg</span><span class="ml">8.6 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">171 mg</span><span class="ml">3.4 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">227 mg/hr</span><span class="ml">4.5 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">5&prime;4&Prime;</td><td class="wt">59</td>
+        <td class="dose" data-col="rsi"><span class="mg">118 mg</span><span class="ml">2.4 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">88.5 mg</span><span class="ml">8.8 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">177 mg</span><span class="ml">3.5 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">236 mg/hr</span><span class="ml">4.7 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">5&prime;5&Prime;</td><td class="wt">61</td>
+        <td class="dose" data-col="rsi"><span class="mg">123 mg</span><span class="ml">2.5 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">91.5 mg</span><span class="ml">9.2 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">184 mg</span><span class="ml">3.7 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">245 mg/hr</span><span class="ml">4.9 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">5&prime;6&Prime;</td><td class="wt">64</td>
+        <td class="dose" data-col="rsi"><span class="mg">127 mg</span><span class="ml">2.5 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">96 mg</span><span class="ml">9.6 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">191 mg</span><span class="ml">3.8 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">254 mg/hr</span><span class="ml">5.1 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">5&prime;7&Prime;</td><td class="wt">66</td>
+        <td class="dose" data-col="rsi"><span class="mg">132 mg</span><span class="ml">2.6 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">99 mg</span><span class="ml">9.9 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">198 mg</span><span class="ml">4.0 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">263 mg/hr</span><span class="ml">5.3 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">5&prime;8&Prime;</td><td class="wt">68</td>
+        <td class="dose" data-col="rsi"><span class="mg">136 mg</span><span class="ml">2.7 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">102 mg</span><span class="ml">10.2 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">205 mg</span><span class="ml">4.1 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">273 mg/hr</span><span class="ml">5.5 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">5&prime;9&Prime;</td><td class="wt">70</td>
+        <td class="dose" data-col="rsi"><span class="mg">141 mg</span><span class="ml">2.8 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">105 mg</span><span class="ml">10.5 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">212 mg</span><span class="ml">4.2 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">282 mg/hr</span><span class="ml">5.6 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">5&prime;10&Prime;</td><td class="wt">73</td>
+        <td class="dose" data-col="rsi"><span class="mg">145 mg</span><span class="ml">2.9 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">109.5 mg</span><span class="ml">10.9 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">218 mg</span><span class="ml">4.4 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">291 mg/hr</span><span class="ml">5.8 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">5&prime;11&Prime;</td><td class="wt">75</td>
+        <td class="dose" data-col="rsi"><span class="mg">150 mg</span><span class="ml">3.0 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">112.5 mg</span><span class="ml">11.2 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">225 mg</span><span class="ml">4.5 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">300 mg/hr</span><span class="ml">6.0 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">6&prime;0&Prime;</td><td class="wt">77</td>
+        <td class="dose" data-col="rsi"><span class="mg">154 mg</span><span class="ml">3.1 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">115.5 mg</span><span class="ml">11.6 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">232 mg</span><span class="ml">4.6 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">309 mg/hr</span><span class="ml">6.2 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">6&prime;1&Prime;</td><td class="wt">80</td>
+        <td class="dose" data-col="rsi"><span class="mg">159 mg</span><span class="ml">3.2 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">120 mg</span><span class="ml">12.0 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">239 mg</span><span class="ml">4.8 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">318 mg/hr</span><span class="ml">6.4 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">6&prime;2&Prime;</td><td class="wt">82</td>
+        <td class="dose" data-col="rsi"><span class="mg">163 mg</span><span class="ml">3.3 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">123 mg</span><span class="ml">12.3 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">245 mg</span><span class="ml">4.9 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">327 mg/hr</span><span class="ml">6.5 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">6&prime;3&Prime;</td><td class="wt">84</td>
+        <td class="dose" data-col="rsi"><span class="mg">168 mg</span><span class="ml">3.4 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">126 mg</span><span class="ml">12.6 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">252 mg</span><span class="ml">5.0 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">336 mg/hr</span><span class="ml">6.7 mL/hr</span></td></tr>
+      <tr class="mrow"><td class="tier-name">6&prime;4&Prime;</td><td class="wt">87</td>
+        <td class="dose" data-col="rsi"><span class="mg">172 mg</span><span class="ml">3.4 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">130.5 mg</span><span class="ml">13.1 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">259 mg</span><span class="ml">5.2 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">345 mg/hr</span><span class="ml">6.9 mL/hr</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============================================== -->
+  <!-- ADULT FEMALE CHART -->
+  <!-- ============================================== -->
+  <h2>Adult Female — by Height (IBW dosing) <span class="pop">(Devine: 45.5 kg + 2.3 kg/in over 5 ft)</span></h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:left;padding-left:12px">Height</th>
+        <th>IBW (kg)</th>
+        <th class="indic rsi" data-col="rsi">KET RSI<br>2 mg/kg</th>
+        <th class="indic roc" data-col="rsi">ROC RSI<br>1.5 mg/kg</th>
+        <th class="indic agit" data-col="agit">KET AGIT<br>3 mg/kg</th>
+        <th class="indic inf" data-col="inf">KET INF<br>4 mg/kg/hr</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="frow"><td class="tier-name">4&prime;9&Prime;</td><td class="wt">39</td>
+        <td class="dose" data-col="rsi"><span class="mg">77 mg</span><span class="ml">1.5 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">58.5 mg</span><span class="ml">5.8 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">116 mg</span><span class="ml">2.3 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">154 mg/hr</span><span class="ml">3.1 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">4&prime;10&Prime;</td><td class="wt">41</td>
+        <td class="dose" data-col="rsi"><span class="mg">81 mg</span><span class="ml">1.6 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">61.5 mg</span><span class="ml">6.2 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">122 mg</span><span class="ml">2.4 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">163 mg/hr</span><span class="ml">3.3 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">4&prime;11&Prime;</td><td class="wt">43</td>
+        <td class="dose" data-col="rsi"><span class="mg">86 mg</span><span class="ml">1.7 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">64.5 mg</span><span class="ml">6.5 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">129 mg</span><span class="ml">2.6 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">172 mg/hr</span><span class="ml">3.4 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">5&prime;0&Prime;</td><td class="wt">46</td>
+        <td class="dose" data-col="rsi"><span class="mg">91 mg</span><span class="ml">1.8 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">69 mg</span><span class="ml">6.9 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">137 mg</span><span class="ml">2.7 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">182 mg/hr</span><span class="ml">3.6 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">5&prime;1&Prime;</td><td class="wt">48</td>
+        <td class="dose" data-col="rsi"><span class="mg">96 mg</span><span class="ml">1.9 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">72 mg</span><span class="ml">7.2 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">144 mg</span><span class="ml">2.9 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">192 mg/hr</span><span class="ml">3.8 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">5&prime;2&Prime;</td><td class="wt">50</td>
+        <td class="dose" data-col="rsi"><span class="mg">100 mg</span><span class="ml">2.0 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">75 mg</span><span class="ml">7.5 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">150 mg</span><span class="ml">3.0 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">200 mg/hr</span><span class="ml">4.0 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">5&prime;3&Prime;</td><td class="wt">52</td>
+        <td class="dose" data-col="rsi"><span class="mg">105 mg</span><span class="ml">2.1 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">78 mg</span><span class="ml">7.8 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">157 mg</span><span class="ml">3.1 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">209 mg/hr</span><span class="ml">4.2 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">5&prime;4&Prime;</td><td class="wt">55</td>
+        <td class="dose" data-col="rsi"><span class="mg">109 mg</span><span class="ml">2.2 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">82.5 mg</span><span class="ml">8.2 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">164 mg</span><span class="ml">3.3 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">218 mg/hr</span><span class="ml">4.4 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">5&prime;5&Prime;</td><td class="wt">57</td>
+        <td class="dose" data-col="rsi"><span class="mg">114 mg</span><span class="ml">2.3 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">85.5 mg</span><span class="ml">8.6 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">171 mg</span><span class="ml">3.4 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">227 mg/hr</span><span class="ml">4.5 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">5&prime;6&Prime;</td><td class="wt">59</td>
+        <td class="dose" data-col="rsi"><span class="mg">118 mg</span><span class="ml">2.4 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">88.5 mg</span><span class="ml">8.8 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">177 mg</span><span class="ml">3.5 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">236 mg/hr</span><span class="ml">4.7 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">5&prime;7&Prime;</td><td class="wt">61</td>
+        <td class="dose" data-col="rsi"><span class="mg">123 mg</span><span class="ml">2.5 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">91.5 mg</span><span class="ml">9.2 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">184 mg</span><span class="ml">3.7 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">245 mg/hr</span><span class="ml">4.9 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">5&prime;8&Prime;</td><td class="wt">64</td>
+        <td class="dose" data-col="rsi"><span class="mg">127 mg</span><span class="ml">2.5 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">96 mg</span><span class="ml">9.6 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">191 mg</span><span class="ml">3.8 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">254 mg/hr</span><span class="ml">5.1 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">5&prime;9&Prime;</td><td class="wt">66</td>
+        <td class="dose" data-col="rsi"><span class="mg">132 mg</span><span class="ml">2.6 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">99 mg</span><span class="ml">9.9 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">198 mg</span><span class="ml">4.0 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">263 mg/hr</span><span class="ml">5.3 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">5&prime;10&Prime;</td><td class="wt">68</td>
+        <td class="dose" data-col="rsi"><span class="mg">136 mg</span><span class="ml">2.7 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">102 mg</span><span class="ml">10.2 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">205 mg</span><span class="ml">4.1 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">273 mg/hr</span><span class="ml">5.5 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">5&prime;11&Prime;</td><td class="wt">71</td>
+        <td class="dose" data-col="rsi"><span class="mg">141 mg</span><span class="ml">2.8 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">106.5 mg</span><span class="ml">10.7 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">212 mg</span><span class="ml">4.2 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">282 mg/hr</span><span class="ml">5.6 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">6&prime;0&Prime;</td><td class="wt">73</td>
+        <td class="dose" data-col="rsi"><span class="mg">145 mg</span><span class="ml">2.9 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">109.5 mg</span><span class="ml">10.9 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">218 mg</span><span class="ml">4.4 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">291 mg/hr</span><span class="ml">5.8 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">6&prime;1&Prime;</td><td class="wt">75</td>
+        <td class="dose" data-col="rsi"><span class="mg">150 mg</span><span class="ml">3.0 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">112.5 mg</span><span class="ml">11.2 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">225 mg</span><span class="ml">4.5 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">300 mg/hr</span><span class="ml">6.0 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">6&prime;2&Prime;</td><td class="wt">77</td>
+        <td class="dose" data-col="rsi"><span class="mg">154 mg</span><span class="ml">3.1 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">115.5 mg</span><span class="ml">11.6 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">232 mg</span><span class="ml">4.6 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">309 mg/hr</span><span class="ml">6.2 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">6&prime;3&Prime;</td><td class="wt">80</td>
+        <td class="dose" data-col="rsi"><span class="mg">159 mg</span><span class="ml">3.2 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">120 mg</span><span class="ml">12.0 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">239 mg</span><span class="ml">4.8 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">318 mg/hr</span><span class="ml">6.4 mL/hr</span></td></tr>
+      <tr class="frow"><td class="tier-name">6&prime;4&Prime;</td><td class="wt">82</td>
+        <td class="dose" data-col="rsi"><span class="mg">163 mg</span><span class="ml">3.3 mL</span></td>
+        <td class="dose" data-col="rsi"><span class="mg">123 mg</span><span class="ml">12.3 mL</span></td>
+        <td class="dose" data-col="agit"><span class="mg">245 mg</span><span class="ml">4.9 mL</span></td>
+        <td class="dose" data-col="inf"><span class="mg">327 mg/hr</span><span class="ml">6.5 mL/hr</span></td></tr>
+    </tbody>
+  </table>
+
+  </div>
+
+  <div class="footnote">
+    <strong>Reference notes:</strong>
+    <br>• <strong>Ketamine</strong>: 500 mg / 10 mL = <strong>50 mg/mL</strong>. Dose (mg) ÷ 50 = mL.
+    <br>• <strong>Rocuronium</strong>: 100 mg / 10 mL = <strong>10 mg/mL</strong>. Dose (mg) ÷ 10 = mL. PHI standing-order RSI dose 1.5 mg/kg IBW IV; alternative 2 mg/kg IBW IM (onset ~5 min).
+    <br>• <strong>Peds weights</strong> from PHI Air Medical Handtevy v6.0.0 tier table.
+    <br>• <strong>Adult IBW</strong> via Devine formula: M = 50 + 2.3 × (in over 5 ft); F = 45.5 + 2.3 × (in over 5 ft). Sub-5 ft uses negative inches.
+    <br>• <strong>Use IBW</strong> for ketamine RSI dosing (lipophilic but standard PHI practice). For obese patients, consider lean body weight rather than actual.
+    <br>• <span class="warn">Caution:</span> 4 mg/kg/hr is the PHI MAX continuous infusion rate. Typical maintenance is 1-2 mg/kg/hr. Start low and titrate. Always BOLUS first (1-2 mg/kg IBW) before initiating drip to avoid under-sedation and dysphoria.
+    <br>• <span class="warn">Rocuronium:</span> Onset 60-90 sec IV, duration 30-60 min. Ensure post-RSI sedation drip is RUNNING before paralytic wears off — paralyzed-but-awake is a critical event. PHI alternative IM dose is 2 mg/kg.
+    <br>• Agitation 3 mg/kg dose is for IM route per typical excited-delirium / dangerous-agitation practice. IV agitation dose is 1-2 mg/kg.
+    <br>• <span class="warn">PHI:</span> Pediatric ketamine for agitation requires medical control (no peds standing orders per PHI Dangerous Agitation 6.3).
+  </div>
+
+</div>
+<script>
+var HANDTEVY = [
+  {label:'PREEMIE',sub:'1 kg',  wt:1, color:'gray'},
+  {label:'PREEMIE',sub:'2 kg',  wt:2, color:'gray'},
+  {label:'NB',     sub:'3 kg',  wt:3, color:'gray'},
+  {label:'NB',     sub:'4 kg',  wt:4, color:'gray'},
+  {label:'2 mo',   sub:'5 kg',  wt:5, color:'pink'},
+  {label:'4 mo',   sub:'6 kg',  wt:6, color:'pink'},
+  {label:'6 mo',   sub:'8 kg',  wt:8, color:'red'},
+  {label:'1 YR',   sub:'10 kg', wt:10,color:'purple'},
+  {label:'2 YR',   sub:'12 kg', wt:12,color:'yellow'},
+  {label:'3 YR',   sub:'15 kg', wt:15,color:'white'},
+  {label:'4 YR',   sub:'17 kg', wt:17,color:'white'},
+  {label:'5 YR',   sub:'20 kg', wt:20,color:'blue'},
+  {label:'6 YR',   sub:'22 kg', wt:22,color:'blue'},
+  {label:'7 YR',   sub:'25 kg', wt:25,color:'orange'},
+  {label:'8 YR',   sub:'27 kg', wt:27,color:'orange'},
+  {label:'9 YR',   sub:'30 kg', wt:30,color:'green'},
+  {label:'10 YR',  sub:'35 kg', wt:35,color:'green'},
+  {label:'11 YR',  sub:'40 kg', wt:40,color:'green'},
+  {label:'12 YR',  sub:'50 kg', wt:50,color:'green'},
+  {label:'13 YR',  sub:'60 kg', wt:60,color:'green'}
+];
+
+var __mode = 'peds';
+var __selectedTier = null;
+
+function buildHandtevyGrid(){
+  var grid = document.getElementById('htGrid');
+  if(!grid) return;
+  grid.innerHTML = HANDTEVY.map(function(t,i){
+    return '<button class="htbtn ht-'+t.color+'" data-tier="'+i+'" onclick="pickTier('+i+')"><span class="age">'+t.label+'</span><span class="wt">'+t.wt+' kg</span></button>';
+  }).join('');
+}
+
+function pickTier(i){
+  var t = HANDTEVY[i];
+  if(!t) return;
+  __selectedTier = i;
+  document.querySelectorAll('.htbtn').forEach(function(b){
+    b.classList.toggle('selected', parseInt(b.dataset.tier,10)===i);
+  });
+  var wtInput = document.getElementById('pedsWt');
+  if(wtInput) wtInput.value = '';
+  showResult(t.wt, t.label+' · '+t.sub, t.color);
+}
+
+function onWtInput(){
+  var v = parseFloat(document.getElementById('pedsWt').value);
+  if(isNaN(v) || v <= 0){ hideResult(); return; }
+  __selectedTier = null;
+  document.querySelectorAll('.htbtn').forEach(function(b){ b.classList.remove('selected'); });
+  showResult(v, 'Weight entered', 'cyan');
+}
+
+function onHeightInput(sex){
+  var ftEl = document.getElementById(sex==='m'?'amFt':'afFt');
+  var inEl = document.getElementById(sex==='m'?'amIn':'afIn');
+  var ft = parseInt(ftEl.value,10);
+  var inch = parseInt(inEl.value,10);
+  if(isNaN(ft) || isNaN(inch) || ft<3 || ft>8 || inch<0 || inch>11){ hideResult(); return; }
+  var totalIn = ft*12 + inch;
+  var ibw = (sex==='m' ? 50 : 45.5) + 2.3 * (totalIn - 60);
+  if(ibw < 20) ibw = 20;
+  var lbl = (sex==='m'?'Adult Male':'Adult Female')+' · '+ft+"'"+inch+'"';
+  var color = sex==='m' ? 'blue' : 'pink';
+  showResult(Math.round(ibw), lbl, color);
+}
+
+function fmtMg(mg){
+  if(mg === Math.floor(mg)) return mg + ' mg';
+  return mg.toFixed(1) + ' mg';
+}
+function fmtMl(ml, isRoc){
+  // Round to nearest 0.1 mL — practical for syringe draw-up
+  return ml.toFixed(1);
+}
+
+function showResult(wt, label, color){
+  var card = document.getElementById('resultCard');
+  if(!card) return;
+  card.classList.remove('empty');
+  document.getElementById('rPtLbl').textContent = label;
+  document.getElementById('rPtWt').textContent = wt + ' kg';
+  // KET RSI 2 mg/kg, conc 50 mg/mL
+  var ketRsi = wt * 2;
+  var rocRsi = wt * 1.5;
+  var ketAgit = wt * 3;
+  var ketInf = wt * 4;
+  document.getElementById('rRsiMl').textContent  = fmtMl(ketRsi/50) + ' mL';
+  document.getElementById('rRsiMg').textContent  = fmtMg(ketRsi);
+  document.getElementById('rRocMl').textContent  = fmtMl(rocRsi/10) + ' mL';
+  document.getElementById('rRocMg').textContent  = fmtMg(rocRsi);
+  document.getElementById('rAgitMl').textContent = fmtMl(ketAgit/50) + ' mL';
+  document.getElementById('rAgitMg').textContent = fmtMg(ketAgit);
+  document.getElementById('rInfMl').textContent  = fmtMl(ketInf/50) + ' mL/hr';
+  document.getElementById('rInfMg').textContent  = fmtMg(ketInf) + '/hr';
+  highlightTableRow(wt, label);
+  card.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function hideResult(){
+  var card = document.getElementById('resultCard');
+  if(card) card.classList.add('empty');
+  clearTableHighlight();
+}
+
+function highlightTableRow(wt, label){
+  clearTableHighlight();
+  // Find rows whose weight cell matches
+  document.querySelectorAll('tr').forEach(function(tr){
+    var wtCell = tr.querySelector('td.wt');
+    if(!wtCell) return;
+    var rowWt = parseFloat(wtCell.textContent);
+    if(rowWt === wt){
+      tr.classList.add('row-match');
+    }
+  });
+}
+function clearTableHighlight(){
+  document.querySelectorAll('tr.row-match').forEach(function(tr){ tr.classList.remove('row-match'); });
+}
+
+function setMode(m){
+  __mode = m;
+  document.querySelectorAll('.calc-mode-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.mode===m);
+  });
+  document.getElementById('modePeds').style.display    = (m==='peds')    ? '' : 'none';
+  document.getElementById('modeAdultM').style.display  = (m==='adult-m') ? '' : 'none';
+  document.getElementById('modeAdultF').style.display  = (m==='adult-f') ? '' : 'none';
+  hideResult();
+}
+
+function readUrlParams(){
+  try{
+    var p = new URLSearchParams(window.location.search);
+    var w = parseFloat(p.get('w'));      // weight in kg (ABW from app)
+    var h = parseFloat(p.get('h'));      // height in cm
+    var s = p.get('s');                  // 'm' or 'f'
+    var from = p.get('from');            // 'adult' | 'peds' | 'ob'
+    if(from === 'peds'){
+      setMode('peds');
+      if(!isNaN(w)){
+        var wt = Math.round(w * 10) / 10;
+        document.getElementById('pedsWt').value = wt;
+        onWtInput();
+      }
+      return;
+    }
+    var sex = (s === 'f' || from === 'ob') ? 'f' : 'm';
+    setMode(sex === 'f' ? 'adult-f' : 'adult-m');
+    // ABW takes precedence over IBW for RSI (lipophilic — and per user PHI direction)
+    if(!isNaN(w) && w > 0){
+      var lblPrefix = (sex === 'f') ? (from==='ob' ? 'Maternal · ABW' : 'Adult Female · ABW') : 'Adult Male · ABW';
+      var color = (sex === 'f') ? 'pink' : 'blue';
+      showResult(Math.round(w), lblPrefix, color);
+      // Show ABW indicator on result card
+      flagAbwUsed(w);
+      return;
+    }
+    if(!isNaN(h) && h > 0){
+      var totalIn = h / 2.54;
+      var ft = Math.floor(totalIn / 12);
+      var inch = Math.round(totalIn - ft*12);
+      var ftId = sex === 'm' ? 'amFt' : 'afFt';
+      var inId = sex === 'm' ? 'amIn' : 'afIn';
+      var ftEl = document.getElementById(ftId), inEl = document.getElementById(inId);
+      if(ftEl) ftEl.value = ft;
+      if(inEl) inEl.value = inch;
+      onHeightInput(sex);
+    }
+  }catch(err){ console.warn('URL param read failed:', err); }
+}
+
+function flagAbwUsed(abw){
+  // Add a small "Using: ABW" indicator on the result card
+  var head = document.querySelector('.result-head .result-cite');
+  if(head){
+    head.innerHTML = '<span style="color:#22d3ee;font-weight:900">USING: ABW (' + Math.round(abw) + ' kg, entered)</span> &nbsp;·&nbsp; ABW preferred for RSI when available';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  buildHandtevyGrid();
+  setTimeout(readUrlParams, 60);
+});
+</script>
+
+<script>
+function toggleChart(){
+  var btn = document.getElementById('chartToggle');
+  var box = document.getElementById('chartCollapse');
+  var lbl = document.getElementById('chartToggleLabel');
+  if(!btn || !box) return;
+  var open = box.classList.toggle('open');
+  btn.classList.toggle('open', open);
+  if(lbl) lbl.textContent = open ? 'Hide Entire Chart' : 'Show Entire Chart (Peds + Adult M/F Tables)';
+  if(open){
+    setTimeout(function(){ box.scrollIntoView({behavior:'smooth', block:'nearest'}); }, 100);
+  }
+}
+</script>
+<script>
+function switchTab(tab){
+  // Update active button
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  // Show/hide columns
+  document.querySelectorAll('th[data-col], td[data-col]').forEach(function(el){
+    var col = el.dataset.col;
+    if(tab === 'all'){
+      el.classList.remove('col-hidden');
+    } else {
+      el.classList.toggle('col-hidden', col !== tab);
+    }
+  });
+}
+</script>
+</body>
+</html>

@@ -586,6 +586,30 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 </div>
 
 <div class="card">
+  <div class="slbl">Ketamine + Rocuronium RSI Quick Chart (Color-Coordinated)</div>
+  <a href="./ketamine-chart.html" target="_blank" rel="noopener" class="safer-diagram-btn" style="text-decoration:none" onclick="return openKetChart(event)">
+    <span class="safer-diagram-icon">💊</span>
+    <span class="safer-diagram-text">
+      <span class="safer-diagram-label">Open Ketamine + Roc Chart</span>
+      <span class="safer-diagram-sub">Auto-pulls maternal patient (ABW preferred over IBW for RSI)</span>
+    </span>
+    <span class="safer-diagram-chev">›</span>
+  </a>
+  <script>
+    function openKetChart(e){
+      e.preventDefault();
+      var params = new URLSearchParams();
+      if(state.m && state.m.weightKg) params.set('w', state.m.weightKg);
+      if(state.m && state.m.heightCm) params.set('h', state.m.heightCm);
+      params.set('s','f');
+      params.set('from','ob');
+      window.open('./ketamine-chart.html?' + params.toString(), '_blank');
+      return false;
+    }
+  </script>
+</div>
+
+<div class="card">
   <div class="slbl">SAFER Pre-Intubation Checklist (PHI Chapter 2)</div>
   <div class="safer-grid" id="saferGrid"></div>
   <div class="safer-actions">
@@ -2478,14 +2502,18 @@ var DX_PLAN = {
     ]
   },
   eclampsia: {
-    picture:'Active or recent generalized tonic-clonic seizure in pregnancy or up to 6 weeks postpartum. Maternal and fetal emergency.',
+    picture:'Active or recent generalized tonic-clonic seizure in pregnancy or up to 6 weeks postpartum. Maternal and fetal emergency. Same per-kg benzo dosing as adult/peds (PHI).',
     plan:[
+      'LEFT LATERAL TILT >20 wk',
       'AIRWAY → OXYGEN → BENZO → MAG → ANTIHYPERTENSIVE',
-      'Lorazepam 2 mg IV/IM/IN (or midazolam 5 mg if no Ativan)',
-      'Magnesium sulfate 6 g IV load over 15-20 min, then 2 g/hr',
-      'Treat severe-range BP (labetalol or hydralazine)',
-      'Anticipate intubation; left lateral tilt',
-      'Continuous fetal monitoring; prepare for emergent delivery'
+      'Midazolam 0.1 mg/kg IV/IO (max 5 mg single dose) — repeat q 2-3 min until seizure stops',
+      'Or if NO IV: Midazolam 0.2 mg/kg IM/NAS (max 10 mg single dose) — repeat q 2-3 min',
+      'Alt: Lorazepam 2-4 mg IV/IM/IN if available',
+      'Magnesium sulfate 4-6 g IV load over 15-20 min, then 2 g/hr — for ECLAMPSIA SPECIFIC seizure prophylaxis/treatment',
+      'Treat severe-range BP (labetalol 20 mg IV preferred in pregnancy, or hydralazine 5-10 mg IV)',
+      'Continuous fetal monitoring; prepare for emergent delivery',
+      '⚠ Do NOT use paralytics to treat seizures — they only MASK seizure activity without treating the underlying cause. Paralytic + ongoing seizure = continued brain injury.',
+      'Magnesium toxicity antidote: Calcium Gluconate 1 g IV (have ready)'
     ]
   },
   thyroid: {

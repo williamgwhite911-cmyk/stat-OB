@@ -514,6 +514,30 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 </div>
 
 <div class="card">
+  <div class="slbl">Ketamine + Rocuronium RSI Quick Chart (Color-Coordinated)</div>
+  <a href="./ketamine-chart.html" target="_blank" rel="noopener" class="safer-diagram-btn" style="text-decoration:none" onclick="return openKetChart(event)">
+    <span class="safer-diagram-icon">💊</span>
+    <span class="safer-diagram-text">
+      <span class="safer-diagram-label">Open Ketamine + Roc Chart</span>
+      <span class="safer-diagram-sub">Auto-pulls patient weight/height/sex · ABW preferred over IBW for RSI</span>
+    </span>
+    <span class="safer-diagram-chev">›</span>
+  </a>
+  <script>
+    function openKetChart(e){
+      e.preventDefault();
+      var params = new URLSearchParams();
+      if(state.weightKg) params.set('w', state.weightKg);
+      if(state.heightCm) params.set('h', state.heightCm);
+      if(state.sex) params.set('s', state.sex);
+      params.set('from','adult');
+      window.open('./ketamine-chart.html?' + params.toString(), '_blank');
+      return false;
+    }
+  </script>
+</div>
+
+<div class="card">
   <div class="slbl">SAFER Pre-Intubation Checklist (PHI Chapter 2)</div>
   <div class="safer-grid" id="saferGrid"></div>
   <div class="safer-actions">
@@ -1369,8 +1393,18 @@ var DX_PLAN = {
     plan:['NS 1 L over 1 hr (start), then 250-500 mL/hr','Insulin: do NOT bolus EMS — defer to receiving (typically 0.1 u/kg/hr drip)','Replace K+ before insulin if K < 3.3','Potassium replacement once K confirmed','Watch glucose drop — add D5 to fluid when glucose < 250','Cerebral edema risk (rare in adults but can occur)']},
   hypo:{picture:'Hypoglycemia in adult: glucose < 70 mg/dL with symptoms. Most common cause: insulin/sulfonylurea overdose.',
     plan:['Confirm glucose','D50 25 g IV (1 ampule = 50 mL of 50%)','Or D10 250 mL IV if no D50 / poor IV','Glucagon 1 mg IM if no IV','Recheck glucose q 15 min','Sulfonylurea OD: octreotide 50 mcg SQ at receiving']},
-  seizure:{picture:'Status epilepticus in adult: seizure > 5 min OR 2+ without recovery.',
-    plan:['Position lateral, suction, NRB at 15 L/min','Check glucose — treat hypoglycemia','Lorazepam 4 mg IV (preferred if access) OR Midazolam 10 mg IM/IN/IV','Repeat benzo in 5-10 min if still seizing','Levetiracetam 60 mg/kg IV (max 4500 mg) over 10 min','Or Fosphenytoin 20 mg PE/kg IV (max 1500 mg PE)','Refractory: prepare for intubation, ketamine drip, propofol per medical control']},
+  seizure:{picture:'Seizure / Status epilepticus in adult: seizure > 5 min OR 2+ without recovery between. Same per-kg benzo dosing as peds (PHI).',
+    plan:[
+      'Position lateral, suction, NRB at 15 L/min · protect airway',
+      'Check glucose — treat hypoglycemia (D10 250 mL OR D50 25 g IV)',
+      '1st line: Midazolam 0.1 mg/kg IV/IO (max 5 mg single dose) — repeat q 2-3 min until seizure stops',
+      'Or if NO IV: Midazolam 0.2 mg/kg IM/NAS (max 10 mg single dose) — repeat q 2-3 min until seizure stops',
+      'Alt: Lorazepam 4 mg IV (if available)',
+      '2nd line: Levetiracetam 60 mg/kg IV (max 4500 mg) over 10 min',
+      'Or Fosphenytoin 20 mg PE/kg IV (max 1500 mg PE)',
+      'Refractory: prepare for intubation, ketamine drip, propofol per medical control',
+      '⚠ Do NOT use paralytics to treat seizures — they only MASK seizure activity without treating the underlying cause'
+    ]},
   stroke_ich:{picture:'Hemorrhagic stroke / ICH: hypertension + neuro deficit. Goal SBP < 140-160 mmHg per protocol.',
     plan:['Time of onset critical — document last known well','HOB 30°, midline neutral','BP control: Labetalol 10-20 mg IV or Nicardipine drip 5-15 mg/hr','Avoid sudden BP drop (auto-regulation)','Reverse anticoagulation per receiving','Glucose, EKG, neuro exam q 15 min']},
   stroke_ais:{picture:'Ischemic stroke / LVO: focal deficit, NIHSS scoring, time-critical for tPA / thrombectomy.',
@@ -1856,9 +1890,22 @@ var DRUGS = {
       rows:[{k:'Dose',v:'4 mg IV/IO'},{k:'Volume',v:'2 mL',cls:'calc'},{k:'Repeat',v:'4 mg in 5-10 min if still seizing'},{k:'Max',v:mx('8 mg'),cls:'warn'}]});
   },
   midazolamSeizure: function(){
+    var w=state.weightKg||null;
+    var iv = w ? Math.min(round(0.1*w,2), 5) : null;
+    var im = w ? Math.min(round(0.2*w,2), 10) : null;
+    var ivMl = iv ? round(iv/5, 2) : null;
+    var imMl = im ? round(im/5, 2) : null;
     return rcCard({name:'Midazolam — Seizure',generic:'Stock 5 mg/mL vial',cat:'SEIZURE',form:'vial',line:'1st line',
-      indication:'Status epilepticus (1st line if no IV — IM/IN)',color:'var(--rose)',
-      rows:[{k:'IM/IN',v:'10 mg IM/IN'},{k:'IV/IO',v:'5 to '+mx('10')+' mg'},{k:'Volume',v:'1 to '+mx('2 mL'),cls:'calc'},{k:'Repeat',v:'5-10 mg in 5-10 min'}]});
+      indication:'Status epilepticus (PHI). Same per-kg dosing as peds. IM/IN if no IV.',color:'var(--rose)',
+      giveBox: w ? {label:'IV/IO at 0.1 mg/kg · IM/NAS at 0.2 mg/kg', mL:'IV: '+ivMl+' / IM-NAS: '+imMl+' mL', mg:'IV: '+iv+' / IM-NAS: '+im+' mg', conc:'5 mg/mL stock', rule:'IV 0.1 mg/kg (max 5 mg) · IM/NAS 0.2 mg/kg (max 10 mg single dose)'} : {needsWt:true},
+      rows:[
+        {k:'PHI IV/IO', v:'0.1 mg/kg ' + mx('(max 5 mg)')},
+        {k:'PHI IM/NAS (no IV)', v:'0.2 mg/kg ' + mx('(max 10 mg single dose)')},
+        {k:'Calc IV', v: w ? iv+' mg = '+ivMl+' mL' : '--', cls:'calc'},
+        {k:'Calc IM/NAS', v: w ? im+' mg = '+imMl+' mL' : '--', cls:'calc'},
+        {k:'Repeat', v:'q 2-3 min until seizure controlled'}
+      ],
+      warn:'Do NOT use paralytics to treat seizures — they only MASK seizure activity without treating the underlying cause. Continued seizing under paralysis = ongoing brain injury.'});
   },
   levetiracetam: function(){
     var w=dosingWt(); var mg=Math.min(round(60*w,0),4500);
