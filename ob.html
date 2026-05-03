@@ -308,6 +308,32 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .safer-diagram-label{font-family:var(--mono);font-size:.78rem;font-weight:800;color:var(--cyan);letter-spacing:.06em;text-transform:uppercase}
 .safer-diagram-sub{font-size:.7rem;color:var(--tx1);margin-top:2px}
 .safer-diagram-chev{font-size:1.3rem;color:var(--cyan);font-weight:300;flex-shrink:0}
+
+/* GIVE-NOW dose display — prominent under-stress display of mL/mg to administer */
+.give-box{background:linear-gradient(135deg,rgba(255,95,109,.22),rgba(255,126,135,.06) 60%);border:3px solid #ff5f6d;border-radius:14px;padding:14px 16px 16px;margin:10px 0 14px;text-align:center;box-shadow:0 0 26px rgba(255,95,109,.35),inset 0 1px 0 rgba(255,255,255,.06);position:relative;overflow:hidden}
+.give-box::before{content:"GIVE NOW";position:absolute;top:6px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:.55rem;font-weight:900;color:#ff5f6d;letter-spacing:.32em;opacity:.9}
+.give-box .gb-label{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;font-weight:900;color:#ff5f6d;margin-top:14px;margin-bottom:8px;text-transform:uppercase;line-height:1.2}
+.give-box .gb-vol{font-family:var(--mono);font-size:2.2rem;font-weight:900;color:#fff;line-height:1.05;letter-spacing:.005em;text-shadow:0 0 20px rgba(255,95,109,.7),0 0 4px rgba(0,0,0,.4);background:rgba(0,0,0,.18);padding:8px 14px;border-radius:9px;display:inline-block;margin:2px 0}
+.give-box .gb-vol .gb-mg{display:inline-block;font-size:1.1rem;color:#ffd6da;margin-left:14px;font-weight:800;letter-spacing:.03em;border-left:1px solid rgba(255,255,255,.25);padding-left:14px;text-shadow:none}
+.give-box .gb-conc{font-family:var(--mono);font-size:.74rem;color:var(--cyan);margin-top:10px;font-weight:800;letter-spacing:.05em;background:rgba(0,212,245,.10);border:1px solid rgba(0,212,245,.4);border-radius:7px;padding:5px 10px;display:inline-block}
+.give-box .gb-rule{font-size:.66rem;color:var(--tx1);margin-top:7px;font-style:italic;letter-spacing:.04em;line-height:1.4}
+.give-box.needs-wt{background:linear-gradient(135deg,rgba(251,191,36,.18),rgba(251,191,36,.04));border-color:#fbbf24;box-shadow:0 0 18px rgba(251,191,36,.25)}
+.give-box.needs-wt::before{color:#fbbf24;content:"DOSE — WEIGHT NEEDED"}
+.give-box.needs-wt .gb-label{color:#fbbf24}
+.give-box.needs-wt .gb-vol{color:#fbbf24;background:rgba(0,0,0,.15);font-size:1.0rem}
+@media(max-width:380px){
+  .give-box .gb-vol{font-size:1.85rem;padding:6px 10px}
+  .give-box .gb-vol .gb-mg{font-size:.95rem;margin-left:10px;padding-left:10px}
+}
+
+/* NON-PHI PROTOCOL badge — visible warning for protocols without direct PHI source */
+.non-phi-banner{background:linear-gradient(135deg,rgba(251,191,36,.18),rgba(251,146,60,.10));border:2px solid rgba(251,146,60,.7);border-radius:10px;padding:10px 14px;margin:8px 0 14px;display:flex;align-items:center;gap:10px;box-shadow:0 0 12px rgba(251,146,60,.18)}
+.non-phi-icon{font-size:1.3rem;line-height:1;flex-shrink:0;color:#fb923c}
+.non-phi-text{flex:1;min-width:0}
+.non-phi-label{font-family:var(--mono);font-size:.7rem;font-weight:900;letter-spacing:.14em;color:#fb923c;text-transform:uppercase}
+.non-phi-sub{font-size:.72rem;color:var(--tx1);margin-top:2px;line-height:1.4}
+.dx-non-phi{position:relative}
+.dx-non-phi::after{content:"NON-PHI";position:absolute;top:6px;right:6px;font-family:var(--mono);font-size:.55rem;font-weight:900;letter-spacing:.1em;color:#fb923c;background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.45);padding:2px 5px;border-radius:4px}
 </style>
 </head>
 <body>
@@ -1326,8 +1352,15 @@ var PROTOCOL_PAGES = {
   cord_prolapse: { src: 'ob',        label: 'OB 10.1 — Standard OB Transport (Cord Prolapse)',   page: 1  },
   precipitous:   { src: 'ob',        label: 'OB 10.1.3 — During Patient Transport',              page: 3  },
   undif_stroke:  { src: 'neuro',     label: 'Neuro 7.4 — Undifferentiated Stroke (Maternal)',    page: 8  },
+  pea:           { src: 'resusc',    label: 'Resusc 4.1 — Cardiac Arrest PEA/Asystole (Maternal)', page: 1  },
   post_rosc:     { src: 'resusc',    label: 'Resusc 4.x — Post-ROSC (Maternal)',                 page: 1  },
   post_lytics:   { src: 'medical',   label: 'Medical 6.x — Post-Thrombolytic Care (Maternal)',   page: 1  },
+  // NON-PHI protocols (clinical reference only)
+  afe:           { src: 'ob',        label: 'AFE — clinical reference only (not PHI standing order)',             page: 1  },
+  abruption:     { src: 'ob',        label: 'Placental Abruption — clinical reference (not PHI standing order)',  page: 1  },
+  uterine_rupture:{ src: 'ob',       label: 'Uterine Rupture — clinical reference (not PHI standing order)',     page: 1  },
+  hellp:         { src: 'ob',        label: 'HELLP Syndrome — clinical reference (not PHI standing order)',       page: 1  },
+  preg_pe:       { src: 'ob',        label: 'PE in Pregnancy — clinical reference (not PHI standing order)',      page: 1  },
   // Newborn / Neonate Ch 11
   newborn:       { src: 'neonate',   label: 'Neonate 11.1 — Care Guidelines & NRP',              page: 1  },
   // Trauma Ch 8
@@ -1352,6 +1385,7 @@ var PROTOCOL_PAGES = {
   hypothermia:   { src: 'trauma',    label: 'Trauma 8-19 — Hypothermia (Maternal)',              page: 19 },
   frostbite:     { src: 'trauma',    label: 'Trauma 8-19 — Frostbite (Maternal)',                page: 19 },
   heat_illness:  { src: 'trauma',    label: 'Trauma 8-19 — Heat-Related Illness (Maternal)',     page: 19 },
+  drowning:      { src: 'trauma',    label: 'Trauma 8-19 — Drowning / Submersion (Maternal)',    page: 19 },
   safer_checklist:{ src: 'safer',    label: 'SAFER 2.2.3 — Airway Checklist', page: 6 },
   safer_diagram:{ src: 'safer', label: 'SAFER 2.2.3 — Smooth Matters Diagram', page: 6 },
   hemshock:{ src: 'resusc', label: 'Resusc 4.9 — Hemorrhagic Shock (Maternal)', page: 25 },
@@ -1452,6 +1486,8 @@ var DIAGNOSES = [
   {id:'hypothermia', cat:'ENVIRONMENTAL', name:'Hypothermia (Maternal)', sub:'Active rewarming · fetal HR'},
   {id:'frostbite', cat:'ENVIRONMENTAL', name:'Frostbite (Maternal)', sub:'No partial thaw'},
   {id:'heat_illness', cat:'ENVIRONMENTAL', name:'Heat Illness (Maternal)', sub:'Cool aggressively · fetal HR'},
+  {id:'drowning', cat:'ENVIRONMENTAL', name:'Drowning / Submersion (Maternal)', sub:'L lateral · hypoxia first · perimortem c/s if arrest'},
+  {id:'pea', cat:'CRITICAL CARE', name:'PEA / Asystole (Maternal)', sub:'L lateral · perimortem c/s · Hs+Ts+pregnancy DDx'},
   {id:'hemshock', cat:'CRITICAL CARE', name:'Hemorrhagic Shock (Maternal)', sub:'Pregnancy compensates · then crashes'},
   {id:'transfusion', cat:'CRITICAL CARE', name:'Blood Transfusion (Maternal)', sub:'PHI 4.9.2 · L lateral · 1:1 · Ca after 2 units'},
   {id:'push_pressor', cat:'CRITICAL CARE', name:'Push Dose Pressors (Maternal)', sub:'PHI 4-32/33 · EPI 10 mcg/mL · PHENYL 100 mcg/mL · L lateral'},
@@ -1462,6 +1498,11 @@ var DIAGNOSES = [
   {id:'safer_diagram', cat:'AIRWAY / INTUBATION', name:'SAFER Smooth Matters Diagram', sub:'PHI 2-6 · Tap to view full-screen'},
   {id:'post_rosc', cat:'CRITICAL CARE', name:'Post-ROSC (Maternal)', sub:'L lateral · perimortem c/s if no ROSC'},
   {id:'post_lytics', cat:'CRITICAL CARE', name:'Post-Thrombolytics (Maternal)', sub:'BP control + ICH watch · L lateral'},
+  {id:'afe', cat:'CRITICAL CARE', name:'Amniotic Fluid Embolism (AFE)', sub:'Sudden collapse + DIC + AMS · MD CONTROL · L lateral'},
+  {id:'abruption', cat:'OB BLEEDING', name:'Placental Abruption', sub:'Painful bleed + rigid uterus + fetal distress · L lateral'},
+  {id:'uterine_rupture', cat:'OB BLEEDING', name:'Uterine Rupture', sub:'Severe pain · loss of fetal HR · VBAC/trauma'},
+  {id:'hellp', cat:'HYPERTENSIVE / PREECLAMPSIA', name:'HELLP Syndrome', sub:'Hemolysis + ↑LFTs + ↓Plt · severe pre-e variant'},
+  {id:'preg_pe', cat:'CRITICAL CARE', name:'PE in Pregnancy', sub:'Leading cause of maternal mortality · L lateral'},
   {id:'newborn', cat:'NEONATAL', name:'Newborn Resuscitation', sub:'Post-delivery'}
 ];
 
@@ -1479,14 +1520,16 @@ function renderDxGrid(){
     if(!groups[cat] || !groups[cat].length) return;
     html += '<div class="dx-cat-header">' + cat + '</div>';
     groups[cat].forEach(function(d){
-      html += '<div class="dx-card' + (state.m.dx===d.id?' on':'') + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
+      var nonPhiClass = (typeof DX_PLAN !== 'undefined' && DX_PLAN[d.id] && DX_PLAN[d.id].nonPhi) ? ' dx-non-phi' : '';
+      html += '<div class="dx-card' + nonPhiClass + (state.m.dx===d.id?' on':'') + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
     });
   });
   Object.keys(groups).forEach(function(cat){
     if(CAT_ORDER.indexOf(cat) !== -1) return;
     html += '<div class="dx-cat-header">' + cat + '</div>';
     groups[cat].forEach(function(d){
-      html += '<div class="dx-card' + (state.m.dx===d.id?' on':'') + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
+      var nonPhiClass = (typeof DX_PLAN !== 'undefined' && DX_PLAN[d.id] && DX_PLAN[d.id].nonPhi) ? ' dx-non-phi' : '';
+      html += '<div class="dx-card' + nonPhiClass + (state.m.dx===d.id?' on':'') + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
     });
   });
   grid.innerHTML = html;
@@ -1521,6 +1564,22 @@ function formBadge(form){
 }
 function rcCard(opts){
   // opts: name, generic, indication, color, form, rows[{k,v,cls}], note, warn, line, mdControl, targets
+  var giveBox = '';
+  if(opts.giveBox){
+    var g = opts.giveBox;
+    if(g.needsWt){
+      giveBox = '<div class="give-box needs-wt"><div class="gb-label">to see mL to give</div><div class="gb-vol">enter weight</div></div>';
+    } else if(g.mL != null || g.mg != null){
+      var volPart = (g.mL != null && g.mL !== '') ? (g.mL + ' mL') : g.mg;
+      var mgPart = (g.mL != null && g.mg) ? '<span class="gb-mg">= ' + g.mg + '</span>' : '';
+      giveBox = '<div class="give-box">' +
+        '<div class="gb-label">' + (g.label || 'Give') + '</div>' +
+        '<div class="gb-vol">' + volPart + mgPart + '</div>' +
+        (g.conc ? '<div class="gb-conc">' + g.conc + '</div>' : '') +
+        (g.rule ? '<div class="gb-rule">' + g.rule + '</div>' : '') +
+      '</div>';
+    }
+  }
   var rows = (opts.rows||[]).map(function(r){
     return '<div class="rr"><span class="rk">' + r.k + '</span><span class="rv ' + (r.cls||'dose') + '">' + r.v + '</span></div>';
   }).join('');
@@ -1542,7 +1601,7 @@ function rcCard(opts){
   return '<div class="rc' + formCls + '"><div class="rc-bar" style="background:' + (opts.color || 'var(--cyan)') + '"></div>' +
     '<div class="rc-cat">' + (opts.cat || '') + '</div>' +
     '<div class="rc-name">' + opts.name + '</div>' +
-    sub + badge + line + ind + mdctrl + targets + rows + note + warn + '</div>';
+    sub + badge + line + ind + mdctrl + targets + giveBox + rows + note + warn + '</div>';
 }
 
 // ──── Maternal drugs ────
@@ -2254,6 +2313,7 @@ var DX_DRUG_MAP = {
   dissection: ['nicardipine','labetalol','fentanyl'],
   herniation: ['magEclampsia','lorazepamSeizure','fentanyl'],
   undif_stroke:['nicardipine','labetalol','magEclampsia'],
+  pea:['fluidBolus','txa','epiPushMaternal','caGluc','magEclampsia'],
   hemshock:['txa','fluidBolus','oxytocin','caCl','caGluc'],
   transfusion:['caCl','caGluc','txa','fluidBolus','oxytocin'],
   push_pressor:['epiPushMaternal','phenylephrinePushMaternal'],
@@ -2265,6 +2325,11 @@ var DX_DRUG_MAP = {
   safer_diagram:[],
   post_rosc: ['fluidBolus','fentanyl','magEclampsia'],
   post_lytics: ['labetalol'],
+  afe:['fluidBolus','epiPushMaternal','txa','caGluc','oxytocin'],
+  abruption:['fluidBolus','txa','fentanyl','oxytocin','caCl'],
+  uterine_rupture:['fluidBolus','txa','fentanyl','epiPushMaternal','caCl','caGluc'],
+  hellp:['magPreeclampsia','labetalol','hydralazine','nicardipine','caGluc','fluidBolus'],
+  preg_pe:['fluidBolus','epiPushMaternal','fentanyl'],
   amputation: ['fentanyl','fluidBolus','txa'],
   impaled: ['fentanyl','fluidBolus','txa'],
   femur_fracture: ['fentanyl','fluidBolus','txa'],
@@ -2275,7 +2340,8 @@ var DX_DRUG_MAP = {
   chemical_burn: ['fentanyl','fluidBolus'],
   hypothermia: ['fluidBolus'],
   frostbite: ['fentanyl'],
-  heat_illness: ['fluidBolus']
+  heat_illness: ['fluidBolus'],
+  drowning: ['fluidBolus','fentanyl','epiPushMaternal']
 };
 
 var DX_NOTES = {
@@ -2502,9 +2568,10 @@ var DX_PLAN = {
       'D10 2 mL/kg if glucose < 50; naloxone 0.1 mg/kg if maternal opioids'
     ]
   },
-  pelvic_fracture:{picture:'Maternal pelvic fracture — pregnancy increases pelvic vascularity → catastrophic hemorrhage risk. LEFT LATERAL TILT (PHI Trauma 8-10).',
+  pelvic_fracture:{nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from adult Trauma 8-10 with L lateral tilt + perimortem c-section additions. Verify with medical control.',picture:'Maternal pelvic fracture — pregnancy increases pelvic vascularity → catastrophic hemorrhage risk. LEFT LATERAL TILT (PHI Trauma 8-10).',
     plan:['LEFT LATERAL TILT >20 wk','Stabilize pelvis with SAM sling at level of greater trochanters','Neurovascular exam BEFORE and AFTER stabilization','DO NOT insert urinary catheter if pelvic fracture suspected','Two large-bore IVs/IO; prefer blood products over crystalloid','Permissive hypotension to radial pulse / normal mentation UNLESS TBI','TXA 1-2 g IV per protocol if within 3 hr','Fetal HR check after maternal stabilization','Pre-alert OB + trauma','Consider perimortem c-section if maternal arrest >20 wk']},
   open_fracture: {
+    nonPhi:true, nonPhiNote:'PHI cefazolin/clindamycin standing order; broader maternal trauma plan synthesized. Verify with medical control.',
     picture:'Open (compound) fracture in maternal patient. Pregnancy considerations: increased blood volume masks shock, supine hypotension after 20 wk requires LEFT LATERAL TILT, fetus is the second patient — fetal HR check is part of secondary survey.',
     plan:[
       'LEFT LATERAL TILT (15° wedge under right hip) for any pt >20 wk gestation',
@@ -2520,6 +2587,7 @@ var DX_PLAN = {
     ]
   },
   aaa: {
+    nonPhi:true, nonPhiNote:'AAA in pregnancy is rare. No PHI maternal standing-order. Verify with medical control.',
     picture:'AAA or aortic dissection in pregnancy is RARE but devastating. Risk factors: Marfan, Ehlers-Danlos, chronic HTN, late gestation. Type A dissection in 3rd trimester or peripartum is a known catastrophe.',
     plan:[
       'LEFT LATERAL TILT >20 wk',
@@ -2533,6 +2601,7 @@ var DX_PLAN = {
     ]
   },
   dissection: {
+    nonPhi:true, nonPhiNote:'Aortic dissection in pregnancy is rare. No PHI maternal standing-order. Verify with medical control.',
     picture:'Aortic dissection in pregnancy — Type A is surgical emergency. Beta-blockers and select vasodilators are pregnancy-acceptable; labetalol is first-line for rate and BP control.',
     plan:[
       'LEFT LATERAL TILT >20 wk',
@@ -2546,6 +2615,7 @@ var DX_PLAN = {
     ]
   },
   herniation: {
+    nonPhi:true, nonPhiNote:'No PHI maternal standing-order specific to brain herniation. Adapted from adult Neuro 7.5 with maternal physiology. Verify with medical control.',
     picture:'Maternal brain herniation — consider eclampsia-related ICH, AVM/aneurysm rupture, severe pre-eclampsia with PRES. Cushing triad (HTN + bradycardia + irregular respirations), pupillary asymmetry, posturing.',
     plan:[
       'LEFT LATERAL TILT >20 wk',
@@ -2559,21 +2629,24 @@ var DX_PLAN = {
       'Notify receiving OB/neurosurgery; consider c-section criteria if maternal arrest >20 wk'
     ]
   },
-  undif_stroke:{picture:'Maternal stroke symptoms without head CT — could also be eclampsia/PRES. Manage BP per PHI Neuro 7.4 + maternal considerations.',
+  undif_stroke:{nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from adult PHI Neuro 7.4 with maternal additions (L lateral, eclampsia DDx). Verify with medical control.',picture:'Maternal stroke symptoms without head CT — could also be eclampsia/PRES. Manage BP per PHI Neuro 7.4 + maternal considerations.',
     plan:['LEFT LATERAL TILT >20 wk','Check glucose FIRST — hypoglycemia mimics stroke','Consider eclampsia — magnesium 4-6 g IV load if BP HTN + neurologic + pregnant','BP treatment criteria (PHI Neuro 7.4): positive stroke + glucose ≥60 + SBP target <185','Manage with online medical direction when practicable','Labetalol 20 mg IV over 2 min, repeat 40 mg in 10-20, then 80 mg q10-20 min, max 300 mg (preferred in pregnancy)','Nicardipine 5 mg/hr IV alt, max 15 mg/hr','Avoid acute BP lowering unless meets PHI criteria','Fetal HR check after maternal stabilization','Pre-alert OB + neuro/stroke at receiving']},
-  hemshock:{picture:'Maternal Hemorrhagic Shock — pregnancy increases blood volume 30-50% so VS changes appear LATE. PPH, abruption, uterine rupture, ectopic, trauma. LEFT LATERAL TILT >20 wk (PHI Resusc 4.9, p. 4-25).',
+  pea:{nonPhi:true, nonPhiNote:'PHI Resusc 4.1 framework. Maternal modifications (L lateral, perimortem c/s, AFE DDx) synthesized. Verify with medical control.',picture:'Maternal PEA / Asystole — non-shockable arrest in pregnant patient. LEFT LATERAL TILT >20 wk. PERIMORTEM C-SECTION within 4 min if no ROSC. Pregnancy adds DDx: amniotic fluid embolism, eclampsia, peripartum cardiomyopathy, hemorrhage from abruption/uterine rupture (PHI Resusc 4.1).',
+    plan:['LEFT LATERAL TILT (15° wedge under right hip) >20 wk gestation — relieves IVC compression','High-quality CPR — hand position 2-3 cm above usual sternal landmark in pregnancy','PERIMORTEM C-SECTION within 4 min of arrest if >20 wk gestation — improves both maternal and fetal survival','Epinephrine 1 mg IV/IO q 3-5 min','CONFIRM rhythm q 2 min','Identify and TREAT the Hs and Ts (parallel to ACLS):','⬢ Hypovolemia → crystalloid bolus + blood products; suspect hemorrhage (PPH, abruption, uterine rupture, ectopic if undiagnosed pregnancy)','⬢ Hypoxia → 100% FiO2; secure airway (pregnancy = difficult airway, more likely aspiration)','⬢ Hydrogen ion (acidosis) → adequate ventilation; NaHCO3 1 mEq/kg IV','⬢ Hyperkalemia → CaCl 1 g IV; NaHCO3; albuterol; insulin + D50','⬢ Hypokalemia → KCl per medical control','⬢ Hypoglycemia → D50 25 g IV','⬢ Hypothermia → warm fluids and patient','⬢ Tension pneumothorax → needle decompression (slightly higher entry in pregnancy due to diaphragm displacement)','⬢ Tamponade → pericardiocentesis','⬢ Toxins → naloxone for opioid; magnesium toxicity (in eclampsia patient): CaGluc 1 g IV antidote','⬢ Thrombosis (PE) → high pregnancy risk; consider thrombolytics; ECMO at receiving','⬢ Thrombosis (coronary) → 12-lead post-ROSC','⬢ Trauma → hemorrhage control + blood; uterine/abdominal trauma evaluation','PREGNANCY-SPECIFIC DDx: AMNIOTIC FLUID EMBOLISM (sudden cardiovascular collapse + DIC + altered mental status), severe pre-eclampsia/eclampsia, peripartum cardiomyopathy, abruption with DIC','Magnesium toxicity (if eclampsia patient on mag drip): STOP mag, give Calcium Gluconate 1 g IV','Continuous capnography','Post-ROSC: continue L lateral tilt, fetal monitoring, OB + ICU + NICU pre-alert']},
+  hemshock:{nonPhi:true, nonPhiNote:'PHI 4.9 hemorrhagic shock framework with maternal adaptations (L lateral tilt, perimortem c/s, oxytocin for PPH). Verify with medical control.',picture:'Maternal Hemorrhagic Shock — pregnancy increases blood volume 30-50% so VS changes appear LATE. PPH, abruption, uterine rupture, ectopic, trauma. LEFT LATERAL TILT >20 wk (PHI Resusc 4.9, p. 4-25).',
     plan:['LEFT LATERAL TILT (15° wedge under right hip) >20 wk gestation','Hemorrhage control + uterine massage if PPH','TXA 2 g IV over 1 min — for SBP < 90 OR HR > 110, within 3 hr of bleeding (PHI). Pregnancy-safe.','Crystalloid: LR or NS 250-500 mL boluses · bolus → assess → repeat','Therapeutic goals: UNCONTROLLED → radial pulse + normal mentation; CONTROLLED → minimally normalized vitals','Blood transfusion if criteria met (Adult): SBP < 90 OR Shock Index ≥ 1 + suspected uncontrolled bleeding/AMS — see Blood Transfusion','Oxytocin 20 units in 1 L IV wide open if PPH','Calcium after 2 units PRBC: CaGluc 3 g IV over 2-10 min OR CaCl 1 g IV over 2-10 min (citrate binding)','Prevent lethal triad: WARM, monitor labs','Maternal arrest >20 wk gestation: PERIMORTEM C-SECTION within 4 min','Pre-alert OB + blood bank for MTP']
   },
-  transfusion:{picture:'Maternal blood transfusion criteria & administration (PHI Resusc 4.9.2, p. 4-26 to 4-28). Pregnancy increases blood volume — by the time criteria met, loss is significant.',
+  transfusion:{nonPhi:true, nonPhiNote:'PHI 4.9.2 transfusion criteria with maternal additions. Verify with medical control.',picture:'Maternal blood transfusion criteria & administration (PHI Resusc 4.9.2, p. 4-26 to 4-28). Pregnancy increases blood volume — by the time criteria met, loss is significant.',
     plan:['LEFT LATERAL TILT >20 wk','ADULT criteria: SBP < 90 mmHg, OR Shock Index ≥ 1 + suspected uncontrolled bleeding OR hemorrhage with AMS','PRODUCT preference: physician-ordered ABO/RH compatible if available; otherwise LTOWB > O-neg PRBC > Type O uncrossmatched PRBC + AB/A plasma','MATERNAL dose: 1 unit at a time. PRBC + plasma → alternate 1:1','LTOWB does NOT require additional plasma','Standard blood filtration tubing. Blood + NS may share IV line.','WARM blood with approved fluid warmer','Reassess after each unit','Calcium after 2 units (no improvement): CaGluc 3 g IV over 2-10 min OR CaCl 1 g IV over 2-10 min. Repeat each 2 units. Flush line after.','TRANSFUSION REACTION: stop, NS to keep open, monitor, document, notify receiving + blood bank','Continuous fetal monitoring','If ongoing PPH: continue oxytocin/methergine/hemabate per OB protocol','Maternal arrest >20 wk: PERIMORTEM C-SECTION within 4 min']
   },
-  push_pressor:{picture:'IV Push Pressor Therapy in maternal patient (PHI Resusc p. 4-32 & 4-33). Temporary support during volume / preparing infusion. Limited to 3 total doses. LEFT LATERAL TILT >20 wk.',
+  push_pressor:{nonPhi:true, nonPhiNote:'PHI 4-32/33 push-pressor framework with maternal context. Verify with medical control.',picture:'IV Push Pressor Therapy in maternal patient (PHI Resusc p. 4-32 & 4-33). Temporary support during volume / preparing infusion. Limited to 3 total doses. LEFT LATERAL TILT >20 wk.',
     plan:['LEFT LATERAL TILT >20 wk','EPINEPHrine push: vasoconstrictor + inotrope + chronotrope. NOT for tachyarrhythmia-induced shock.','Phenylephrine push: pure alpha vasoconstrictor — preferred for anesthetic-induced hypotension (e.g., post-spinal in OB)','EPI prep (10 mcg/mL): Add 0.1 mg (1 mL of 0.1 mg/mL prefilled) to 9 mL NS = 10 mcg/mL. SEGREGATE prefilled syringe.','EPI alt prep: 1 mg in 100 mL NS = 10 mcg/mL — bag also for infusion','PHENYL prep (100 mcg/mL): 10 mg (1 mL) into 100 mL NS = 100 mcg/mL','Adult phenyl push: 50-200 mcg IV q2-5 min PRN, max 3 doses','Adult epi push: 10-20 mcg IV q2-5 min PRN, max 3 doses','LABEL bag AND syringe. NEVER use prefilled NS flush for med dilution.','Continuous fetal monitoring','Transition to continuous infusion if ongoing pressor need','See Non-Hemorrhagic Shock for definitive selection (norepi 1st-line)']
   },
-  cat_resistant_shock:{picture:'Maternal shock not responding to fluids + pressors (PHI Resusc 4.9.3, p. 4-34). Pregnancy-specific DDx: amniotic fluid embolism, abruption with DIC, peripartum cardiomyopathy. Most adjuncts REQUIRE ONLINE MEDICAL CONTROL.',
+  cat_resistant_shock:{nonPhi:true, nonPhiNote:'PHI 4.9.3 framework with maternal AFE/eclampsia/peripartum CM additions. Verify with medical control.',picture:'Maternal shock not responding to fluids + pressors (PHI Resusc 4.9.3, p. 4-34). Pregnancy-specific DDx: amniotic fluid embolism, abruption with DIC, peripartum cardiomyopathy. Most adjuncts REQUIRE ONLINE MEDICAL CONTROL.',
     plan:['LEFT LATERAL TILT >20 wk','Evaluate for unrecognized: tension PTX, tamponade, ongoing blood loss, AMNIOTIC FLUID EMBOLISM, abruption with DIC, peripartum CM','Stress dose steroids: CONSULT MD. Hydrocortisone 100 mg IV (adult) for adrenal crisis.','Continue volume + pressor support per Non-Hemorrhagic Shock guideline','Continuous fetal monitoring','Maternal arrest >20 wk gestation: PERIMORTEM C-SECTION within 4 min','Notify OB + receiving + medical control EARLY']
   },
   post_intubation: {
+    nonPhi:true, nonPhiNote:'PHI Analgesia Ch 5 referenced. Maternal-specific considerations synthesized. Verify with medical control.',
     picture:'Post-intubation sedation in maternal patient. Pregnancy-acceptable: fentanyl, ketamine, propofol (short-term), midazolam (sparingly). AVOID prolonged benzodiazepine if delivery imminent (neonatal depression).',
     plan:[
       'LEFT LATERAL TILT >20 wk',
@@ -2598,6 +2671,7 @@ var DX_PLAN = {
     ]
   },
   agitation: {
+    nonPhi:true, nonPhiNote:'No specific PHI maternal standing-order. Adapted from adult PHI Medical 6.3 with pregnancy-safe medication selection. Verify with medical control.',
     picture:'Maternal dangerous agitation — risk to mother, fetus, crew, aircraft. Causes: eclampsia, hypoxia, hypoglycemia, head injury, intoxication, severe anxiety. Identify reversible causes FIRST.',
     plan:[
       'LEFT LATERAL TILT >20 wk',
@@ -2609,11 +2683,98 @@ var DX_PLAN = {
       'Pilot notification before sedation if flight risk'
     ]
   },
-  post_rosc:{picture:'Maternal Post-ROSC after cardiac arrest. LEFT LATERAL TILT >20 wk. If ROSC NOT achieved within 4 min of arrest, perform perimortem c-section.',
+  post_rosc:{nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from AHA Post-Cardiac-Arrest Care + maternal additions (L lateral tilt, perimortem c/s if no ROSC). Verify with medical control.',picture:'Maternal Post-ROSC after cardiac arrest. LEFT LATERAL TILT >20 wk. If ROSC NOT achieved within 4 min of arrest, perform perimortem c-section.',
     plan:['LEFT LATERAL TILT >20 wk gestation','12-lead EKG within 10 min','SBP target ≥ 90 mmHg, MAP ≥ 65 mmHg — fluid + pressor as needed','SpO2 target 94-98% — AVOID hyperoxia','EtCO2 target 35-40 mmHg — AVOID hyperventilation (worsens utero-placental flow)','HR target 60-100','Glucose check','Treat reversible causes (Hs and Ts) — pulmonary embolism + amniotic fluid embolism are common in pregnancy','Continuous fetal HR monitoring','Targeted Temperature Management 32-36°C if comatose (TTM safe in pregnancy)','Sedation: fentanyl + ketamine (avoid maternal hypotension)','Pre-alert OB + ICU + NICU']},
-  post_lytics:{picture:'Maternal post-thrombolytic care — rare in pregnancy due to bleeding risk, given for life-threatening PE/STEMI/stroke. LEFT LATERAL TILT >20 wk.',
+  post_lytics:{nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from AHA fibrinolytic guidelines + maternal considerations. Verify with medical control.',picture:'Maternal post-thrombolytic care — rare in pregnancy due to bleeding risk, given for life-threatening PE/STEMI/stroke. LEFT LATERAL TILT >20 wk.',
     plan:['LEFT LATERAL TILT >20 wk','BP target: SBP < 180 AND DBP < 105 for first 24 hr','Treat HTN: labetalol 10-20 mg IV q10 min (preferred in pregnancy)','VS q15 min × 2 hr, then q30 min × 6 hr','Neuro checks q15 min × 2 hr','Watch for ICH (sudden HA, vomiting, AMS, BP spike)','Watch for bleeding: vaginal, uterine, IV sites','NO anticoagulants for 24 hr','AVOID IM, arterial line, NG, urinary catheter × 24 hr','Fetal HR monitoring continuously','If ICH suspected: STOP antithrombotics, emergent CT, neurosurgery + OB consult','Pre-alert receiving']},
+  afe:{nonPhi:true, nonPhiNote:'Not on PHI standing orders — clinical reference only. Manage with online medical direction. Source: ACOG Committee Opinion 818, SMFM consensus.', picture:'Amniotic Fluid Embolism — sudden cardiovascular collapse + hypoxia + DIC + altered mental status during labor or just after delivery. Mortality 20-60%. Triad: cardiopulmonary collapse, coagulopathy, neurologic. LEFT LATERAL TILT >20 wk. PERIMORTEM C-SECTION within 4 min if arrest.',
+    plan:[
+      'LEFT LATERAL TILT >20 wk gestation',
+      'Recognize triad: sudden hypoxia/collapse + DIC + AMS in peripartum patient',
+      'High-flow O2 → intubate early (rapid hypoxia onset)',
+      '2 large-bore IVs / IO',
+      'CPR if arrest — perform PERIMORTEM C-SECTION within 4 min if no ROSC and >20 wk',
+      'Aggressive fluid resuscitation with crystalloid',
+      'Vasopressors EARLY: norepi 2-35 mcg/min OR push-dose epi 10-20 mcg q2-5 min while preparing infusion',
+      'Blood products for DIC: 1:1:1 PRBC:plasma:platelets if available',
+      'TXA 2 g IV for hemorrhagic component',
+      'Calcium after blood products: CaGluc 3 g or CaCl 1 g IV q 2 units',
+      'Continuous fetal monitoring',
+      'Pre-alert receiving: ICU, OB, NICU, blood bank, possible ECMO referral',
+      'Document time of onset — outcome correlated with rapid recognition'
+    ]
+  },
+  abruption:{nonPhi:true, nonPhiNote:'Recognition + supportive care. Definitive treatment is delivery at receiving facility. Verify management with online medical control.', picture:'Placental Abruption — separation of placenta from uterine wall before delivery. Classic: painful vaginal bleeding (may be concealed) + rigid/tender uterus + fetal distress. Hemorrhage may be much larger than visible bleeding. Risk of DIC, fetal demise, maternal hemorrhagic shock. LEFT LATERAL TILT >20 wk.',
+    plan:[
+      'LEFT LATERAL TILT (15° wedge under right hip) >20 wk',
+      'High-flow O2',
+      '2 large-bore IVs / IO',
+      'Crystalloid bolus 250-500 mL, then prefer blood products',
+      'Hemorrhage criteria: SBP < 90 OR Shock Index ≥ 1 → blood transfusion (see Blood Transfusion protocol)',
+      'TXA 2 g IV over 1 min within 3 hr of bleeding onset',
+      'Continuous fetal monitoring once mom stabilized',
+      'Watch for DIC: oozing IV sites, hematuria, petechiae — early plasma + platelets',
+      'Pain control: fentanyl IV',
+      'AVOID vaginal exam (may worsen bleeding if previa not yet ruled out)',
+      'Expedite transport to OB capable of emergent c-section',
+      'Pre-alert OB + NICU + blood bank',
+      'Maternal arrest >20 wk: PERIMORTEM C-SECTION within 4 min'
+    ]
+  },
+  uterine_rupture:{nonPhi:true, nonPhiNote:'Recognition + hemodynamic support + expedited surgical transfer. Verify with online medical control.', picture:'Uterine Rupture — full-thickness disruption of uterine wall. Classic: sudden severe abdominal pain, loss of fetal heart tones, vaginal bleeding, maternal shock. Risk factors: prior c-section (VBAC), grand multipara, trauma, oxytocin overuse. Catastrophic for both mother and fetus. LEFT LATERAL TILT >20 wk.',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'High-flow O2; intubate if AMS or shock',
+      '2 large-bore IVs / IO — anticipate massive transfusion',
+      'Crystalloid + EARLY blood products (LTOWB if available, otherwise 1:1 PRBC:plasma)',
+      'TXA 2 g IV over 1 min',
+      'STOP oxytocin if running',
+      'Permissive hypotension (radial pulse) until surgical control',
+      'Pain control: fentanyl IV',
+      'Continuous fetal monitoring (often absent fetal HR by recognition)',
+      'EXPEDITE transport — emergent laparotomy required',
+      'Pre-alert OB + trauma surgery + blood bank + NICU',
+      'Calcium after 2 units PRBC',
+      'Maternal arrest: PERIMORTEM C-SECTION within 4 min if >20 wk'
+    ]
+  },
+  hellp:{nonPhi:true, nonPhiNote:'Recognition + magnesium prophylaxis + BP control. Definitive treatment is delivery. Verify with online medical control.', picture:'HELLP Syndrome — severe pre-eclampsia variant. H = Hemolysis, EL = Elevated Liver enzymes, LP = Low Platelets. Often presents with RUQ/epigastric pain, malaise, headache. May progress to eclampsia, hepatic rupture, DIC, abruption. LEFT LATERAL TILT >20 wk.',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'Recognition: severe pre-e + RUQ pain + falling platelets + hemolysis (LDH ↑, hapto ↓, schistocytes)',
+      'Magnesium sulfate seizure prophylaxis: 4-6 g IV over 15-20 min, then 2 g/hr maintenance',
+      'BP control if SBP ≥ 160 OR DBP ≥ 110: Labetalol 20 mg IV (preferred in pregnancy), repeat 40 mg q10 min, max 300 mg total',
+      'Alternative BP: Hydralazine 5-10 mg IV q20 min OR Nicardipine 5 mg/hr IV',
+      'Goal: SBP 140-150, DBP 90-100 (avoid sudden drop)',
+      'Continuous fetal monitoring',
+      'Anticipate hemorrhage: type & cross, may need blood products',
+      'AVOID NSAIDs (worsens platelets)',
+      'CAUTION with aggressive fluid (pulmonary edema risk)',
+      'Watch for: eclamptic seizure, hepatic rupture (sudden severe RUQ pain + shock), abruption',
+      'Pre-alert OB + ICU + NICU at receiving',
+      'Mag toxicity antidote: Calcium Gluconate 1 g IV (have ready)'
+    ]
+  },
+  preg_pe:{nonPhi:true, nonPhiNote:'Recognition + supportive care. Anticoagulation and thrombolytics require online medical control. ACOG/SMFM guidance.', picture:'Pulmonary Embolism in pregnancy — pregnancy is a major risk factor (5-10x baseline). Often missed because dyspnea and tachycardia are common in pregnancy. Sudden dyspnea, pleuritic chest pain, hypoxia, tachycardia, syncope, RV strain on EKG. Massive PE = leading cause of maternal mortality. LEFT LATERAL TILT >20 wk.',
+    plan:[
+      'LEFT LATERAL TILT >20 wk',
+      'High-flow O2 → intubate if severe hypoxia or AMS',
+      'Continuous SpO2, EtCO2, EKG (look for S1Q3T3, RBBB, T-wave inversions)',
+      'Cautious fluid: small bolus 250-500 mL only if clear hypovolemia (avoid worsening RV)',
+      'If hypotensive: vasopressor — Norepinephrine 2-35 mcg/min FIRST LINE in obstructive shock',
+      'Push-dose pressor while preparing infusion: epi 10-20 mcg IV',
+      'Massive PE with hypotension/arrest: thrombolytics (tPA 50 mg IV bolus during arrest, OR full dose if pre-arrest) — REQUIRES MD ORDER. Pregnancy is NOT an absolute contraindication when life-threatening.',
+      'Heparin anticoagulation per receiving (bolus + drip or LMWH) — REQUIRES MD ORDER',
+      'AVOID warfarin in pregnancy (teratogenic)',
+      'Pain: fentanyl IV',
+      'Continuous fetal monitoring',
+      'Pre-alert OB + ICU + cardiology/IR (catheter-directed thrombolysis option) + NICU',
+      'ECMO consideration at receiving for refractory shock',
+      'Maternal arrest: PERIMORTEM C-SECTION within 4 min if >20 wk; consider thrombolytics during arrest'
+    ]
+  },
   amputation: {
+    nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from adult Trauma 8-9. Verify with medical control.',
     picture:'Maternal traumatic amputation — pregnancy increases blood volume but masks shock. LEFT LATERAL TILT >20 wk (PHI Trauma 8-9).',
     plan:[
       'LEFT LATERAL TILT (15° wedge under right hip) >20 wk',
@@ -2627,6 +2788,7 @@ var DX_PLAN = {
     ]
   },
   impaled: {
+    nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from adult Trauma 8-9. Verify with medical control.',
     picture:'Maternal impaled object. DO NOT remove — stabilize in place (PHI Trauma 8-9). LEFT LATERAL TILT >20 wk.',
     plan:[
       'LEFT LATERAL TILT >20 wk',
@@ -2640,6 +2802,7 @@ var DX_PLAN = {
     ]
   },
   femur_fracture: {
+    nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from adult Trauma 8-10. Verify with medical control.',
     picture:'Maternal midshaft femur fracture — significant blood loss possible. LEFT LATERAL TILT >20 wk (PHI Trauma 8-10).',
     plan:[
       'LEFT LATERAL TILT >20 wk',
@@ -2653,6 +2816,7 @@ var DX_PLAN = {
     ]
   },
   ocular: {
+    nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from adult Trauma 8-11. Verify with medical control.',
     picture:'Maternal eye injury — pregnancy doesn\'t change ocular protocol. Avoid pressure on globe (PHI Trauma 8-11).',
     plan:[
       'LEFT LATERAL TILT >20 wk if other injuries',
@@ -2666,6 +2830,7 @@ var DX_PLAN = {
     ]
   },
   crush: {
+    nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from adult Trauma 8-12/13. Verify with medical control.',
     picture:'Maternal crush injury — torso/extremity crushed >1 hour. K+ release on extrication = VF risk. LEFT LATERAL TILT >20 wk (PHI Trauma 8-12, 8-13).',
     plan:[
       'LEFT LATERAL TILT >20 wk',
@@ -2694,6 +2859,7 @@ var DX_PLAN = {
     ]
   },
   electrical_burn: {
+    nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from adult Trauma 8-16. Verify with medical control.',
     picture:'Maternal electrical burn — current may pass through uterus → fetal injury. Continuous fetal monitoring (PHI Trauma 8-16).',
     plan:[
       'LEFT LATERAL TILT >20 wk',
@@ -2708,6 +2874,7 @@ var DX_PLAN = {
     ]
   },
   chemical_burn: {
+    nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from adult Trauma 8-17. Verify with medical control.',
     picture:'Maternal chemical burn — PPE for crew, decon before transport. Some chemicals cross placenta (PHI Trauma 8-17).',
     plan:[
       'LEFT LATERAL TILT >20 wk',
@@ -2722,6 +2889,7 @@ var DX_PLAN = {
     ]
   },
   hypothermia: {
+    nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from general hypothermia management. Verify with medical control.',
     picture:'Maternal hypothermia — Mild 32-35°C, Moderate 28-32°C, Severe <28°C. Fetal HR will be bradycardic in severe maternal hypothermia (PHI Trauma 8-19).',
     plan:[
       'LEFT LATERAL TILT >20 wk',
@@ -2737,6 +2905,7 @@ var DX_PLAN = {
     ]
   },
   frostbite: {
+    nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from general frostbite management. Verify with medical control.',
     picture:'Maternal frostbite — pregnancy doesn\'t change protocol. Treat associated maternal hypothermia first (PHI Trauma 8-19).',
     plan:[
       'Treat hypothermia first if present',
@@ -2749,6 +2918,7 @@ var DX_PLAN = {
     ]
   },
   heat_illness: {
+    nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from general heat-illness management. Verify with medical control.',
     picture:'Maternal heat illness — pregnancy increases heat illness risk (cardiac output, body temp baseline higher). Heat stroke risks fetal demise (PHI Trauma 8-19).',
     plan:[
       'LEFT LATERAL TILT >20 wk',
@@ -2761,6 +2931,32 @@ var DX_PLAN = {
       'Stop cooling at 38-39°C to avoid overshoot',
       'Continuous fetal HR monitoring',
       'Pre-alert OB'
+    ]
+  },
+  drowning: {
+    nonPhi:true, nonPhiNote:'No PHI maternal standing-order. Adapted from AHA/ILCOR drowning guidance + maternal modifications. Verify with medical control.',
+    picture:'Maternal drowning / submersion — primary insult is HYPOXIA + risk to fetus. LEFT LATERAL TILT >20 wk. Reverse usual sequence: 5 RESCUE BREATHS BEFORE compressions. PERIMORTEM C-SECTION within 4 min if arrest >20 wk.',
+    plan:[
+      'Scene safety FIRST',
+      'C-spine precautions if diving or unwitnessed mechanism',
+      'LEFT LATERAL TILT (15° wedge under right hip) >20 wk',
+      'Open airway, gentle suction',
+      'If apneic + pulseless → 5 RESCUE BREATHS first THEN start CPR',
+      'CPR with hand position 2-3 cm above usual sternal landmark in pregnancy',
+      'PERIMORTEM C-SECTION within 4 min of arrest if >20 wk gestation',
+      'Epinephrine 1 mg IV/IO q 3-5 min',
+      '100% FiO2; secure airway (pregnancy = difficult airway, aspiration risk)',
+      'PEEP 5-10 cm H2O once intubated',
+      'Continuous capnography + continuous fetal monitoring (after maternal stabilization)',
+      'Aggressive rewarming if hypothermic (warm IV, blankets, humidified O2)',
+      'Cold water submersion: prolong resuscitation; ECMO referral',
+      'Cautious crystalloid; avoid over-resuscitation (pulm edema)',
+      'OG tube once intubated to decompress stomach',
+      'Glucose check',
+      'Bronchospasm: Albuterol neb',
+      'POST-ROSC: continue L lateral, SBP ≥ 90, SpO2 92-98%, EtCO2 35-40, TTM if comatose',
+      'TRANSPORT ALL — delayed ARDS up to 24 hr',
+      'Pre-alert OB + ICU + NICU + receiving (ECMO if cold water)'
     ]
   },
   safer_checklist:{picture:'SAFER airway preparation checklist — Crew 1 (operator) + Crew 2 (assist) parallel workflow.', plan:['Tap each step to mark complete','See PHI SAFER chapter for full protocol detail']},
@@ -2880,7 +3076,9 @@ function renderPlan(){
     var p = DX_PLAN[dx];
     var planLis = p.plan.map(function(s){ return '<li style="margin-bottom:5px">' + s + '</li>'; }).join('');
     var protoBtn = renderProtocolBtn(dx);
+    var nonPhiBanner = (p && p.nonPhi) ? '<div class="non-phi-banner"><span class="non-phi-icon">⚠</span><div class="non-phi-text"><div class="non-phi-label">NON-PHI PROTOCOL</div><div class="non-phi-sub">' + (p.nonPhiNote || 'Not on PHI standing orders. Use as clinical reference only and verify with online medical control before acting.') + '</div></div></div>' : '';
     html =
+      nonPhiBanner +
       '<div style="font-size:.86rem;line-height:1.55;color:var(--tx0);margin-bottom:12px"><strong style="color:var(--rose)">Picture: </strong>' + p.picture + '</div>' +
       protoBtn +
       '<div class="slbl" style="margin-top:10px">Plan of Action — Field Reference</div>' +

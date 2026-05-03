@@ -140,13 +140,22 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .rv.warn{color:var(--amber)}
 .rv .max,.rv .mx{color:#ff5f6d !important;font-weight:900;background:rgba(255,95,109,.12);padding:1px 6px;border-radius:5px;margin:0 1px;border:1px solid rgba(255,95,109,.3);text-shadow:0 0 6px rgba(255,95,109,.35)}
 .rv.calc .max,.rv.calc .mx{color:#ff7e87 !important}
-/* "GIVE BOX" — prominent under-stress dosing display */
-.give-box{background:linear-gradient(135deg,rgba(255,95,109,.18),rgba(255,126,135,.06) 60%);border:2px solid rgba(255,95,109,.55);border-radius:11px;padding:11px 14px 12px;margin:0 0 12px;text-align:center;box-shadow:0 0 18px rgba(255,95,109,.18),inset 0 1px 0 rgba(255,255,255,.05)}
-.give-box .gb-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.22em;font-weight:900;color:#ff5f6d;margin-bottom:3px;text-transform:uppercase}
-.give-box .gb-vol{font-family:var(--mono);font-size:1.7rem;font-weight:900;color:#ff7e87;line-height:1.05;letter-spacing:.01em;text-shadow:0 0 12px rgba(255,95,109,.45)}
-.give-box .gb-vol .gb-mg{display:inline-block;font-size:.78rem;color:var(--tx0);margin-left:8px;opacity:.92;font-weight:700;letter-spacing:.04em}
-.give-box .gb-conc{font-family:var(--mono);font-size:.72rem;color:var(--cyan);margin-top:6px;font-weight:800;letter-spacing:.05em;background:rgba(0,212,245,.08);border:1px solid rgba(0,212,245,.3);border-radius:6px;padding:3px 8px;display:inline-block}
-.give-box .gb-rule{font-size:.62rem;color:var(--tx2);margin-top:5px;font-style:italic;letter-spacing:.04em}
+/* GIVE-NOW dose display — prominent under-stress display of mL/mg to administer */
+.give-box{background:linear-gradient(135deg,rgba(255,95,109,.22),rgba(255,126,135,.06) 60%);border:3px solid #ff5f6d;border-radius:14px;padding:14px 16px 16px;margin:10px 0 14px;text-align:center;box-shadow:0 0 26px rgba(255,95,109,.35),inset 0 1px 0 rgba(255,255,255,.06);position:relative;overflow:hidden}
+.give-box::before{content:"GIVE NOW";position:absolute;top:6px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:.55rem;font-weight:900;color:#ff5f6d;letter-spacing:.32em;opacity:.9}
+.give-box .gb-label{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;font-weight:900;color:#ff5f6d;margin-top:14px;margin-bottom:8px;text-transform:uppercase;line-height:1.2}
+.give-box .gb-vol{font-family:var(--mono);font-size:2.2rem;font-weight:900;color:#fff;line-height:1.05;letter-spacing:.005em;text-shadow:0 0 20px rgba(255,95,109,.7),0 0 4px rgba(0,0,0,.4);background:rgba(0,0,0,.18);padding:8px 14px;border-radius:9px;display:inline-block;margin:2px 0}
+.give-box .gb-vol .gb-mg{display:inline-block;font-size:1.1rem;color:#ffd6da;margin-left:14px;font-weight:800;letter-spacing:.03em;border-left:1px solid rgba(255,255,255,.25);padding-left:14px;text-shadow:none}
+.give-box .gb-conc{font-family:var(--mono);font-size:.74rem;color:var(--cyan);margin-top:10px;font-weight:800;letter-spacing:.05em;background:rgba(0,212,245,.10);border:1px solid rgba(0,212,245,.4);border-radius:7px;padding:5px 10px;display:inline-block}
+.give-box .gb-rule{font-size:.66rem;color:var(--tx1);margin-top:7px;font-style:italic;letter-spacing:.04em;line-height:1.4}
+.give-box.needs-wt{background:linear-gradient(135deg,rgba(251,191,36,.18),rgba(251,191,36,.04));border-color:#fbbf24;box-shadow:0 0 18px rgba(251,191,36,.25)}
+.give-box.needs-wt::before{color:#fbbf24;content:"DOSE — WEIGHT NEEDED"}
+.give-box.needs-wt .gb-label{color:#fbbf24}
+.give-box.needs-wt .gb-vol{color:#fbbf24;background:rgba(0,0,0,.15);font-size:1.0rem}
+@media(max-width:380px){
+  .give-box .gb-vol{font-size:1.85rem;padding:6px 10px}
+  .give-box .gb-vol .gb-mg{font-size:.95rem;margin-left:10px;padding-left:10px}
+}
 .rc-note{margin-top:8px;padding:7px 10px;background:rgba(0,212,245,.05);border:1px solid rgba(0,212,245,.18);border-radius:7px;font-size:.68rem;color:var(--tx1);line-height:1.5}
 /* PHI Protocol PDF deep-link button (rendered above plan-of-action on diagnosis page) */
 .proto-btn{display:flex;align-items:center;gap:11px;padding:11px 14px;margin:8px 0 14px;background:linear-gradient(135deg,rgba(168,85,247,.18),rgba(34,211,238,.10));border:2px solid rgba(168,85,247,.55);border-radius:11px;text-decoration:none;color:var(--tx0);box-shadow:0 0 18px rgba(168,85,247,.18),inset 0 1px 0 rgba(255,255,255,.05);transition:transform .12s ease,box-shadow .2s ease,border-color .2s ease}
@@ -335,6 +344,15 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .safer-diagram-label{font-family:var(--mono);font-size:.78rem;font-weight:800;color:var(--cyan);letter-spacing:.06em;text-transform:uppercase}
 .safer-diagram-sub{font-size:.7rem;color:var(--tx1);margin-top:2px}
 .safer-diagram-chev{font-size:1.3rem;color:var(--cyan);font-weight:300;flex-shrink:0}
+
+/* NON-PHI PROTOCOL badge */
+.non-phi-banner{background:linear-gradient(135deg,rgba(251,191,36,.18),rgba(251,146,60,.10));border:2px solid rgba(251,146,60,.7);border-radius:10px;padding:10px 14px;margin:8px 0 14px;display:flex;align-items:center;gap:10px;box-shadow:0 0 12px rgba(251,146,60,.18)}
+.non-phi-icon{font-size:1.3rem;line-height:1;flex-shrink:0;color:#fb923c}
+.non-phi-text{flex:1;min-width:0}
+.non-phi-label{font-family:var(--mono);font-size:.7rem;font-weight:900;letter-spacing:.14em;color:#fb923c;text-transform:uppercase}
+.non-phi-sub{font-size:.72rem;color:var(--tx1);margin-top:2px;line-height:1.4}
+.dx-non-phi{position:relative}
+.dx-non-phi::after{content:"NON-PHI";position:absolute;top:6px;right:6px;font-family:var(--mono);font-size:.55rem;font-weight:900;letter-spacing:.1em;color:#fb923c;background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.45);padding:2px 5px;border-radius:4px}
 </style>
 </head>
 <body>
@@ -1276,6 +1294,7 @@ var PROTOCOL_FILES = {
 var PROTOCOL_PAGES = {
   // ── RESUSCITATION (Ch 4) — cardiac arrest, brady, tachy, shock ──
   arrest:     { src: 'resusc',  label: 'Resusc 4.1 — Cardiac Arrest',                          page: 1  },
+  pea:        { src: 'resusc',  label: 'Resusc 4.1 — Cardiac Arrest PEA/Asystole (Peds)',      page: 1  },
   post_rosc:  { src: 'resusc',  label: 'Resusc 4.x — Post-ROSC Care (Peds)',                   page: 1  },
   post_lytics:{ src: 'medical', label: 'Medical 6.x — Post-Thrombolytic Care (Peds)',          page: 1  },
   brady:      { src: 'resusc',  label: 'Resusc 4.2 — Bradycardia (Peds on p.10)',              page: 9  },
@@ -1310,6 +1329,7 @@ var PROTOCOL_PAGES = {
   hypothermia:{ src: 'trauma', label: 'Trauma 8-19 — Hypothermia', page: 19 },
   frostbite:{ src: 'trauma', label: 'Trauma 8-19 — Frostbite', page: 19 },
   heat_illness:{ src: 'trauma', label: 'Trauma 8-19 — Heat-Related Illness', page: 19 },
+  drowning:{ src: 'trauma', label: 'Trauma 8-19 — Drowning / Submersion (Peds Environmental)', page: 19 },
   transfusion:{ src: 'resusc', label: 'Resusc 4.9.2 — Blood Transfusion (Peds)', page: 26 },
   push_pressor:{ src: 'resusc', label: 'Resusc 4-32/33 — IV Push Pressor Therapy', page: 32 },
   cat_resistant_shock:{ src: 'resusc', label: 'Resusc 4.9.3 — Catecholamine-Resistant Shock', page: 34 },
@@ -1324,6 +1344,7 @@ var PROTOCOL_PAGES = {
 var DIAGNOSES = [
   {id:'preterm',    cat:'CARDIAC', name:'Preterm / NRP',          sub:'Prematurity / unattended birth / NICU transport'},
   {id:'arrest',     cat:'CARDIAC', name:'Cardiac Arrest',         sub:'PALS — VF/VT/PEA/asystole'},
+  {id:'pea',        cat:'CARDIAC', name:'PEA / Asystole (Peds)',   sub:'PALS — find & fix Hs and Ts'},
   {id:'post_rosc',  cat:'CARDIAC', name:'Post-ROSC Care (Peds)',   sub:'After return of circulation'},
   {id:'post_lytics', cat:'CARDIAC', name:'Post-Thrombolytics (Peds)', sub:'Rare in peds — MD direction'},
   {id:'brady',      cat:'CARDIAC', name:'Symptomatic Brady',      sub:'HR low for age + poor perfusion'},
@@ -1369,7 +1390,8 @@ var DIAGNOSES = [
   {id:'chemical_burn', cat:'TRAUMA', name:'Chemical Burn',        sub:'PPE · irrigate 20+ min'},
   {id:'hypothermia', cat:'ENVIRONMENTAL', name:'Hypothermia',            sub:'Active rewarming · gentle handling'},
   {id:'frostbite',  cat:'ENVIRONMENTAL', name:'Frostbite',               sub:'No partial thaw · loose dressing'},
-  {id:'heat_illness', cat:'ENVIRONMENTAL', name:'Heat Illness / Heat Stroke', sub:'Cool aggressively'}
+  {id:'heat_illness', cat:'ENVIRONMENTAL', name:'Heat Illness / Heat Stroke', sub:'Cool aggressively'},
+  {id:'drowning', cat:'ENVIRONMENTAL', name:'Drowning / Submersion (Peds)', sub:'Hypoxia first · 5 rescue breaths before CPR'}
 ];
 
 function renderDxGrid(){
@@ -1386,14 +1408,16 @@ function renderDxGrid(){
     if(!groups[cat] || !groups[cat].length) return;
     html += '<div class="dx-cat-header">' + cat + '</div>';
     groups[cat].forEach(function(d){
-      html += '<div class="dx-card' + (state.dx===d.id?' on':'') + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
+      var nonPhiClass = (typeof DX_PLAN !== 'undefined' && DX_PLAN[d.id] && DX_PLAN[d.id].nonPhi) ? ' dx-non-phi' : '';
+      html += '<div class="dx-card' + (state.dx===d.id?' on':'') + nonPhiClass + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
     });
   });
   Object.keys(groups).forEach(function(cat){
     if(CAT_ORDER.indexOf(cat) !== -1) return;
     html += '<div class="dx-cat-header">' + cat + '</div>';
     groups[cat].forEach(function(d){
-      html += '<div class="dx-card' + (state.dx===d.id?' on':'') + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
+      var nonPhiClass = (typeof DX_PLAN !== 'undefined' && DX_PLAN[d.id] && DX_PLAN[d.id].nonPhi) ? ' dx-non-phi' : '';
+      html += '<div class="dx-card' + (state.dx===d.id?' on':'') + nonPhiClass + '" data-id="' + d.id + '"><div class="dx-name">' + d.name + '</div><div class="dx-sub">' + d.sub + '</div></div>';
     });
   });
   grid.innerHTML = html;
@@ -1437,7 +1461,10 @@ var DX_PLAN = {
       'Throughout: search for and treat reversible causes (Hs/Ts)'
     ]
   },
+  pea:{nonPhi:true, nonPhiNote:'Hs and Ts management adapted from PALS algorithms. Verify with medical control.', picture:'Pediatric PEA / Asystole — non-shockable arrest. Most peds arrests are HYPOXIC or HYPOVOLEMIC in origin. Outcome depends on rapid identification and treatment of the Hs and Ts. Use Broselow/Handtevy weight-based dosing (PHI Resusc 4.1).',
+    plan:['High-quality CPR — rate 100-120/min, depth 1/3 AP chest (1.5 in infant, 2 in child); compression-to-vent 30:2 single rescuer, 15:2 two-rescuer; rotate q 2 min','Ventilate 1 breath q 2-3 sec (20-30/min) once advanced airway in place','Epinephrine 0.01 mg/kg (0.1 mL/kg of 1:10,000) IV/IO q 3-5 min — max 1 mg single dose','CONFIRM rhythm q 2 min — if VF/pVT develops → defibrillate (2 J/kg first, 4 J/kg subsequent)','Identify and TREAT the Hs and Ts (parallel to PALS):','⬢ Hypovolemia → 20 mL/kg LR/NS bolus IV/IO, repeat to 60 mL/kg; blood products 10-20 mL/kg if hemorrhagic','⬢ Hypoxia → 100% FiO2; secure airway; confirm chest rise and EtCO2 waveform','⬢ Hydrogen ion (acidosis) → adequate ventilation; NaHCO3 1 mEq/kg IV/IO if known severe acidosis or prolonged arrest','⬢ Hyperkalemia → CaCl 20 mg/kg IV/IO OR Ca gluconate 60 mg/kg IV/IO; NaHCO3 1 mEq/kg; Albuterol neb; Insulin + D25','⬢ Hypokalemia → uncommon; KCl per medical control','⬢ Hypoglycemia → check glucose; D10 5 mL/kg IV/IO (or D25 2 mL/kg in older child); peds use D10 not D50 to avoid osmotic injury','⬢ Hypothermia → warm IV fluids (40°C), passive + active warming; if core <30°C, modified PALS','⬢ Tension pneumothorax → needle decompression 2nd ICS midclavicular (or 4th-5th ICS AAL), peds-appropriate catheter (small child: 14-18 ga; infant: 18-22 ga)','⬢ Tamponade → pericardiocentesis if available','⬢ Toxins → opioid: naloxone 0.1 mg/kg IV/IM/IN (max 2 mg); TCA: NaHCO3 1-2 mEq/kg; CCB/β-blocker: Ca + glucagon 50 mcg/kg; cyanide: hydroxocobalamin 70 mg/kg IV (max 5 g)','⬢ Thrombosis (PE) → uncommon in peds; consult medical control for thrombolytics','⬢ Thrombosis (coronary) → very rare in peds; consider congenital coronary anomaly','⬢ Trauma → hemorrhage control; blood products; emergent surgical consult; consider ductal-dependent CHD in ill infant (alprostadil per MD)','Continuous capnography — EtCO2 < 10 mmHg after prolonged CPR = poor prognosis','Post-ROSC care per Post-ROSC protocol (age-appropriate SBP, SpO2 92-98%, EtCO2 35-40, TTM)']},
   post_rosc: {
+    nonPhi:true, nonPhiNote:'Pediatric post-ROSC targets adapted from PALS guidelines. Not a PHI standing-order protocol. Verify with medical control.',
     picture:'Pediatric Post-ROSC care — high re-arrest risk in kids. Optimize perfusion, ventilation, identify cause.',
     plan:[
       '12-lead EKG within 10 min',
@@ -1455,6 +1482,7 @@ var DX_PLAN = {
     ]
   },
   post_lytics: {
+    nonPhi:true, nonPhiNote:'Pediatric thrombolytic care extrapolated from adult AHA guidelines. Not a PHI standing-order protocol. Verify with medical control.',
     picture:'Pediatric post-thrombolytic care — RARE indication. Most peds protocols require MD direction for both administration and post-care management.',
     plan:[
       'CONTACT MEDICAL DIRECTION — pediatric thrombolytics are rare and individualized',
@@ -1660,6 +1688,7 @@ var DX_PLAN = {
     ]
   },
   pelvic_fracture: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order. Adapted from adult PHI Trauma 8-10 + pediatric trauma practice. Verify with medical control.',
     picture:'Pediatric suspected pelvic fracture — occult hemorrhage risk. Children\'s pelvic ring is more flexible but still bleeds. Stabilize with sized binder (PHI Trauma 8-10).',
     plan:[
       'Stabilize pelvis with SAM sling/peds-sized binder at level of greater trochanters',
@@ -1674,6 +1703,7 @@ var DX_PLAN = {
     ]
   },
   amputation: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order. Adapted from adult PHI Trauma 8-9 with peds doses. Verify with medical control.',
     picture:'Pediatric traumatic amputation. Priorities: stump hemorrhage control + preservation of amputated part for re-implantation (PHI Trauma 8-9). Children compensate for blood loss until late.',
     plan:[
       'Control stump hemorrhage: direct pressure → tourniquet (mark time)',
@@ -1688,6 +1718,7 @@ var DX_PLAN = {
     ]
   },
   impaled: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order. Adapted from adult PHI Trauma 8-9. Verify with medical control.',
     picture:'Pediatric impaled object. DO NOT remove — stabilize in place. Removal causes catastrophic hemorrhage (PHI Trauma 8-9). Exception: object obstructs airway.',
     plan:[
       'DO NOT remove the impaled object',
@@ -1700,6 +1731,7 @@ var DX_PLAN = {
     ]
   },
   femur_fracture: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order. Adapted from adult PHI Trauma 8-10. Verify with medical control.',
     picture:'Pediatric midshaft femur fracture — blood loss possible. Apply size-appropriate traction splint (PHI Trauma 8-10).',
     plan:[
       'Neurovascular exam (CMS) before AND after',
@@ -1712,6 +1744,7 @@ var DX_PLAN = {
     ]
   },
   ocular: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order. Adapted from adult PHI Trauma 8-11. Verify with medical control.',
     picture:'Pediatric eye injury. Avoid pressure on globe; cover both eyes (PHI Trauma 8-11).',
     plan:[
       'Remove contact lenses PRN',
@@ -1725,6 +1758,7 @@ var DX_PLAN = {
     ]
   },
   crush: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order. Adapted from adult PHI Trauma 8-12/13 with peds doses (Ca gluc 60 mg/kg). Verify with medical control.',
     picture:'Pediatric crush injury — torso/extremity crushed >1 hour. K+ release on extrication = VF risk (PHI Trauma 8-12, 8-13).',
     plan:[
       'BEFORE extrication: aggressive IV fluids',
@@ -1738,6 +1772,7 @@ var DX_PLAN = {
     ]
   },
   co_poison: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order. Adapted from adult PHI Trauma 8-15. Verify with medical control.',
     picture:'Pediatric CO poisoning — suspect in fire/enclosed-space exposure. Pulse-ox is FALSELY NORMAL — use rainbow SpCO sensor (PHI Trauma 8-15).',
     plan:[
       '100% FiO2 via NRB at 15-25 L/min (sized to peds)',
@@ -1749,6 +1784,7 @@ var DX_PLAN = {
     ]
   },
   electrical_burn: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order. Adapted from adult PHI Trauma 8-16 with peds fluid resuscitation (3 mL/kg/TBSA). Verify with medical control.',
     picture:'Pediatric electrical burn — entrance/exit wounds, arrhythmia, deep tissue injury (PHI Trauma 8-16).',
     plan:[
       '12-lead EKG',
@@ -1761,6 +1797,7 @@ var DX_PLAN = {
     ]
   },
   chemical_burn: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order. Adapted from adult PHI Trauma 8-17. Verify with medical control.',
     picture:'Pediatric chemical burn — PPE for crew, decon before transport (PHI Trauma 8-17).',
     plan:[
       'DON PPE before patient contact',
@@ -1774,6 +1811,7 @@ var DX_PLAN = {
     ]
   },
   hypothermia: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order. Adapted from PALS / general hypothermia management. Verify with medical control.',
     picture:'Pediatric hypothermia — children cool faster than adults due to surface-area-to-mass ratio. Mild 32-35°C, Moderate 28-32°C, Severe <28°C (PHI Trauma 8-19).',
     plan:[
       'Remove wet clothing, dry, insulate',
@@ -1786,6 +1824,7 @@ var DX_PLAN = {
     ]
   },
   frostbite: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order. Adapted from general frostbite management. Verify with medical control.',
     picture:'Pediatric frostbite — fingers, toes, ears, nose at highest risk (PHI Trauma 8-19).',
     plan:[
       'Gentle handling — frozen tissue is fragile',
@@ -1799,6 +1838,7 @@ var DX_PLAN = {
     ]
   },
   heat_illness: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order. Adapted from PALS / general heat-illness management. Verify with medical control.',
     picture:'Pediatric heat illness — heat exhaustion vs heat stroke (>40°C/104°F + AMS, often anhidrotic). Heat stroke = life-threatening (PHI Trauma 8-19).',
     plan:[
       'Move to cool environment',
@@ -1812,7 +1852,35 @@ var DX_PLAN = {
       'Pre-alert peds receiving'
     ]
   },
+  drowning: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order page provided. Built from PALS/AHA drowning recommendations. Verify with medical control.',
+    picture:'Pediatric drowning / submersion — leading cause of accidental death in children. Primary insult is HYPOXIA. Reverse the usual sequence: 5 RESCUE BREATHS BEFORE compressions. Cold water drowning may have neuro-protective hypothermia. Suspect non-accidental trauma in toddler/infant if hx unclear.',
+    plan:[
+      'Scene safety FIRST',
+      'C-spine precautions if diving, fall into water, or unwitnessed (manual stabilization, peds c-collar)',
+      'Open airway, gentle suction (do NOT delay vents to clear "all" water)',
+      'If apneic + pulseless → 5 RESCUE BREATHS first THEN start CPR',
+      'CPR 30:2 single rescuer, 15:2 two-rescuer (peds); rate 100-120/min, depth 1/3 AP chest',
+      'Epinephrine 0.01 mg/kg (0.1 mL/kg of 1:10,000) IV/IO q 3-5 min',
+      'If VF/pVT: defib 2 J/kg first, 4 J/kg subsequent',
+      '100% FiO2; secure airway with sized ETT, anticipate aspiration',
+      'PEEP 5-10 cm H2O once intubated to recruit alveoli',
+      'Continuous capnography',
+      'CORE TEMP — peds cool fast; aggressive rewarming: warm IV fluids 40°C, blankets, warm O2',
+      'COLD WATER (<6°C / 43°F) submersion: PROLONG resuscitation; ECMO referral',
+      'Glucose check; treat hypoglycemia with D10 5 mL/kg IV',
+      'Bronchospasm: Albuterol neb (peds dosing)',
+      'Cautious crystalloid 10-20 mL/kg if hypovolemic; avoid over-resuscitation',
+      'OG tube once intubated to decompress stomach',
+      'Remove wet clothing, dry, insulate',
+      'POST-ROSC: age-appropriate SBP, SpO2 92-98%, EtCO2 35-40, TTM 32-36°C',
+      'TRANSPORT ALL submersion patients — delayed ARDS up to 24 hr',
+      'Consider non-accidental etiology in unsupervised infant/toddler — document mechanism + scene',
+      'Pre-alert peds receiving + possible ECMO referral'
+    ]
+  },
   open_fracture: {
+    nonPhi:true, nonPhiNote:'PHI antibiotic dosing (cefazolin/clindamycin) is standing-order; the broader plan (NV checks, splinting, TXA timing) is general trauma practice. Verify non-abx components with medical control.',
     picture:'Open fracture — any skin opening near a suspected fracture (PHI Trauma 8-11). Early antibiotics greatly reduce morbidity.',
     plan:[
       'Control bleeding, realign, and splint as indicated',
@@ -1825,6 +1893,7 @@ var DX_PLAN = {
     ]
   },
   laceration: {
+    nonPhi:true, nonPhiNote:'No specific PHI peds laceration standing-order. Built from general trauma principles + PHI dosing for pain/abx. Verify with medical control.',
     picture:'Pediatric laceration with active bleeding or significant tissue injury. Concerns: hemorrhage (children compensate then crash), arterial involvement, foreign body, contamination, distal NV compromise.',
     plan:[
       'Direct pressure first — 5-10 min uninterrupted',
@@ -1839,6 +1908,7 @@ var DX_PLAN = {
     ]
   },
   aaa: {
+    nonPhi:true, nonPhiNote:'AAA is rare in pediatrics; no PHI peds standing-order. Built from connective tissue disease and adult adaptation. Verify with medical control.',
     picture:'AAA in pediatrics is RARE — usually associated with connective tissue disease (Marfan, Ehlers-Danlos, Loeys-Dietz), Kawasaki sequelae, or trauma. Same management principles as adult: hemorrhage control + permissive hypotension + rapid transport.',
     plan:[
       'Two large-bore IVs/IO — do NOT delay transport',
@@ -1851,6 +1921,7 @@ var DX_PLAN = {
     ]
   },
   dissection: {
+    nonPhi:true, nonPhiNote:'Aortic dissection rare in pediatrics; no PHI peds standing-order. Beta-blockade and BP control extrapolated from adult PHI. Verify with medical control.',
     picture:'Pediatric aortic dissection — rare; consider in connective tissue disease, congenital heart disease, hypertensive crisis, severe trauma. Type A = surgical; Type B = medical.',
     plan:[
       'BP in BOTH arms — treat higher reading; document pulse deficits',
@@ -1876,6 +1947,7 @@ var DX_PLAN = {
     ]
   },
   hemshock: {
+    nonPhi:true, nonPhiNote:'PHI 4.9 hemorrhagic shock framework with peds adaptations (10-20 mL/kg fluid, 15 mg/kg TXA, peds Ca dosing). Verify with medical control.',
     picture:'Pediatric Hemorrhagic Shock — children compensate via tachycardia until late then crash. Hypotension is LATE. Manage per PHI Resusc 4.9 (p. 4-25).',
     plan:[
       'Hemorrhage control: direct pressure → pressure dressing → hemostatic → tourniquet (mark time)',
@@ -1890,6 +1962,7 @@ var DX_PLAN = {
     ]
   },
   transfusion: {
+    nonPhi:true, nonPhiNote:'PHI 4.9.2 transfusion criteria. Peds-specific adaptations included. Verify with medical control.',
     picture:'Pediatric blood transfusion criteria & administration (PHI Resusc 4.9.2, p. 4-26 to 4-28).',
     plan:[
       'PEDIATRIC criteria: Uncompensated hypotensive shock (SBP < 70 mmHg + 2 × age in yrs)',
@@ -1906,6 +1979,7 @@ var DX_PLAN = {
     ]
   },
   push_pressor: {
+    nonPhi:true, nonPhiNote:'PHI 4-32/33 push-pressor framework. Pediatric weight-based dosing extrapolated. Verify with medical control.',
     picture:'IV Push Pressor Therapy in pediatric patient (PHI Resusc p. 4-32 & 4-33). Temporary support during volume / preparing infusion. Limited to 3 total doses.',
     plan:[
       'EPINEPHrine push: vasoconstrictor + inotrope + chronotrope. Use for ALL shock states EXCEPT tachyarrhythmia-induced.',
@@ -1921,6 +1995,7 @@ var DX_PLAN = {
     ]
   },
   cat_resistant_shock: {
+    nonPhi:true, nonPhiNote:'PHI 4.9.3 framework. Pediatric specifics (alprostadil for ductal-dependent CHD) per medical control. Verify all peds adjuncts.',
     picture:'Pediatric shock not responding to fluids + pressors (PHI Resusc 4.9.3, p. 4-34). Search for unrecognized cause; ALL pediatric adjuncts REQUIRE ONLINE MEDICAL CONTROL.',
     plan:[
       'Evaluate for unrecognized: tension PTX, pericardial effusion (tamponade), ongoing occult blood loss',
@@ -1932,6 +2007,7 @@ var DX_PLAN = {
     ]
   },
   stroke_ich: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order for hemorrhagic stroke BP control (PHI Neuro 7.4 explicitly states no peds standing orders for BP control drugs). Verify with medical control.',
     picture:'Pediatric ICH — uncommon, often associated with AVM, aneurysm, coagulopathy, sickle cell. Presents with sudden HA, AMS, focal deficit, seizure. BP management is critical.',
     plan:[
       'Neuro exam q15 min — document GCS, pupils, focal deficits',
@@ -1944,9 +2020,10 @@ var DX_PLAN = {
       'Transport to peds neuro/neurosurgery center'
     ]
   },
-  undif_stroke:{picture:'Pediatric stroke symptoms without head CT diagnosis. PHI Neuro 7.4: NO pediatric standing orders. Online medical direction REQUIRED before BP treatment.',
+  undif_stroke:{nonPhi:true, nonPhiNote:'PHI explicitly excludes peds standing orders; if not already flagged, flag it.',picture:'Pediatric stroke symptoms without head CT diagnosis. PHI Neuro 7.4: NO pediatric standing orders. Online medical direction REQUIRED before BP treatment.',
     plan:['Check finger-stick glucose FIRST — hypoglycemia mimics stroke; treat hypoglycemia immediately','CONTACT ONLINE MEDICAL DIRECTION before any BP treatment in peds','PHI states "No PHI Standing Orders or Indications" for nicardipine, clevidipine, labetalol in peds','Acute HTN may be protective for brain perfusion','Avoid acute lowering of BP without medical direction order','Supportive care: airway, monitoring, neuro checks q15 min','Notify receiving peds neuro/stroke center','Document MD contacted and orders received']},
   post_intubation: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order. Adapted from PHI Analgesia Ch 5 + PALS. Verify with medical control.',
     picture:'Post-RSI sedation in pediatric patient. Analgesia FIRST. Paralytic outlasts induction — child paralyzed but AWARE without sedation. Use age-appropriate dosing; ketamine preferred if unstable.',
     plan:[
       'ANALGESIA FIRST: fentanyl 1-2 mcg/kg IV q10 min PRN, then 1-2 mcg/kg/hr infusion',
@@ -1958,6 +2035,7 @@ var DX_PLAN = {
     ]
   },
   agitation: {
+    nonPhi:true, nonPhiNote:'PHI Dangerous Agitation 6.3 explicitly states "no peds standing orders." MD direction required.',
     picture:'Pediatric dangerous agitation — risk to crew, self, aircraft. Causes: head injury, hypoxia, hypoglycemia, intoxication, pain, fear, autism/developmental. Identify and treat reversible causes FIRST.',
     plan:[
       'Reversible-cause sweep: glucose, SpO2, EtCO2, pupils, head injury',
@@ -1971,6 +2049,7 @@ var DX_PLAN = {
     ]
   },
   anxiolysis: {
+    nonPhi:true, nonPhiNote:'No PHI peds standing-order. Adapted from PHI Analgesia Ch 5 + PALS. Verify with medical control.',
     picture:'Pediatric anxiety pre-loading or in-flight. Treat pain FIRST. Untreated anxiety escalates to agitation.',
     plan:[
       'Address pain first — fentanyl IV/IN',
@@ -2295,8 +2374,10 @@ function renderPlan(){
   }
   var p = DX_PLAN[dx];
   var planLis = p.plan.map(function(s){ return '<li style="margin-bottom:5px">' + s + '</li>'; }).join('');
+  var nonPhiBanner = (p && p.nonPhi) ? '<div class="non-phi-banner"><span class="non-phi-icon">⚠</span><div class="non-phi-text"><div class="non-phi-label">NON-PHI PROTOCOL</div><div class="non-phi-sub">' + (p.nonPhiNote || 'Not on PHI standing orders. Use as clinical reference only and verify with online medical control before acting.') + '</div></div></div>' : '';
   var protoBtn = renderProtocolBtn(dx);
   out.innerHTML =
+    nonPhiBanner +
     '<div style="font-size:.86rem;line-height:1.55;color:var(--tx0);margin-bottom:12px"><strong style="color:var(--purple)">Picture: </strong>' + p.picture + '</div>' +
     protoBtn +
     '<div class="slbl" style="margin-top:10px">Plan of Action — Field Reference</div>' +
@@ -2411,16 +2492,20 @@ function rcCard(opts){
   var mdCtrlBadge = opts.mdControl ? '<div class="rc-mdctrl">⚠ MEDICAL DIRECTION REQUIRED</div>' : '';
   // GIVE BOX — prominent under-stress display of MAX recommended dose + concentration + mL to push.
   var giveBox = '';
-  if(opts.giveBox && opts.giveBox.mL != null){
+  if(opts.giveBox){
     var g = opts.giveBox;
-    giveBox = '<div class="give-box">' +
-      '<div class="gb-label">' + (g.label || 'Give') + '</div>' +
-      '<div class="gb-vol">' + g.mL + ' mL' + (g.mg ? '<span class="gb-mg">= ' + g.mg + '</span>' : '') + '</div>' +
-      (g.conc ? '<div class="gb-conc">' + g.conc + '</div>' : '') +
-      (g.rule ? '<div class="gb-rule">' + g.rule + '</div>' : '') +
-    '</div>';
-  } else if(opts.giveBox && opts.giveBox.needsWt){
-    giveBox = '<div class="give-box" style="border-color:rgba(251,191,36,.5)"><div class="gb-label" style="color:var(--amber)">Enter weight</div><div class="gb-vol" style="color:var(--amber);font-size:.95rem">to see mL to give</div></div>';
+    if(g.needsWt){
+      giveBox = '<div class="give-box needs-wt"><div class="gb-label">to see mL to give</div><div class="gb-vol">enter weight</div></div>';
+    } else if(g.mL != null || g.mg != null){
+      var volPart = (g.mL != null && g.mL !== '') ? (g.mL + ' mL') : g.mg;
+      var mgPart = (g.mL != null && g.mg) ? '<span class="gb-mg">= ' + g.mg + '</span>' : '';
+      giveBox = '<div class="give-box">' +
+        '<div class="gb-label">' + (g.label || 'Give') + '</div>' +
+        '<div class="gb-vol">' + volPart + mgPart + '</div>' +
+        (g.conc ? '<div class="gb-conc">' + g.conc + '</div>' : '') +
+        (g.rule ? '<div class="gb-rule">' + g.rule + '</div>' : '') +
+      '</div>';
+    }
   }
   var targets = (opts.targets ? '<div class="rc-targets">' +
     '<div class="rc-targets-label">START</div>' +
@@ -3389,6 +3474,7 @@ var DX_DRUGS = {
   // Order = line of therapy: 1st-line listed first, then alternatives, then adjuncts.
   preterm:    ['fluidBolus','epiArrest','d10','alprostadil'],
   arrest:     ['defib','epiArrest','amiodaroneArrest','lidocaineArrest','fluidBolus'],
+  pea:        ['epiArrest','caClPeds','caGlucPeds','bicarbTox','naloxone','d10','fluidBolus','glucagonCCB','cyanokit'],
   post_rosc:  ['fluidBolus','epiInfusionShock','fentanyl','epiArrest'],
   post_lytics:['labetalol'],
   brady:      ['epiArrest','atropine','fluidBolus'],
@@ -3434,7 +3520,8 @@ var DX_DRUGS = {
   chemical_burn: ['fentanylBolus','fluidBolus'],
   hypothermia: ['fluidBolus'],
   frostbite:  ['fentanylBolus'],
-  heat_illness: ['fluidBolus']
+  heat_illness: ['fluidBolus'],
+  drowning: ['epiArrest','fentanylBolus','albuterol','fluidBolus','ketamineInduction','rocPeds','d10']
 };
 
 function renderDxDrugs(){
