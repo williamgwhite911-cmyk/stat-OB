@@ -1,5 +1,37 @@
 # StatFlight Changes
 
+## Pain protocol rebuilt to PHI 5.1.2 Analgesia format (Rev 23, 23 Jan 2025)
+
+`pain-protocol.html` rewritten to mirror the PHI Health Clinical Care
+Guidelines section 5.1.2 verbatim:
+
+- PHI document-style banner (PHI HEALTH logo block, section title,
+  Rev/Date metadata)
+- "5.1.2 Analgesia" section heading
+- General Guidelines intro paragraph (verbatim from PHI doc)
+- Each medication: Adult column / Pediatric column with bulleted doses
+  - Fentanyl: 0.5–2 mcg/kg IBW IV over 1 min, IM, NAS — repeat q 10 min PRN
+  - Morphine: 2–10 mg adult / 0.05–0.2 mg/kg peds (max 10 mg single)
+  - Hydromorphone: 0.2–1 mg adult / 0.01–0.02 mg/kg peds — max total 4 mg
+- "Adjunctive Analgesia" subsection
+  - Ketamine sub-dissociative 0.1–0.3 mg/kg IBW; max single 30 mg;
+    NOTE × 3 (refractory to opioids · Naltrexone/Buprenorphine ·
+    not advised in psychosis); CAUTION callout for slow push
+  - Ketorolac 15 mg adult / 0.5 mg/kg peds (max 15 mg)
+- OB addendum below — institutional guidance not in PHI 5.1.2: non-labor
+  vs labor pain with ketamine contraindication and NSAID gestational-age
+  limits
+- Reassess + Document tiles at bottom
+- Print stylesheet: portrait letter, 0.4" margins, monochrome-friendly
+
+In-app pain_mgmt protocols updated to PHI doses (adult / peds / ob).
+Drug cards (adult + peds): ketamineAnalgesic simplified to single
+0.1–0.3 mg/kg range with 30 mg cap; hydromorphone updated to PHI
+0.2–1 mg adult / 0.01–0.02 mg/kg peds with 4 mg total cap; new
+ketorolac card added.
+
+SW cache bumped v52 → v53.
+
 ## New: One-page Trauma Star Pain Protocol (pain-protocol.html)
 
 Standalone reference card covering Adult, OB Non-Labor, OB Labor, and Peds

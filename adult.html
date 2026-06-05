@@ -1449,17 +1449,18 @@ var DX_PLAN = {
     plan:['Evaluate for unrecognized: tension PTX, pericardial effusion (tamponade), ongoing occult blood loss, mechanical complications','Stress dose steroids if adrenal crisis suspected (CONSULT MEDICAL CONTROL): Hydrocortisone 100 mg IV (adult). PEDS: NO standing orders — physician order required.','Ill infant with refractory shock → suspect ductal-dependent congenital heart defect: CONSULT MD for Alprostadil 0.02-0.05 mcg/kg/min','Pediatric persistent shock + suspected hypocalcemia (ionized Ca < 1.1 mmol/L / 4.8 mg/dL): CONSULT MD for Calcium Gluconate','Continue volume + pressor support per Non-Hemorrhagic Shock guideline','Notify receiving + medical control early in any catecholamine-resistant shock']},
   post_intubation:{nonPhi:true, nonPhiNote:'PHI Analgesia Ch 5 referenced. Plan elements include synthesized practice points; verify drug-specific dosing with medical control.', picture:'Post-RSI/intubation analgesia and sedation. ALWAYS treat pain first. Paralytic outlasts induction agent — patient is paralyzed but AWARE without sedation. Stratify: assessable vs paralyzed (RASS not valid) vs hemodynamically unstable.',
     plan:['ANALGESIA FIRST: fentanyl 0.5-2 mcg/kg IV q10 min PRN, then 1-2 mcg/kg/hr infusion','Then sedation: ketamine 1-2 mg/kg IV bolus → 1-4 mg/kg/hr infusion (preferred if unstable)','If paralyzed and non-assessable: ketamine monotherapy OR fentanyl + sedative DUAL agent','NEVER use RASS/CPOT/BPS on paralyzed patients — they cannot exhibit measurable behavior','If using ketamine infusion, ALWAYS bolus first to avoid dysphoria/under-sedation','Reassess every 10-15 min: HR, BP, pupils, lacrimation, ventilator synchrony','Goal: RASS -2 to 0 if assessable; deeper if paralyzed']},
-  pain_mgmt:{nonPhi:true, nonPhiNote:'Trauma Star Pain Protocol — synthesized clinical pathway. Fentanyl is first-line, ketamine analgesic dose is opioid-sparing, hydromorphone is the longer-acting step. Verify with medical control.',
-    picture:'Acute pain (broken bone / soft tissue / non-labor). Stepwise: fentanyl → ketamine (analgesic dose) → hydromorphone. <strong>Pregnant patient → switch to OB app.</strong> Ketamine is contraindicated for analgesia in pregnancy.',
+  pain_mgmt:{picture:'PHI 5.1.2 Analgesia (Rev 23, 23 Jan 2025). Assess pain with age/condition-appropriate scale. Treat to the lowest reasonable level balanced with cardiovascular stability and pain goals. Adjunctive ketamine for opioid-refractory pain, or when patient is on Naltrexone / Buprenorphine. <strong>Pregnant patient → use OB app (ketamine contraindicated in pregnancy).</strong>',
     plan:[
-      'STEP 1 — Fentanyl 0.5-1 mcg/kg IV. Repeat q5-10 min PRN. MAX cumulative 200 mcg.',
-      'STEP 2 — Ketamine (analgesic dose, opioid-sparing): mild pain / elderly >75 / fragile → 0.1-0.3 mg/kg IV over 1-2 min. Moderate-severe in stable adult → 0.3-0.5 mg/kg IV over 1-2 min. Reassess at 5 min. Repeat only if needed.',
-      'STEP 3 — Hydromorphone (Dilaudid): 0.2-0.8 mg IV over 2-3 min for most adults; 0.5-1.5 mg IV for opioid-tolerant. Repeat q30-60 min PRN, titrated to effect.',
-      'BROKEN BONE vs LABOR PAIN: this protocol is for fracture / soft tissue / non-obstetric pain. For labor pain → OB app (neuraxial first-line, NO ketamine, opioids only if neuraxial unavailable).',
-      'Lower starting doses in elderly, frail, or renal / hepatic impairment.',
-      'Monitor for respiratory depression and sedation with opioids.',
-      'Ketamine is NOT sedative-only — partial dissociation possible at higher doses; reassure patient.',
-      'If pregnancy known or possible → STOP, use OB Pain Management protocol (ketamine contraindicated for analgesia in pregnancy).'
+      'FENTANYL — 0.5-2 mcg/kg IBW IV over 1 min, IM, NAS. Repeat q 10 min PRN.',
+      'MORPHINE — 2-10 mg IV push over 1-2 min, IM. Repeat q 20 min PRN. Titrate to pain goal.',
+      'HYDROMORPHONE (Dilaudid) — 0.2-1 mg IV over 2 min, IM. Repeat q 15 min PRN. MAX total dose 4 mg.',
+      'ADJUNCTIVE — Ketamine sub-dissociative 0.1-0.3 mg/kg IBW IV over 1-2 min, IM, NAS. Repeat q 10-20 min PRN. MAX single dose 30 mg. Push SLOWLY — fast push causes partial dissociation → agitation/delirium.',
+      'ADJUNCTIVE — Ketorolac 15 mg IV over 30-60 seconds. Avoid in renal impairment / GI bleed / coagulopathy.',
+      'KETAMINE INDICATIONS: pain refractory to opioids, OR patient on Naltrexone / Buprenorphine.',
+      'KETAMINE CAUTIONS: not advised in active psychosis; partial dissociation if pushed too fast.',
+      'Reassess pain frequently. Monitor RR, SpO2, BP, sedation level (RASS / Pasero) at every dose.',
+      'Document weight, IBW (for fentanyl/ketamine), pre/post pain score, RR/SpO2/BP, adverse effects, naloxone availability.',
+      'See one-page reference: pain-protocol.html'
     ]},
   anxiolysis:{nonPhi:true, nonPhiNote:'PHI Analgesia Ch 5 referenced. Plan elements include synthesized practice points; verify with medical control.', picture:'Anxious patient pre-loading or in-flight. Untreated anxiety can escalate to dangerous agitation. Treat anxiety AFTER pain control (treat pain with opioid first).',
     plan:['Address pain first — fentanyl titrated','Verbal de-escalation, environment control (calm, quiet, dim cabin)','Midazolam 0.5-2 mg IV/IM/IN q5 min PRN to effect (max ~5 mg single dose)','Or lorazepam 0.5-2 mg IV/IM/IN q10-20 min PRN','CAUTION: benzo + opioid combo — monitor closely for respiratory depression','Have BVM, I-gel, suction at head of bed','If escalates to dangerous agitation, switch to droperidol/ketamine pathway','Consider pilot notification for at-risk patients']},
@@ -2030,29 +2031,37 @@ var DRUGS = {
       rows:[{k:'Dose',v:'2 to '+mx('5')+' mg IV/IM'},{k:'Volume',v:'0.5 to '+mx('1.25 mL'),cls:'calc'},{k:'Max single',v:mx('10 mg'),cls:'warn'}]});
   },
   ketamineAnalgesic: function(){
-    var w=dosingWt();
-    var loMin=round(0.1*w,1), loMax=round(0.3*w,1);
-    var hiMin=round(0.3*w,1), hiMax=round(0.5*w,1);
-    return rcCard({name:'Ketamine — Analgesic Dose',generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — sub-dissociative for pain',cat:'PAIN',form:'vial',line:'opioid-sparing (Step 2)',
-      indication:'Acute pain — sub-dissociative ketamine. Pair with fentanyl as Step 2 of the Trauma Star Pain Protocol.',color:'var(--orange)',
+    var ibw=dosingIbw();
+    var loMg=round(0.1*ibw,1), hiMg=Math.min(round(0.3*ibw,1), 30);
+    var maxNote = (0.3*ibw > 30) ? ' (capped at 30 mg max single dose)' : '';
+    return rcCard({name:'Ketamine — Sub-dissociative',generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — PHI 5.1.2 Adjunctive',cat:'PAIN',form:'vial',line:'adjunctive',
+      indication:'PHI 5.1.2: Pain refractory to opioids, OR patient on Naltrexone / Buprenorphine. Not advised in active psychosis.',color:'var(--orange)',
       rows:[
-        {k:'Mild / elderly >75 / fragile',v:'0.1 to 0.3 mg/kg IV over 1-2 min'},
-        {k:'Calc (mild)',v:loMin+' to '+loMax+' mg ('+round(loMin/50,2)+' to '+round(loMax/50,2)+' mL)',cls:'calc'},
-        {k:'Moderate-severe / stable',v:'0.3 to 0.5 mg/kg IV over 1-2 min'},
-        {k:'Calc (mod-severe)',v:hiMin+' to '+hiMax+' mg ('+round(hiMin/50,2)+' to '+round(hiMax/50,2)+' mL)',cls:'calc'},
-        {k:'Reassess',v:'5 min — repeat only if needed'}
+        {k:'PHI dose',v:'0.1 to 0.3 mg/kg IBW IV over 1-2 min, IM, NAS'},
+        {k:'IBW',v:round(ibw,1)+' kg',cls:'calc'},
+        {k:'Calc',v:loMg+' to '+mx(hiMg+' mg')+' ('+round(loMg/50,2)+' to '+round(hiMg/50,2)+' mL)'+maxNote,cls:'calc'},
+        {k:'Repeat',v:'q 10-20 min PRN'},
+        {k:'MAX single',v:mx('30 mg'),cls:'warn'}
       ],
-      warn:'⚠ AVOID in pregnancy for analgesia (use OB protocol). Not sedative-only — partial dissociation possible at higher end.'});
+      warn:'⚠ Push SLOWLY over 1-2 min — fast push causes partial dissociation → agitation/delirium. AVOID in pregnancy for analgesia.'});
   },
   hydromorphone: function(){
-    return rcCard({name:'Hydromorphone (Dilaudid)',generic:'Stock 2 mg/mL or 4 mg/mL vial — longer-acting opioid',cat:'PAIN',form:'vial',line:'Step 3',
-      indication:'Pain Step 3 — longer-acting opioid after fentanyl ± ketamine',color:'var(--amber)',
+    return rcCard({name:'Hydromorphone (Dilaudid)',generic:'Stock 2 mg/mL or 4 mg/mL vial — longer-acting opioid — PHI 5.1.2',cat:'PAIN',form:'vial',line:'PHI standing order',
+      indication:'PHI 5.1.2 Analgesia — longer-acting opioid for transport',color:'var(--amber)',
       rows:[
-        {k:'Most adults',v:'0.2 to 0.8 mg IV over 2-3 min'},
-        {k:'Opioid-tolerant',v:'0.5 to 1.5 mg IV over 2-3 min'},
-        {k:'Repeat',v:'q30-60 min PRN, titrated to effect'}
+        {k:'PHI dose',v:'0.2 to 1 mg IV over 2 min, IM'},
+        {k:'Repeat',v:'q 15 min PRN'},
+        {k:'MAX total',v:mx('4 mg'),cls:'warn'}
       ],
-      warn:'Lower starting dose in elderly / frail / renal / hepatic impairment. Monitor for respiratory depression and sedation.'});
+      warn:'Lower starting dose in elderly / frail / renal / hepatic impairment. Monitor RR, SpO2, sedation. Have naloxone available.'});
+  },
+  ketorolac: function(){
+    return rcCard({name:'Ketorolac',generic:'NSAID — PHI 5.1.2 Adjunctive',cat:'PAIN',form:'vial',line:'adjunctive',
+      indication:'PHI 5.1.2 Adjunctive analgesia — non-opioid',color:'var(--amber)',
+      rows:[
+        {k:'PHI dose',v:'15 mg IV over 30-60 seconds'}
+      ],
+      warn:'AVOID in renal impairment, GI bleed / ulcer, coagulopathy, severe asthma, pregnancy (especially >20 wk).'});
   },
   // RSI
   ketamineInd: function(){
@@ -2276,7 +2285,7 @@ var DX_DRUGS = {
   agitation:['ketamineAgit','succRSI','ketamineDrip'],
   pe:['fluidBolus','norepi'],
   open_fracture:['cefazolin','clindamycin','fentanylBolus','fluidBolus','txa'],
-  pain_mgmt:['fentanylBolus','ketamineAnalgesic','hydromorphone'],
+  pain_mgmt:['fentanylBolus','morphinePain','hydromorphone','ketamineAnalgesic','ketorolac'],
   aaa:['nicardipine','fluidBolus','fentanylBolus','txa'],
   dissection:['nicardipine','esmolol','labetalol','clevidipine','fentanylBolus'],
   hemshock:['txa','fluidBolus','cacl','cagluc','norepi'],
