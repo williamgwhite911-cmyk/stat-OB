@@ -35,6 +35,30 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
 .topbar .pbtn{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-family:var(--mono);font-size:.7rem;font-weight:700;letter-spacing:.08em;cursor:pointer}
 .topbar .pbtn:hover{filter:brightness(1.15)}
 
+/* Role badge — shows when filtered to adult / peds / ob */
+.role-badge{display:none;align-items:center;gap:8px;padding:7px 11px;font-family:var(--mono);font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;border-radius:6px;border:1px solid currentColor;margin-bottom:14px;width:fit-content}
+body[data-role] .role-badge{display:inline-flex}
+body[data-role="adult"] .role-badge{color:#22c55e;background:rgba(34,197,94,.08)}
+body[data-role="peds"] .role-badge{color:#22d3ee;background:rgba(34,211,238,.08)}
+body[data-role="ob"] .role-badge{color:#f472b6;background:rgba(244,114,182,.08)}
+
+/* Role-based filtering — when ?role=adult|peds|ob in URL */
+/* adult: hide Peds column + OB addendum; collapse cols2 to single column */
+body[data-role="adult"] .col[data-col="peds"]{display:none}
+body[data-role="adult"] .cols2{grid-template-columns:1fr;max-width:560px}
+body[data-role="adult"] .ob-addendum{display:none}
+/* peds: hide Adult column + OB addendum; collapse cols2 to single column */
+body[data-role="peds"] .col[data-col="adult"]{display:none}
+body[data-role="peds"] .cols2{grid-template-columns:1fr;max-width:560px}
+body[data-role="peds"] .ob-addendum{display:none}
+/* ob: hide all main med blocks + adjunct header; show only banner + intro + OB addendum + reassess/document tiles */
+body[data-role="ob"] .med{display:none}
+body[data-role="ob"] .adjunct-hdr{display:none}
+
+/* Embed mode (iframe inside parent app) — hide the topbar */
+body.embed-mode .topbar{display:none}
+body.embed-mode .wrap{padding-top:12px}
+
 .wrap{max-width:1100px;margin:0 auto;padding:20px 18px 36px}
 
 /* Document-style banner (PHI-format) */
@@ -170,6 +194,8 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
     <div class="doc-banner-meta"><b>Trauma Star</b> &nbsp; Pain Protocol<br>Adult · OB · Peds</div>
   </div>
 
+  <div class="role-badge"><span>Filtered view:</span> <span id="roleLabel">all</span></div>
+
   <div class="section-no"><span class="num">1.0</span> Analgesia</div>
 
   <p class="intro">
@@ -180,7 +206,7 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
   <div class="med">
     <div class="med-name">Fentanyl <span class="sub">stock 50 mcg/mL · 1st-line opioid</span></div>
     <div class="cols2">
-      <div class="col">
+      <div class="col" data-col="adult">
         <div class="col-label">Adult</div>
         <ul>
           <li>0.5–1 mcg/kg IV, IM, IN</li>
@@ -188,7 +214,7 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
           <li>Max cumulative dose 200 mcg</li>
         </ul>
       </div>
-      <div class="col">
+      <div class="col" data-col="peds">
         <div class="col-label">Pediatric</div>
         <ul>
           <li>1–2 mcg/kg IV / IN</li>
@@ -203,7 +229,7 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
   <div class="med">
     <div class="med-name">Hydromorphone (Dilaudid) <span class="sub">stock 2 mg/mL or 4 mg/mL · longer-acting opioid</span></div>
     <div class="cols2">
-      <div class="col">
+      <div class="col" data-col="adult">
         <div class="col-label">Adult</div>
         <ul>
           <li>0.2–0.8 mg IV over 2–3 min (most adults)</li>
@@ -211,7 +237,7 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
           <li>Repeat q 30–60 min PRN, titrated to effect</li>
         </ul>
       </div>
-      <div class="col">
+      <div class="col" data-col="peds">
         <div class="col-label">Pediatric</div>
         <ul>
           <li>0.01–0.02 mg/kg IV over 2–3 min</li>
@@ -228,7 +254,7 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
   <div class="med">
     <div class="med-name">Ketamine — Sub-dissociative Dose <span class="sub">stock 500 mg / 10 mL (50 mg/mL) · opioid-sparing</span></div>
     <div class="cols2">
-      <div class="col">
+      <div class="col" data-col="adult">
         <div class="col-label">Adult</div>
         <ul>
           <li>Mild / elderly &gt;75 / fragile: 0.1–0.3 mg/kg IV over 1–2 min</li>
@@ -236,7 +262,7 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
           <li>Reassess at 5 min; repeat only if needed</li>
         </ul>
       </div>
-      <div class="col">
+      <div class="col" data-col="peds">
         <div class="col-label">Pediatric</div>
         <ul>
           <li>Young / fragile IV: 0.1–0.3 mg/kg IV over 1–2 min</li>
@@ -262,14 +288,14 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
   <div class="med">
     <div class="med-name">Ketorolac (Toradol) <span class="sub">NSAID · non-narcotic adjunct · opioid-sparing</span></div>
     <div class="cols2">
-      <div class="col">
+      <div class="col" data-col="adult">
         <div class="col-label">Adult</div>
         <ul>
           <li>15 mg IV over 30–60 seconds</li>
           <li>Single dose for transport (do not exceed 5 days total therapy)</li>
         </ul>
       </div>
-      <div class="col">
+      <div class="col" data-col="peds">
         <div class="col-label">Pediatric</div>
         <ul>
           <li>0.5 mg/kg IV over 30–60 seconds</li>
@@ -289,7 +315,7 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
   <div class="med">
     <div class="med-name">Acetaminophen IV (Ofirmev) <span class="sub">non-narcotic · non-NSAID · safe in pregnancy</span></div>
     <div class="cols2">
-      <div class="col">
+      <div class="col" data-col="adult">
         <div class="col-label">Adult</div>
         <ul>
           <li>1000 mg IV over 15 min q 6 hr (≥ 50 kg)</li>
@@ -297,7 +323,7 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
           <li>MAX 4 g per 24 hr (all sources combined)</li>
         </ul>
       </div>
-      <div class="col">
+      <div class="col" data-col="peds">
         <div class="col-label">Pediatric</div>
         <ul>
           <li>≥ 13 yr or ≥ 50 kg: adult dosing</li>
@@ -384,6 +410,25 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
 </div>
 
 <script>
+// Role filter (?role=adult|peds|ob) + embed mode (?embed=1)
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var role = (params.get('role') || '').toLowerCase();
+  if(role === 'adult' || role === 'peds' || role === 'ob'){
+    document.body.setAttribute('data-role', role);
+    var lbl = document.getElementById('roleLabel');
+    if(lbl) lbl.textContent = role === 'adult' ? 'Adult only' : role === 'peds' ? 'Pediatric only' : 'Obstetric only';
+    var titles = { adult: 'Trauma Star Analgesia — Adult', peds: 'Trauma Star Analgesia — Peds', ob: 'Trauma Star Analgesia — OB' };
+    document.title = titles[role] || document.title;
+    var h1 = document.querySelector('.topbar h1');
+    if(h1) h1.textContent = role === 'adult' ? 'Trauma Star — Adult' : role === 'peds' ? 'Trauma Star — Peds' : 'Trauma Star — OB';
+  }
+  // Embed mode hides the topbar (used when iframe-embedded inside the apps)
+  if(params.get('embed') === '1'){
+    document.body.classList.add('embed-mode');
+  }
+})();
+
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
     navigator.serviceWorker.register('sw.js').catch(function(err){

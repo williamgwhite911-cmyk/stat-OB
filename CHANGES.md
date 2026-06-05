@@ -1,5 +1,32 @@
 # StatFlight Changes
 
+## Trauma Star Analgesia replaces PHI protocol in the analgesia diagnosis (per-tab filtered)
+
+The Pain Management diagnosis in each app now links to the Trauma Star
+Analgesia Protocol page (pain-protocol.html) filtered to that app's
+population — so the Adult tab shows the Adult-only section, Peds the
+Peds-only section, and OB the OB Addendum (non-labor + labor).
+
+pain-protocol.html now supports two URL params:
+- `?role=adult` — hides Pediatric column + OB addendum
+- `?role=peds` — hides Adult column + OB addendum
+- `?role=ob` — hides all main med blocks + Adjunctive Analgesia header,
+  shows only the OB Addendum (with non-labor and labor sub-blocks)
+- `?embed=1` — hides the page topbar (used by in-app iframe overlay)
+
+A small role-color badge appears at the top of the filtered view
+(green for adult, cyan for peds, pink for ob).
+
+In-app integration:
+- Each app (adult/peds/ob) gets a small HTML iframe overlay with a
+  BACK TO APP button and Escape-to-close
+- renderPlan() in each app prepends a purple proto-style button when
+  the selected diagnosis is `pain_mgmt` (and OB also for `labor_pain`)
+- Button opens pain-protocol.html?role=<adult|peds|ob>&embed=1 inside
+  the iframe overlay — fully offline-capable via the existing SW cache
+
+SW cache bumped v55 → v56.
+
 ## Add Ketorolac + IV Acetaminophen (Tylenol) to pain protocol
 
 Two non-narcotic adjuncts added across pain-protocol.html and the in-app

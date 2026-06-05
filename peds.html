@@ -2418,9 +2418,22 @@ function renderPlan(){
   var planLis = p.plan.map(function(s){ return '<li style="margin-bottom:5px">' + s + '</li>'; }).join('');
   var nonPhiBanner = (p && p.nonPhi) ? '<div class="non-phi-banner"><span class="non-phi-icon">⚠</span><div class="non-phi-text"><div class="non-phi-label">NON-PHI PROTOCOL</div><div class="non-phi-sub">' + (p.nonPhiNote || 'Not on PHI standing orders. Use as clinical reference only and verify with online medical control before acting.') + '</div></div></div>' : '';
   var protoBtn = renderProtocolBtn(dx);
+  // Trauma Star Analgesia button for pain_mgmt diagnosis
+  var traumaPainBtn = '';
+  if(dx === 'pain_mgmt'){
+    traumaPainBtn = '<a href="javascript:void(0)" class="proto-btn" onclick="openTraumaPainProtocol(\'peds\')">' +
+      '<span class="proto-icon">📑</span>' +
+      '<span class="proto-text">' +
+        '<span class="proto-label">Trauma Star Analgesia Protocol</span>' +
+        '<span class="proto-cite">Peds section · one-page Trauma Star reference</span>' +
+      '</span>' +
+      '<span class="proto-chev">›</span>' +
+    '</a>';
+  }
   out.innerHTML =
     nonPhiBanner +
     '<div style="font-size:.86rem;line-height:1.55;color:var(--tx0);margin-bottom:12px"><strong style="color:var(--purple)">Picture: </strong>' + p.picture + '</div>' +
+    traumaPainBtn +
     protoBtn +
     '<div class="slbl" style="margin-top:10px">Plan of Action — Field Reference</div>' +
     '<ol style="padding-left:18px;font-size:.83rem;line-height:1.55;color:var(--tx0)">' + planLis + '</ol>' +
@@ -4191,7 +4204,56 @@ safeRun('renderAllDrugs', function(){ renderAllDrugs('all'); });
 safeRun('renderSafer', renderSafer);
 safeRun('renderIntubation', renderIntubation);
 safeRun('renderBurnMap', renderBurnMap);
+
+// ====== Trauma Star Analgesia HTML overlay ======
+function openHtmlOverlay(url, title){
+  var ov = document.getElementById('htmlOverlay');
+  var fr = document.getElementById('htmlOverlayFrame');
+  var tt = document.getElementById('htmlOverlayTitle');
+  if(!ov || !fr) return;
+  if(tt) tt.textContent = title || 'Trauma Star Protocol';
+  fr.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'embed=1';
+  ov.classList.add('show');
+  document.documentElement.style.overflow='hidden';
+  document.body.style.overflow='hidden';
+}
+function closeHtmlOverlay(){
+  var ov = document.getElementById('htmlOverlay');
+  var fr = document.getElementById('htmlOverlayFrame');
+  if(ov) ov.classList.remove('show');
+  if(fr) fr.src = 'about:blank';
+  document.documentElement.style.overflow='';
+  document.body.style.overflow='';
+}
+function openTraumaPainProtocol(role, label){
+  var titles = { adult: 'Trauma Star — Adult Analgesia', peds: 'Trauma Star — Peds Analgesia', ob: 'Trauma Star — OB Analgesia' };
+  openHtmlOverlay('pain-protocol.html?role=' + role, label || titles[role] || 'Trauma Star Analgesia');
+}
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    var ov = document.getElementById('htmlOverlay');
+    if(ov && ov.classList.contains('show')) closeHtmlOverlay();
+  }
+});
 </script>
+
+<style>
+.html-overlay{display:none;position:fixed;inset:0;background:var(--bg0);z-index:1000;flex-direction:column}
+.html-overlay.show{display:flex}
+.html-overlay-bar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg1);border-bottom:1px solid var(--bd1);flex-shrink:0;padding-top:max(10px,env(safe-area-inset-top,10px))}
+.html-overlay-back{background:var(--bg2);color:var(--cyan);border:1px solid var(--bd1);border-radius:6px;padding:7px 11px;font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.06em;cursor:pointer;display:flex;align-items:center;gap:4px}
+.html-overlay-back:hover{background:var(--s0);border-color:var(--cyan)}
+.html-overlay-title{font-weight:700;font-size:.85rem;color:var(--tx0);flex:1}
+#htmlOverlayFrame{flex:1;width:100%;border:0;background:var(--bg0)}
+</style>
+
+<div id="htmlOverlay" class="html-overlay" role="dialog" aria-label="Trauma Star Protocol">
+  <div class="html-overlay-bar">
+    <button class="html-overlay-back" type="button" onclick="closeHtmlOverlay()">‹ BACK TO APP</button>
+    <div class="html-overlay-title" id="htmlOverlayTitle">Trauma Star Protocol</div>
+  </div>
+  <iframe id="htmlOverlayFrame" src="about:blank" title="Trauma Star Protocol"></iframe>
+</div>
 
 <div id="pdfOverlay" class="pdf-overlay" role="dialog" aria-label="Protocol PDF">
   <div class="pdf-bar">
