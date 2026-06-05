@@ -1,5 +1,17 @@
 # StatFlight Changes
 
+## Diagnosis picker condensed to a dropdown (Adult / Peds / OB)
+
+The diagnosis grid (~30 cards per app stacked in multiple rows by category)
+is now a single `<select>` with `<optgroup>` per category. Saves ~80% of
+the vertical space on mobile. Tap the dropdown → pick from grouped lists.
+
+Behavior unchanged — selecting a diagnosis still triggers the same render
+chain (drug panel, plan, burn map / diagnosis drugs). `state.dx` /
+`state.m.dx` are preserved.
+
+SW cache bumped v50 → v51.
+
 ## Trauma Star Pain Protocol (Adult / Peds / OB)
 
 New diagnosis card under a new "PAIN / ANALGESIA" category in all three apps.
