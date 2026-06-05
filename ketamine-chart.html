@@ -299,7 +299,7 @@
           <div class="lbl">Ketamine RSI · 2 mg/kg</div>
           <div class="give-line"><span class="give-word">GIVE</span> <span class="give-mg" id="rRsiMg">— mg</span></div>
           <div class="equals">= <span class="give-ml" id="rRsiMl">— mL</span></div>
-          <div class="rule">concentration 50 mg/mL</div>
+          <div class="rule">concentration 100 mg/mL</div>
         </div>
         <div class="rdose roc">
           <div class="lbl">Rocuronium RSI · 1 mg/kg</div>
@@ -311,13 +311,13 @@
           <div class="lbl">Ketamine Agitation · 3 mg/kg</div>
           <div class="give-line"><span class="give-word">GIVE</span> <span class="give-mg" id="rAgitMg">— mg</span></div>
           <div class="equals">= <span class="give-ml" id="rAgitMl">— mL</span></div>
-          <div class="rule">concentration 50 mg/mL</div>
+          <div class="rule">concentration 100 mg/mL</div>
         </div>
         <div class="rdose inf">
           <div class="lbl">Ketamine Infusion · 4 mg/kg/hr</div>
           <div class="give-line"><span class="give-word">GIVE</span> <span class="give-mg" id="rInfMg">— mg/hr</span></div>
           <div class="equals">= <span class="give-ml" id="rInfMl">— mL/hr</span></div>
-          <div class="rule">concentration 50 mg/mL</div>
+          <div class="rule">concentration 100 mg/mL</div>
         </div>
       </div>
     </div>
@@ -799,7 +799,7 @@ function showResult(wt, label, color){
   card.classList.remove('empty');
   document.getElementById('rPtLbl').textContent = label;
   document.getElementById('rPtWt').textContent = wt + ' kg';
-  // KET RSI 2 mg/kg, conc 50 mg/mL
+  // KET RSI 2 mg/kg, conc 100 mg/mL
   var ketRsi = wt * 2;
   var rocRsi = wt * 1.0;
   var ketAgit = wt * 3;

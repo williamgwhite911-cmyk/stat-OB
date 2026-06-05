@@ -1,5 +1,5 @@
 // StatFlight Service Worker — offline cache
-const CACHE_NAME = 'statflight-v57';
+const CACHE_NAME = 'statflight-v58';
 const ASSETS = [
   './',
   './index.html',
