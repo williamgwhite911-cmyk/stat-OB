@@ -1,5 +1,25 @@
 # StatFlight Changes
 
+## New: One-page Trauma Star Pain Protocol (pain-protocol.html)
+
+Standalone reference card covering Adult, OB Non-Labor, OB Labor, and Peds
+on a single landscape page. Mirrors the meds in the existing diagnosis
+cards (Fentanyl → Ketamine analgesic → Hydromorphone), with ketamine
+explicitly contraindicated for both OB variants.
+
+Each medication block shows:
+- **When** (indication)
+- **Dose** (with weight-based math where applicable)
+- **Reassess** (timing + what to monitor)
+- **Document** (exactly what to chart)
+
+Plus a top-of-page differentiation callout (broken-bone vs labor pain)
+and bottom-of-page reassess + document checklists. Print stylesheet
+formats to landscape letter at 0.3" margins.
+
+New homepage card on index.html links to it (purple gradient, "PAIN" icon).
+Added to SW cache list. Cache bumped v51 → v52.
+
 ## Diagnosis picker condensed to a dropdown (Adult / Peds / OB)
 
 The diagnosis grid (~30 cards per app stacked in multiple rows by category)
