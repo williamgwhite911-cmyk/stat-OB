@@ -149,7 +149,11 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
 .form-section-hdr.h-syringe{color:var(--cyan)}
 .form-section-hdr.h-po{color:var(--purple)}
 
-.dx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:8px}
+.dx-grid{margin-top:8px}
+.dx-select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--bd1);background:var(--bg2);color:var(--tx0);font-size:15px;font-family:inherit;font-weight:700;min-height:48px;-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--purple) 50%),linear-gradient(135deg,var(--purple) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:36px}
+.dx-select:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 2px rgba(167,139,250,.3)}
+.dx-select optgroup{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;color:var(--cyan);background:var(--bg1)}
+.dx-select option{font-size:.9rem;font-weight:500;color:var(--tx0);background:var(--bg2);padding:6px}
 /* PHI Protocol PDF deep-link button */
 .proto-btn{display:flex;align-items:center;gap:11px;padding:11px 14px;margin:8px 0 14px;background:linear-gradient(135deg,rgba(168,85,247,.18),rgba(34,211,238,.10));border:2px solid rgba(168,85,247,.55);border-radius:11px;text-decoration:none;color:var(--tx0);box-shadow:0 0 18px rgba(168,85,247,.18),inset 0 1px 0 rgba(255,255,255,.05);transition:transform .12s ease,box-shadow .2s ease,border-color .2s ease}
 .proto-btn:hover{transform:translateY(-1px);border-color:rgba(168,85,247,.85);box-shadow:0 0 24px rgba(168,85,247,.35),inset 0 1px 0 rgba(255,255,255,.08)}
@@ -1340,31 +1344,28 @@ function renderDxGrid(){
     if(!groups[cat]) groups[cat] = [];
     groups[cat].push(dx);
   });
-  var grid=document.getElementById('dxGrid');
-  var html = '';
+  function optsFor(cat){
+    return groups[cat].map(function(d){
+      var sel = state.dx === d.id ? ' selected' : '';
+      return '<option value="'+d.id+'"'+sel+'>'+d.name+' — '+d.sub+'</option>';
+    }).join('');
+  }
+  var html = '<select id="dxSelect" class="dx-select"><option value="">— Select a diagnosis —</option>';
   CAT_ORDER.forEach(function(cat){
     if(!groups[cat] || !groups[cat].length) return;
-    html += '<div class="dx-cat-header">' + cat + '</div>';
-    groups[cat].forEach(function(d){
-      var nonPhiClass = (typeof DX_PLAN !== 'undefined' && DX_PLAN[d.id] && DX_PLAN[d.id].nonPhi) ? ' dx-non-phi' : '';
-      html += '<div class="dx-card'+(state.dx===d.id?' on':'')+nonPhiClass+'" data-id="'+d.id+'"><div class="dx-name">'+d.name+'</div><div class="dx-sub">'+d.sub+'</div></div>';
-    });
+    html += '<optgroup label="'+cat+'">'+optsFor(cat)+'</optgroup>';
   });
   Object.keys(groups).forEach(function(cat){
     if(CAT_ORDER.indexOf(cat) !== -1) return;
-    html += '<div class="dx-cat-header">' + cat + '</div>';
-    groups[cat].forEach(function(d){
-      var nonPhiClass = (typeof DX_PLAN !== 'undefined' && DX_PLAN[d.id] && DX_PLAN[d.id].nonPhi) ? ' dx-non-phi' : '';
-      html += '<div class="dx-card'+(state.dx===d.id?' on':'')+nonPhiClass+'" data-id="'+d.id+'"><div class="dx-name">'+d.name+'</div><div class="dx-sub">'+d.sub+'</div></div>';
-    });
+    html += '<optgroup label="'+cat+'">'+optsFor(cat)+'</optgroup>';
   });
+  html += '</select>';
+  var grid = document.getElementById('dxGrid');
   grid.innerHTML = html;
-  grid.querySelectorAll('.dx-card').forEach(function(el){
-    el.onclick=function(){
-      state.dx = el.dataset.id===state.dx ? '' : el.dataset.id;
-      renderDxGrid(); renderDxDrugs(); renderPlan(); renderBurnMap();
-    };
-  });
+  document.getElementById('dxSelect').onchange = function(){
+    state.dx = this.value || '';
+    renderDxGrid(); renderDxDrugs(); renderPlan(); renderBurnMap();
+  };
 }
 
 var DX_PLAN = {
