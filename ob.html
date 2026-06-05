@@ -567,7 +567,7 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
   <div class="callout callout-info" style="font-size:.8rem;line-height:1.55">
     <strong>What PHI carries and orders for RSI:</strong><br>
     <span style="color:var(--teal);font-weight:700">✓ Ketamine</span> — preferred RSI induction agent (1.5-2 mg/kg IV, max RSI 2 mg/kg). Max infusion 4 mg/kg/hr adult.<br>
-    <span style="color:var(--teal);font-weight:700">✓ Rocuronium</span> — PHI standing order, 1.5 mg/kg IBW IV or 2 mg/kg IM.<br>
+    <span style="color:var(--teal);font-weight:700">✓ Rocuronium</span> — PHI standing order, 1 mg/kg IBW IV or 2 mg/kg IM.<br>
     <span style="color:var(--amber);font-weight:700">△ Succinylcholine</span> — PHI standing order is for <strong>Dangerous Agitation only</strong> (4 mg/kg IM). Not a PHI-listed routine RSI agent. Avoid in OB whenever roc is available.<br>
     <span style="color:var(--tx2);font-weight:700">✗ Etomidate</span> — <strong>NOT on PHI Health formulary</strong>. Listed in app for reference only.
   </div>
@@ -2083,11 +2083,11 @@ var DRUGS_MATERNAL = {
     });
   },
   rocuroniumRSI: function(){
-    // PHI dose: 1.5 mg/kg IBW IV or 2 mg/kg IM (Chapter 6 — formulary)
+    // PHI dose: 1 mg/kg IBW IV or 2 mg/kg IM (Chapter 6 — formulary)
     // Use IBW for paralytic dosing per PHI standard.
     var ibw = dosingIbw();
     var src = state.m.ibwFromHeight ? '(IBW from ht)' : '(PHI 50 kg IBW fallback)';
-    var dose = round(1.5*ibw, 0);
+    var dose = round(1*ibw, 0);
     var vol = round(dose/10, 2);
     var doseIM = round(2*ibw, 0);
     var volIM = round(doseIM/10, 2);
@@ -2097,7 +2097,7 @@ var DRUGS_MATERNAL = {
       line:'1st line',
       indication:'RSI paralysis — preferred over succinylcholine in eclamptic/preeclamptic patients on magnesium', color:'var(--rose)',
       rows:[
-        {k:'PHI dose IV', v:'1.5 mg/kg IBW IV push'},
+        {k:'PHI dose IV', v:'1 mg/kg IBW IV push'},
         {k:'PHI dose IM', v:'2 mg/kg IBW IM (onset ~5 min)'},
         {k:'IBW', v:round(ibw,1) + ' kg ' + src, cls:'calc'},
         {k:'Calc dose IV', v:dose + ' mg = ' + vol + ' mL', cls:'calc'},
@@ -3196,8 +3196,8 @@ function renderRsiMaxDose(){
   // Ketamine induction MAX = 2 mg/kg ABW
   var ketMaxMg = round(2*abw, 0);
   var ketMaxML = round(ketMaxMg/50, 2);
-  // Roc MAX = 1.5 mg/kg IBW (PHI)
-  var rocMaxMg = round(1.5*ibw, 0);
+  // Roc MAX = 1 mg/kg IBW (PHI)
+  var rocMaxMg = round(1*ibw, 0);
   var rocMaxML = round(rocMaxMg/10, 2);
   // Ketamine drip MAX = 4 mg/kg/hr ABW from 5 mg/mL premix
   var ketDripMaxMgHr = round(4*abw, 0);
@@ -3219,7 +3219,7 @@ function renderRsiMaxDose(){
         '<td class="ibw-c">' + round(abw,1) + ' kg ' + abwSrc + '<br><strong>' + ketMaxMg + ' mg</strong></td>' +
         '<td class="tv-c">' + ketMaxML + ' mL</td></tr>' +
       '<tr><td><strong style="color:var(--rose)">Rocuronium — RSI</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">100 mg / 10 mL</div></td>' +
-        '<td>1.5 mg/kg IBW IV push</td>' +
+        '<td>1 mg/kg IBW IV push</td>' +
         '<td class="ibw-c">' + round(ibw,1) + ' kg ' + ibwSrc + '<br><strong>' + rocMaxMg + ' mg</strong></td>' +
         '<td class="tv-c">' + rocMaxML + ' mL</td></tr>' +
       '<tr style="background:rgba(0,212,245,.04)"><td><strong style="color:var(--orange)">Ketamine drip — MAX</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">5 mg/mL premix (500 mg / 100 mL NS)</div></td>' +

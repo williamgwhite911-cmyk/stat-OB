@@ -495,7 +495,7 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
   <div class="slbl">PHI Formulary Note</div>
   <div class="callout callout-info" style="font-size:.8rem;line-height:1.55">
     <span style="color:var(--teal);font-weight:700">✓ Ketamine</span> — preferred RSI induction (1.5-2 mg/kg IV; max RSI 2 mg/kg). Max infusion 4 mg/kg/hr adult.<br>
-    <span style="color:var(--teal);font-weight:700">✓ Rocuronium</span> — PHI standing order, 1.5 mg/kg IBW IV or 2 mg/kg IM.<br>
+    <span style="color:var(--teal);font-weight:700">✓ Rocuronium</span> — PHI standing order, 1 mg/kg IBW IV or 2 mg/kg IM.<br>
     <span style="color:var(--amber);font-weight:700">△ Succinylcholine</span> — PHI standing order is for <strong>Dangerous Agitation</strong> (4 mg/kg IM). Avoid in OB or with mag.<br>
     <span style="color:var(--tx2);font-weight:700">✗ Etomidate</span> — NOT on PHI formulary. Reference only.
   </div>
@@ -2031,10 +2031,10 @@ var DRUGS = {
       warn:'⚠ NOT on PHI Health formulary. Use ketamine as PHI preferred.'});
   },
   rocRSI: function(){
-    var ibw=dosingIbw(); var dose=round(1.5*ibw,0); var doseIM=round(2*ibw,0);
+    var ibw=dosingIbw(); var dose=round(1*ibw,0); var doseIM=round(2*ibw,0);
     return rcCard({name:'Rocuronium — RSI',generic:'Stock 100 mg / 10 mL vial (10 mg/mL) — PHI formulary',cat:'RSI',form:'vial',line:'1st line',
       indication:'Adult RSI paralysis',color:'var(--rose)',
-      rows:[{k:'PHI IV',v:'1.5 mg/kg IBW IV'},{k:'PHI IM',v:'2 mg/kg IBW IM (onset ~5 min)'},{k:'IBW',v:round(ibw,1)+' kg',cls:'calc'},{k:'Calc IV',v:dose+' mg = '+round(dose/10,2)+' mL',cls:'calc'},{k:'Calc IM',v:doseIM+' mg = '+round(doseIM/10,2)+' mL',cls:'calc'},{k:'Onset',v:'60-90 sec IV'},{k:'Duration',v:'45-90 min'}],
+      rows:[{k:'PHI IV',v:'1 mg/kg IBW IV'},{k:'PHI IM',v:'2 mg/kg IBW IM (onset ~5 min)'},{k:'IBW',v:round(ibw,1)+' kg',cls:'calc'},{k:'Calc IV',v:dose+' mg = '+round(dose/10,2)+' mL',cls:'calc'},{k:'Calc IM',v:doseIM+' mg = '+round(doseIM/10,2)+' mL',cls:'calc'},{k:'Onset',v:'60-90 sec IV'},{k:'Duration',v:'45-90 min'}],
       warn:'Ensure post-RSI sedation drip is running BEFORE paralytic wears off.'});
   },
   succRSI: function(){
@@ -2405,13 +2405,13 @@ function renderRsiMaxDose(){
   var out=document.getElementById('rsiMaxDose'); if(!out) return;
   var w=dosingWt(); var ibw=dosingIbw();
   var ketMax=round(2*w,0); var ketML=round(ketMax/50,2);
-  var rocMax=round(1.5*ibw,0); var rocML=round(rocMax/10,2);
+  var rocMax=round(1*ibw,0); var rocML=round(rocMax/10,2);
   var dripMax=round(4*w,0); var dripRate=round(dripMax/5,1);
   out.innerHTML =
     '<div style="font-size:.85rem;line-height:1.55;color:var(--tx0);margin-bottom:14px"><strong style="color:var(--red)">For adult transport, default to MAX RSI doses.</strong><br>Pregnancy raises CO; trauma / sepsis cause unpredictable pharmacokinetics. Lock the airway in one pass with full induction + full paralytic + max ketamine drip running before paralytic wears off.</div>'+
     '<div class="vent-wrap"><table class="vt" style="border:1px solid rgba(255,95,109,.4);border-radius:8px;overflow:hidden"><thead><tr style="background:rgba(255,95,109,.08)"><th style="color:var(--red)">Drug</th><th>PHI Max</th><th>Calc</th><th>Volume</th></tr></thead><tbody>'+
     '<tr><td><strong style="color:var(--orange)">Ketamine — Induction</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">500 mg / 10 mL</div></td><td>2 mg/kg ABW IV push</td><td class="ibw-c">'+round(w,1)+' kg ABW<br><strong>'+ketMax+' mg</strong></td><td class="tv-c">'+ketML+' mL</td></tr>'+
-    '<tr><td><strong style="color:var(--rose)">Rocuronium — RSI</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">100 mg / 10 mL</div></td><td>1.5 mg/kg IBW IV</td><td class="ibw-c">'+round(ibw,1)+' kg IBW<br><strong>'+rocMax+' mg</strong></td><td class="tv-c">'+rocML+' mL</td></tr>'+
+    '<tr><td><strong style="color:var(--rose)">Rocuronium — RSI</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">100 mg / 10 mL</div></td><td>1 mg/kg IBW IV</td><td class="ibw-c">'+round(ibw,1)+' kg IBW<br><strong>'+rocMax+' mg</strong></td><td class="tv-c">'+rocML+' mL</td></tr>'+
     '<tr style="background:rgba(0,212,245,.04)"><td><strong style="color:var(--orange)">Ketamine drip — MAX</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">5 mg/mL premix</div></td><td>4 mg/kg/hr (PHI Adult)</td><td class="ibw-c">'+round(w,1)+' kg<br><strong>'+dripMax+' mg/hr</strong></td><td class="tv-c">'+dripRate+' mL/hr</td></tr>'+
     '</tbody></table></div>'+
     '<div class="callout callout-warn" style="margin-top:12px;font-size:.78rem"><strong>Sequence:</strong> (1) Pre-O2 ramped → (2) Push ketamine '+ketMax+' mg → (3) Push roc '+rocMax+' mg → (4) Wait 60-90 sec → (5) Intubate (depth 21-23 cm at lip) → (6) Confirm EtCO2 → (7) Start ketamine drip at '+dripRate+' mL/hr <strong>before paralytic wears off</strong>.</div>';

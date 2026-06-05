@@ -1,3 +1,22 @@
+# StatFlight Changes
+
+## Rocuronium dose change (Adult / OB / Peds / Ketamine chart)
+
+PHI IV RSI dose updated from 1.5 mg/kg IBW (Adult / OB) and 1.2 mg/kg IV (Peds)
+to **1 mg/kg** across all three apps and the shared Ketamine + Roc quick-chart.
+
+Updated every spot the dose surfaces:
+- Safer-checklist text in each app
+- `rocRSI` / `rocuroniumRSI` / `rocPeds` drug-card function (dose calculation + label rows + giveBox rule)
+- `renderRsiMaxDose` auto-calculated dose table
+- RSI sequence callout
+- Ketamine + Roc Quick Chart: header label, dose card, dynamic calc (`wt * 1.0`), explanatory footnote
+- Ketamine chart static reference table — all 120 ROC RSI dose cells recomputed from `weight × 1 mg`
+
+IM dose unchanged (2 mg/kg IBW IM, onset ~5 min). OB rebolus unchanged (0.15–0.3 mg/kg PRN).
+
+SW cache bumped v48 → v49 so installed PWAs pick up the new dose.
+
 # StatFlight v1.1 — Changes
 
 ## New Protocols (synced across Adult / Peds / OB)
