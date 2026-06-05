@@ -1900,14 +1900,13 @@ var DRUGS_MATERNAL = {
   },
   hydromorphone: function(){
     return rcCard({
-      name:'Hydromorphone (Dilaudid)', generic:'Stock 2 mg/mL or 4 mg/mL vial — PHI 5.1.2',
-      cat:'PAIN', form:'vial', line:'PHI standing order',
-      indication:'Non-labor pain (PHI dose) or supplemental labor analgesia if neuraxial unavailable',
+      name:'Hydromorphone (Dilaudid)', generic:'Stock 2 mg/mL or 4 mg/mL vial — longer-acting opioid',
+      cat:'PAIN', form:'vial', line:'Step 2 (non-labor) / alt (labor)',
+      indication:'Non-labor pain after fentanyl; supplemental labor analgesia if neuraxial unavailable',
       color:'var(--amber)',
       rows:[
-        {k:'PHI non-labor', v:'0.2 to 1 mg IV over 2 min, IM'},
-        {k:'Repeat (non-labor)', v:'q 15 min PRN'},
-        {k:'PHI MAX total', v:mx('4 mg'), cls:'warn'},
+        {k:'Non-labor', v:'0.2 to 0.8 mg IV over 2-3 min'},
+        {k:'Repeat (non-labor)', v:'q 30-60 min PRN'},
         {k:'Labor (alt)', v:'0.5 to 1 mg IV over 2-3 min'},
         {k:'Repeat (labor)', v:'q 2-3 hr PRN'}
       ],
@@ -3010,21 +3009,20 @@ var DX_PLAN = {
   },
   safer_checklist:{picture:'SAFER airway preparation checklist — Crew 1 (operator) + Crew 2 (assist) parallel workflow.', plan:['Tap each step to mark complete','See PHI SAFER chapter for full protocol detail']},
   safer_diagram:{picture:'PHI SAFER Crew 1 + Crew 2 duties diagram. Tap below to view full-screen.', plan:['View the diagram for at-a-glance airway prep workflow','Use SAFER Airway Checklist for tap-to-complete walkthrough']},
-  pain_mgmt:{nonPhi:true, nonPhiNote:'OB-specific institutional guidance. PHI 5.1.2 does not separate OB; institutional standard contraindicates ketamine for analgesia in pregnancy and applies NSAID gestational-age limits.',
-    picture:'<strong>Non-labor pain in the pregnant patient</strong> (fracture, trauma, soft-tissue). Use PHI 5.1.2 opioid doses (fentanyl, morphine, hydromorphone). <strong>NO ketamine.</strong> Ketorolac: avoid &gt; 20 wk, strictly &gt; 28 wk. For LABOR pain → use Labor Pain protocol (neuraxial first).',
+  pain_mgmt:{nonPhi:true, nonPhiNote:'Trauma Star OB Non-Labor Pain Protocol — for pregnant patients with non-obstetric acute pain (fracture, soft tissue, trauma). KETAMINE CONTRAINDICATED for analgesia in pregnancy. Morphine NOT carried by program.',
+    picture:'<strong>Non-labor pain in the pregnant patient</strong> (broken bone, trauma, soft-tissue). Fentanyl + Hydromorphone only. <strong>NO ketamine.</strong> NSAIDs: avoid &gt; 20 wk, strict &gt; 28 wk. For LABOR pain → use Labor Pain protocol.',
     plan:[
-      'FENTANYL — 0.5-2 mcg/kg IBW IV over 1 min, IM, NAS. Repeat q 10 min PRN.',
-      'MORPHINE — 2-10 mg IV push over 1-2 min, IM. Repeat q 20 min PRN. Titrate to pain goal.',
-      'HYDROMORPHONE (Dilaudid) — 0.2-1 mg IV over 2 min, IM. Repeat q 15 min PRN. MAX total 4 mg.',
-      'KETAMINE — CONTRAINDICATED for analgesia in pregnancy (institutional). Use opioids only.',
-      'KETOROLAC / NSAIDs — AVOID > 20 wk; STRICTLY AVOID > 28 wk (fetal renal dysfunction, premature ductus closure).',
+      'FENTANYL (1st-line opioid) — 0.5-1 mcg/kg IV. Repeat q 5-10 min PRN. MAX cumulative 200 mcg.',
+      'HYDROMORPHONE (Dilaudid) — 0.2-0.8 mg IV over 2-3 min. Repeat q 30-60 min PRN, titrated to effect.',
+      'KETAMINE — CONTRAINDICATED for analgesia in pregnancy. Use opioids only.',
+      'NSAIDs (ibuprofen / ketorolac) — AVOID > 20 wk; STRICTLY AVOID > 28 wk (fetal renal, premature ductus closure).',
       'Use lowest effective opioid dose for shortest duration. Monitor maternal RR/SpO2 and FHR where feasible.',
       'Opioids near delivery → neonatal respiratory depression — have NEONATAL NALOXONE 0.1 mg/kg available.',
       'Left-lateral tilt > 20 wk for any pain crisis or hemodynamic instability.',
       'For LABOR pain → switch to Labor Pain protocol (neuraxial first-line).',
       'See one-page reference: pain-protocol.html'
     ]},
-  labor_pain:{nonPhi:true, nonPhiNote:'OB-specific institutional guidance. Not part of PHI 5.1.2. Neuraxial (epidural/spinal) is first-line when available. Systemic opioids when neuraxial is unavailable or contraindicated. KETAMINE CONTRAINDICATED for labor analgesia.',
+  labor_pain:{nonPhi:true, nonPhiNote:'Trauma Star Labor Pain Management. Neuraxial first-line. Systemic opioids only as alternative. KETAMINE CONTRAINDICATED. Morphine NOT carried.',
     picture:'<strong>Labor pain</strong> — distinguish from broken-bone / non-labor pain (use Non-Labor Pain protocol for those). <strong>Neuraxial anesthesia (epidural / spinal) is first-line</strong> when available — collaborate with anesthesia/OB. Systemic opioids only as alternative or supplement. <strong>NO ketamine for labor analgesia.</strong>',
     plan:[
       'FIRST-LINE — Neuraxial anesthesia (epidural or spinal). Collaborate with receiving anesthesia/OB on arrival.',

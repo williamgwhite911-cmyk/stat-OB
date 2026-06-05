@@ -1,5 +1,35 @@
 # StatFlight Changes
 
+## Pain protocol: PHI document FORMAT, Trauma Star content (no morphine, no ketorolac)
+
+Per user clarification — keep the PHI document visual format (banner,
+Adult/Pediatric two-column bullets, NOTE/CAUTION callouts) but revert
+all content to Trauma Star doses. Morphine and ketorolac removed — not
+carried by program.
+
+pain-protocol.html now shows:
+- Trauma Star branded banner (purple "TRAUMA STAR" block)
+- Section 1.0 Analgesia heading + general guidelines intro
+- Fentanyl: 0.5-1 mcg/kg adult / 1-2 mcg/kg peds (max 100 mcg single)
+- Hydromorphone: 0.2-0.8 mg adult (0.5-1.5 opioid-tolerant) /
+  0.01-0.02 mg/kg peds
+- Adjunctive Ketamine sub-dissociative: 0.1-0.3 mg/kg low tier /
+  0.3-0.5 mg/kg high tier (adult + peds); peds IN 1-1.5 mg/kg
+- 4 NOTEs + CAUTION callout for ketamine (refractory/Naltrexone/
+  Buprenorphine indications, psychosis caution, slow-push warning,
+  contraindicated in pregnancy)
+- OB Addendum with non-labor and labor sub-blocks
+- Reassess + Document tiles
+
+In-app pain_mgmt protocols (adult/peds/ob) reverted to Trauma Star
+content. Drug cards reverted: ketamineAnalgesic back to two-tier
+0.1-0.3 / 0.3-0.5 range; hydromorphone back to 0.2-0.8 / 0.5-1.5
+opioid-tolerant. Ketorolac drug card removed from adult + peds.
+
+Drug map for pain_mgmt: fentanylBolus + hydromorphone + ketamineAnalgesic.
+
+SW cache bumped v53 → v54.
+
 ## Pain protocol rebuilt to PHI 5.1.2 Analgesia format (Rev 23, 23 Jan 2025)
 
 `pain-protocol.html` rewritten to mirror the PHI Health Clinical Care

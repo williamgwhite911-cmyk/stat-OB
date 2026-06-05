@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Analgesia">
+<meta name="apple-mobile-web-app-title" content="Pain Protocol">
 <meta name="theme-color" content="#030710">
-<title>5.1.2 Analgesia — PHI Health Clinical Care Guidelines</title>
+<title>Trauma Star Analgesia Protocol — Adult · OB · Peds</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -37,9 +37,9 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
 
 .wrap{max-width:1100px;margin:0 auto;padding:20px 18px 36px}
 
-/* PHI document-style banner */
-.doc-banner{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:12px 16px;background:linear-gradient(135deg,rgba(255,193,7,.05),rgba(0,212,245,.04));border:1px solid var(--bd1);border-radius:10px;margin-bottom:18px}
-.doc-banner-logo{font-family:var(--mono);font-size:.9rem;font-weight:900;color:var(--amber);letter-spacing:.06em;padding:8px 12px;border:2px solid var(--amber);border-radius:6px}
+/* Document-style banner (PHI-format) */
+.doc-banner{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:12px 16px;background:linear-gradient(135deg,rgba(180,123,255,.08),rgba(0,212,245,.04));border:1px solid var(--bd1);border-radius:10px;margin-bottom:18px}
+.doc-banner-logo{font-family:var(--mono);font-size:.9rem;font-weight:900;color:var(--purple);letter-spacing:.06em;padding:8px 12px;border:2px solid var(--purple);border-radius:6px;text-align:center}
 .doc-banner-title{text-align:center}
 .doc-banner-title .h-main{font-size:.95rem;font-weight:800;letter-spacing:-.005em}
 .doc-banner-title .h-sub{font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;color:var(--tx1);margin-top:2px;text-transform:uppercase}
@@ -107,7 +107,7 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
   .topbar{display:none}
   .wrap{max-width:none;padding:8px 12px}
   .doc-banner{background:#fff;border:2px solid #000;border-radius:0;padding:6px 10px;margin-bottom:8px}
-  .doc-banner-logo{color:#b88600;border-color:#b88600;font-size:8.5pt;padding:4px 7px}
+  .doc-banner-logo{color:#3b1675;border-color:#3b1675;font-size:8.5pt;padding:4px 7px}
   .doc-banner-title .h-main{color:#000;font-size:10pt}
   .doc-banner-title .h-sub{color:#444;font-size:6.5pt}
   .doc-banner-meta{color:#444;font-size:6.5pt}
@@ -154,23 +154,23 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
 
 <div class="topbar">
   <a class="back" href="index.html">‹ HOME</a>
-  <h1>PHI 5.1.2 Analgesia</h1>
+  <h1>Trauma Star Analgesia</h1>
   <button class="pbtn" onclick="window.print()">🖨 PRINT</button>
 </div>
 
 <div class="wrap">
 
-  <!-- PHI document-style banner -->
+  <!-- Trauma Star document-style banner -->
   <div class="doc-banner">
-    <div class="doc-banner-logo">PHI<br>HEALTH</div>
+    <div class="doc-banner-logo">TRAUMA<br>STAR</div>
     <div class="doc-banner-title">
-      <div class="h-main">5 Analgesia | Anxiolysis | Sedation</div>
+      <div class="h-main">Analgesia | Anxiolysis | Sedation</div>
       <div class="h-sub">General Guidelines</div>
     </div>
-    <div class="doc-banner-meta"><b>Rev 23</b> &nbsp; Page 5-5<br>Date <b>23 Jan 2025</b></div>
+    <div class="doc-banner-meta"><b>Trauma Star</b> &nbsp; Pain Protocol<br>Adult · OB · Peds</div>
   </div>
 
-  <div class="section-no"><span class="num">5.1.2</span> Analgesia</div>
+  <div class="section-no"><span class="num">1.0</span> Analgesia</div>
 
   <p class="intro">
     Assess pain frequently during transport to gauge severity and monitor the response to interventions. Pain assessment should include the use of scales appropriate for the age group and patient condition. Pain should be treated to a level as low as reasonably possible in balance with the patient's cardiovascular stability and pain goals.
@@ -178,43 +178,22 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
 
   <!-- FENTANYL -->
   <div class="med">
-    <div class="med-name">Fentanyl <span class="sub">stock 50 mcg/mL</span></div>
+    <div class="med-name">Fentanyl <span class="sub">stock 50 mcg/mL · 1st-line opioid</span></div>
     <div class="cols2">
       <div class="col">
         <div class="col-label">Adult</div>
         <ul>
-          <li>0.5–2 mcg/kg IBW IV over 1 min, IM, NAS</li>
-          <li>Repeat every 10 minutes, PRN</li>
+          <li>0.5–1 mcg/kg IV, IM, IN</li>
+          <li>Repeat every 5–10 minutes PRN</li>
+          <li>Max cumulative dose 200 mcg</li>
         </ul>
       </div>
       <div class="col">
         <div class="col-label">Pediatric</div>
         <ul>
-          <li>Refer to adult dosing</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- MORPHINE -->
-  <div class="med">
-    <div class="med-name">Morphine <span class="sub">stock 4 mg/mL</span></div>
-    <div class="cols2">
-      <div class="col">
-        <div class="col-label">Adult</div>
-        <ul>
-          <li>2–10 mg IV push over 1–2 min, IM</li>
-          <li>Repeat every 20 minutes PRN</li>
-          <li>Titrate to pain goal</li>
-        </ul>
-      </div>
-      <div class="col">
-        <div class="col-label">Pediatric</div>
-        <ul>
-          <li>0.05–0.2 mg/kg IV over 1–2 min, IM</li>
-          <li>Max single dose 10 mg</li>
-          <li>Repeat every 10 minutes PRN</li>
-          <li>Titrate to pain goal</li>
+          <li>1–2 mcg/kg IV / IN</li>
+          <li>Repeat every 5–10 minutes PRN</li>
+          <li>Max single dose 100 mcg</li>
         </ul>
       </div>
     </div>
@@ -222,23 +201,22 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
 
   <!-- HYDROMORPHONE -->
   <div class="med">
-    <div class="med-name">Hydromorphone <span class="sub">stock 2 mg/mL or 4 mg/mL · longer-acting</span></div>
+    <div class="med-name">Hydromorphone (Dilaudid) <span class="sub">stock 2 mg/mL or 4 mg/mL · longer-acting opioid</span></div>
     <div class="cols2">
       <div class="col">
         <div class="col-label">Adult</div>
         <ul>
-          <li>0.2–1 mg IV over 2 min, IM</li>
-          <li>Repeat q 15 min PRN</li>
-          <li>Max total dose 4 mg</li>
+          <li>0.2–0.8 mg IV over 2–3 min (most adults)</li>
+          <li>0.5–1.5 mg IV over 2–3 min (opioid-tolerant)</li>
+          <li>Repeat q 30–60 min PRN, titrated to effect</li>
         </ul>
       </div>
       <div class="col">
         <div class="col-label">Pediatric</div>
         <ul>
-          <li>0.01–0.02 mg/kg IV over 2 min, IM</li>
-          <li>Repeat q 15 min PRN</li>
-          <li>Max single dose 1 mg</li>
-          <li>Max total dose 4 mg</li>
+          <li>0.01–0.02 mg/kg IV over 2–3 min</li>
+          <li>Typical range 0.05–0.2 mg per dose</li>
+          <li>Repeat q 30–60 min PRN, titrated to effect</li>
         </ul>
       </div>
     </div>
@@ -248,69 +226,53 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
 
   <!-- KETAMINE -->
   <div class="med">
-    <div class="med-name">Ketamine — Sub-dissociative Dose <span class="sub">stock 500 mg / 10 mL (50 mg/mL)</span></div>
+    <div class="med-name">Ketamine — Sub-dissociative Dose <span class="sub">stock 500 mg / 10 mL (50 mg/mL) · opioid-sparing</span></div>
     <div class="cols2">
       <div class="col">
         <div class="col-label">Adult</div>
         <ul>
-          <li>0.1–0.3 mg/kg IBW IV over 1–2 min, IM, NAS</li>
-          <li>Repeat q 10–20 min PRN</li>
-          <li>Max single dose 30 mg</li>
+          <li>Mild / elderly &gt;75 / fragile: 0.1–0.3 mg/kg IV over 1–2 min</li>
+          <li>Moderate–severe / stable: 0.3–0.5 mg/kg IV over 1–2 min</li>
+          <li>Reassess at 5 min; repeat only if needed</li>
         </ul>
       </div>
       <div class="col">
         <div class="col-label">Pediatric</div>
         <ul>
-          <li>Refer to adult dosing</li>
+          <li>Young / fragile IV: 0.1–0.3 mg/kg IV over 1–2 min</li>
+          <li>Stable moderate–severe IV: 0.3–0.5 mg/kg IV over 1–2 min</li>
+          <li>IN route: 1–1.5 mg/kg IN (max 1 mL per nostril)</li>
+          <li>Reassess at 5 min; repeat only if needed</li>
         </ul>
       </div>
     </div>
     <div class="notes">
-      <div class="note"><span class="tag">NOTE</span><span class="body">For pain refractory to opioid analgesia.</span></div>
-      <div class="note"><span class="tag">NOTE</span><span class="body">Ketamine should be used for patients on Naltrexone or Buprenorphine.</span></div>
-      <div class="note"><span class="tag">NOTE</span><span class="body">Sub-dissociative doses of ketamine is not advised in patients experiencing psychosis.</span></div>
+      <div class="note"><span class="tag">NOTE</span><span class="body">For pain refractory to opioid analgesia, or as an opioid-sparing adjunct.</span></div>
+      <div class="note"><span class="tag">NOTE</span><span class="body">Use for patients on Naltrexone or Buprenorphine.</span></div>
+      <div class="note"><span class="tag">NOTE</span><span class="body">Sub-dissociative doses of ketamine are not advised in patients experiencing psychosis.</span></div>
+      <div class="note"><span class="tag">NOTE</span><span class="body">Contraindicated for analgesia in pregnancy — use the OB addendum.</span></div>
     </div>
     <div class="caution">
       <span class="tri">⚠ CAUTION</span>
-      <span class="body">Sub-dissociative doses of ketamine for pain control must be given slowly. If not, partial dissociation can occur, which is very disturbing to the patient and can result in agitation and delirium.</span>
+      <span class="body">Sub-dissociative doses of ketamine for pain control must be given <b>slowly over 1–2 min</b>. If pushed too fast, partial dissociation can occur, which is very disturbing to the patient and can result in agitation and delirium.</span>
     </div>
   </div>
 
-  <!-- KETOROLAC -->
-  <div class="med">
-    <div class="med-name">Ketorolac <span class="sub">NSAID</span></div>
-    <div class="cols2">
-      <div class="col">
-        <div class="col-label">Adult</div>
-        <ul>
-          <li>15 mg IV over 30–60 seconds</li>
-        </ul>
-      </div>
-      <div class="col">
-        <div class="col-label">Pediatric</div>
-        <ul>
-          <li>0.5 mg/kg IV over 30–60 seconds</li>
-          <li>Max dose 15 mg</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- OB ADDENDUM (not in PHI 5.1.2 — institutional OB-specific guidance) -->
+  <!-- OB ADDENDUM -->
   <div class="ob-addendum">
     <h3>Obstetric Addendum</h3>
-    <div class="ob-sub">Not in PHI 5.1.2 — institutional guidance for the pregnant patient</div>
+    <div class="ob-sub">Pregnant patient — institutional guidance · ketamine contraindicated · NSAID restrictions by gestational age</div>
 
     <div class="ob-cols">
 
       <div class="ob-sub-block">
         <div class="ob-title">Non-Labor Pain in Pregnancy</div>
         <ul>
-          <li>Fentanyl 0.5–1 mcg/kg IV; repeat q 10 min PRN; max cumulative 200 mcg</li>
+          <li>Fentanyl 0.5–1 mcg/kg IV; repeat q 5–10 min PRN; max cumulative 200 mcg</li>
           <li>Hydromorphone 0.2–0.8 mg IV over 2–3 min; repeat q 30–60 min PRN</li>
           <li class="contra">Ketamine — CONTRAINDICATED for analgesia in pregnancy</li>
-          <li class="contra">Ketorolac / NSAIDs — avoid &gt; 20 wk, strict &gt; 28 wk (fetal renal, premature ductus closure)</li>
-          <li>Left-lateral tilt &gt; 20 wk; document FHR pre &amp; post each dose</li>
+          <li class="contra">NSAIDs — avoid &gt; 20 wk, strict &gt; 28 wk (fetal renal, premature ductus closure)</li>
+          <li>Left-lateral tilt &gt; 20 wk; document FHR pre &amp; post each opioid dose</li>
         </ul>
       </div>
 
@@ -319,7 +281,7 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
         <ul>
           <li><b>Neuraxial first-line</b> (epidural / spinal) — coordinate with anesthesia/OB</li>
           <li>Fentanyl 50–100 mcg IV q 30–60 min PRN if neuraxial unavailable</li>
-          <li>Hydromorphone 0.5–1 mg IV q 2–3 hr PRN (alt)</li>
+          <li>Hydromorphone 0.5–1 mg IV q 2–3 hr PRN (alternative)</li>
           <li class="contra">NO ketamine for labor analgesia</li>
           <li>Avoid near planned delivery → neonatal respiratory depression. Have <b>neonatal naloxone 0.1 mg/kg</b> ready.</li>
         </ul>
@@ -346,7 +308,7 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
       <h3>Document at every administration</h3>
       <ul>
         <li>Medication, dose (units), route, time</li>
-        <li>Patient weight (kg) used for calculation; IBW where PHI specifies</li>
+        <li>Patient weight (kg) used for calculation</li>
         <li>Pre- and post-dose pain score with timestamps</li>
         <li>RR, SpO2, BP, sedation level pre &amp; post</li>
         <li>OB: gestational age, FHR pre/post, L-lateral tilt &gt; 20 wk</li>
@@ -358,8 +320,7 @@ body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:1
   </div>
 
   <div class="footer">
-    Source: <b>PHI Health Clinical Care Guidelines · Section 5.1.2 Analgesia · Rev 23 · 23 Jan 2025</b><br>
-    OB addendum is institutional guidance and not part of PHI 5.1.2. <b>UNCONTROLLED WHEN DOWNLOADED OR PRINTED.</b>
+    <b>Trauma Star Analgesia Protocol</b> · Fentanyl → Hydromorphone with adjunctive Ketamine (non-pregnant) · OB addendum: institutional guidance
   </div>
 
 </div>
