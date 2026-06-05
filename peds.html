@@ -2726,7 +2726,7 @@ var DRUGS = {
     var ivMl = iv ? round(iv/5, 2) : null;
     var imMl = im ? round(im/5, 2) : null;
     return rcCard({
-      name:'Midazolam — Seizure', generic:'Stock 5 mg/mL vial', cat:'SEIZURE',
+      name:'Midazolam — Seizure', generic:'Stock 10 mg / 2 mL vial (5 mg/mL)', cat:'SEIZURE',
       form:'vial', line:'1st',
       indication:'1st-line drug for status epilepticus — IM/IN preferred if no IV — PHI Ch 5', color:'var(--rose)',
       giveBox: w ? {label:'IV/IO at 0.1 mg/kg, IM/IN at 0.2 mg/kg', mL:'IV: '+ivMl+' / IM-IN: '+imMl+' mL', mg:'IV: '+iv+' / IM-IN: '+im+' mg', conc:'5 mg/mL stock', rule:'IV 0.1 mg/kg (max 5), IM/IN 0.2 mg/kg (max 10) per PHI'} : {needsWt:true},
@@ -3194,7 +3194,7 @@ var DRUGS = {
     var lo = w ? round(1*w, 0) : null;
     var hi = w ? Math.min(round(2*w, 0), 50) : null;
     return rcCard({
-      name:'Fentanyl', generic:'Stock 50 mcg/mL vial', cat:'PAIN',
+      name:'Fentanyl', generic:'Stock 250 mcg / 5 mL vial (50 mcg/mL)', cat:'PAIN',
       form:'vial', line:'adj',
       indication:'1st-line opioid for analgesia — preferred over morphine (less hypotension, faster onset) — PHI Ch 5', color:'var(--amber)',
       rows:[
@@ -3227,14 +3227,14 @@ var DRUGS = {
     var hiMin = w ? round(0.3*w, 1) : null, hiMax = w ? round(0.5*w, 1) : null;
     var inMin = w ? round(1*w, 1) : null,   inMax = w ? round(1.5*w, 1) : null;
     return rcCard({
-      name:'Ketamine — Analgesic Dose', generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — sub-dissociative for pain', cat:'PAIN',
+      name:'Ketamine — Analgesic Dose', generic:'Stock 500 mg / 5 mL vial (100 mg/mL) — sub-dissociative for pain', cat:'PAIN',
       form:'vial', line:'adjunctive (opioid-sparing)',
       indication:'Acute peds pain — sub-dissociative ketamine. Adjunctive: refractory to opioids, opioid-sparing desired, or patient on Naltrexone / Buprenorphine.', color:'var(--orange)',
       rows:[
         {k:'Young / fragile IV', v:'0.1 to 0.3 mg/kg IV over 1-2 min'},
-        {k:'Calc (low)', v:loMin != null ? loMin + ' to ' + loMax + ' mg ('+round(loMin/50,2)+' to '+round(loMax/50,2)+' mL)' : '--', cls:'calc'},
+        {k:'Calc (low)', v:loMin != null ? loMin + ' to ' + loMax + ' mg ('+round(loMin/100,2)+' to '+round(loMax/100,2)+' mL)' : '--', cls:'calc'},
         {k:'Stable mod-severe IV', v:'0.3 to 0.5 mg/kg IV over 1-2 min'},
-        {k:'Calc (high)', v:hiMin != null ? hiMin + ' to ' + hiMax + ' mg ('+round(hiMin/50,2)+' to '+round(hiMax/50,2)+' mL)' : '--', cls:'calc'},
+        {k:'Calc (high)', v:hiMin != null ? hiMin + ' to ' + hiMax + ' mg ('+round(hiMin/100,2)+' to '+round(hiMax/100,2)+' mL)' : '--', cls:'calc'},
         {k:'IN route', v:'1 to 1.5 mg/kg IN (max 1 mL per nostril)'},
         {k:'Calc IN', v:inMin != null ? inMin + ' to ' + inMax + ' mg' : '--', cls:'calc'},
         {k:'Reassess', v:'5 min — repeat only if needed'}
@@ -3246,7 +3246,7 @@ var DRUGS = {
     var lo = w ? round(0.01*w, 3) : null;
     var hi = w ? round(0.02*w, 3) : null;
     return rcCard({
-      name:'Hydromorphone (Dilaudid)', generic:'Stock 2 mg/mL or 4 mg/mL vial — longer-acting opioid', cat:'PAIN',
+      name:'Hydromorphone (Dilaudid)', generic:'Stock 2 mg/mL vial — longer-acting opioid', cat:'PAIN',
       form:'vial', line:'longer-acting',
       indication:'Pain — longer-acting opioid after / instead of fentanyl', color:'var(--amber)',
       rows:[
@@ -3311,18 +3311,18 @@ var DRUGS = {
     var w = dosingWt();
     var lo = w ? round(1*w, 0) : null;
     var hi = w ? round(2*w, 0) : null;
-    var hiMl = hi ? round(hi/50, 2) : null;
+    var hiMl = hi ? round(hi/100, 2) : null;
     return rcCard({
-      name:'Ketamine — Induction', generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — PHI preferred RSI', cat:'RSI',
+      name:'Ketamine — Induction', generic:'Stock 500 mg / 5 mL vial (100 mg/mL) — PHI preferred RSI', cat:'RSI',
       form:'vial', line:'adj',
       indication:'Peds RSI induction — preferred for asthma, hypotension, hypovolemia', color:'var(--orange)',
-      giveBox: w ? {label:'Give MAX IV push', mL:hiMl, mg:hi+' mg', conc:'50 mg/mL stock (500 mg / 10 mL vial)', rule:'2 mg/kg max IV (RSI dose)'} : {needsWt:true},
+      giveBox: w ? {label:'Give MAX IV push', mL:hiMl, mg:hi+' mg', conc:'100 mg/mL stock (500 mg / 5 mL vial)', rule:'2 mg/kg max IV (RSI dose)'} : {needsWt:true},
       rows:[
         {k:'PHI dose IV', v:'1 to ' + mx('2') + ' mg/kg IV push'},
         {k:'PHI dose IM', v:'4 to ' + mx('5') + ' mg/kg IM (if no IV)'},
         {k:'Wt', v:w ? round(w,2) + ' kg' : '--', cls:'calc'},
         {k:'Calc IV', v:lo ? lo + ' to ' + mx(hi + ' mg') : '--', cls:'calc'},
-        {k:'Calc IV vol', v:lo ? round(lo/50, 2) + ' to ' + mx(round(hi/50, 2) + ' mL') : '--', cls:'calc'},
+        {k:'Calc IV vol', v:lo ? round(lo/100, 2) + ' to ' + mx(round(hi/100, 2) + ' mL') : '--', cls:'calc'},
         {k:'Onset IV', v:'30-60 sec'},
         {k:'Duration', v:'10-20 min'}
       ],
@@ -3893,7 +3893,7 @@ function renderRsiMaxDose(){
     return;
   }
   var ketMaxMg = round(2*w, 0);
-  var ketMaxML = round(ketMaxMg/50, 2);
+  var ketMaxML = round(ketMaxMg/100, 2);
   var rocMaxMg = round(1*w, 0);
   var rocMaxML = round(rocMaxMg/10, 2);
   var ketDripMaxMgHr = round(4*w, 1);  // PHI practice — extrapolated from Ch 6
@@ -3915,7 +3915,7 @@ function renderRsiMaxDose(){
         '<td>0.02 mg/kg IV (min 0.1 mg)</td>' +
         '<td class="ibw-c">' + round(w,2) + ' kg<br><strong>' + atropineMg + ' mg</strong></td>' +
         '<td class="tv-c">' + round(atropineMg/0.1, 1) + ' mL</td></tr>' : '') +
-      '<tr><td><strong style="color:var(--orange)">Ketamine — Induction</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">500 mg / 10 mL</div></td>' +
+      '<tr><td><strong style="color:var(--orange)">Ketamine — Induction</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">500 mg / 5 mL</div></td>' +
         '<td>2 mg/kg IV push (PHI max)</td>' +
         '<td class="ibw-c">' + round(w,2) + ' kg<br><strong>' + ketMaxMg + ' mg</strong></td>' +
         '<td class="tv-c">' + ketMaxML + ' mL</td></tr>' +

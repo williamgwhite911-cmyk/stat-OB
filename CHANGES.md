@@ -1,5 +1,32 @@
 # StatFlight Changes
 
+## Default drug concentrations updated
+
+Stock concentrations updated to match program supply:
+
+| Drug | New default stock | New per-mL | Math change |
+|---|---|---|---|
+| **Ketamine** | 500 mg / 5 mL | **100 mg/mL** (was 50) | mL = mg ÷ 100 (was ÷ 50) |
+| **Fentanyl** | 250 mcg / 5 mL | 50 mcg/mL (unchanged) | none |
+| **Midazolam** | 10 mg / 2 mL | 5 mg/mL (unchanged) | none |
+| **Hydromorphone** | 2 mg/mL | 2 mg/mL (was "2 or 4") | none |
+
+Ketamine concentration doubles — every volume calculation updated:
+- adult.html: ketamineAnalgesic, ketamineInd, ketamineAgit drug cards;
+  renderRsiMaxDose table calc; ketamine drip mix description
+- peds.html: ketamineAnalgesic, ketamineInd (incl. giveBox rule with
+  '100 mg/mL stock'); renderRsiMaxDose table calc
+- ob.html: ketamineInd (incl. volume label '100 mg/mL'); renderRsiMaxDose;
+  ketamine drip mix description
+- pain-protocol.html: sub-label for the ketamine med block
+- ketamine-chart.html: header concentration block; footnote;
+  dynamic JS calc (rRsiMl, rAgitMl, rInfMl → /100); 80 KET RSI
+  static cells × 2 + 40 KET AGIT + 40 KET INF = 160 ketamine cells
+  recomputed via Python script. ROC RSI cells preserved (already at
+  /10 from previous v49 update).
+
+SW cache bumped v56 → v57.
+
 ## Trauma Star Analgesia replaces PHI protocol in the analgesia diagnosis (per-tab filtered)
 
 The Pain Management diagnosis in each app now links to the Trauma Star
