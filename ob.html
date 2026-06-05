@@ -1527,11 +1527,13 @@ var DIAGNOSES = [
   {id:'uterine_rupture', cat:'OB BLEEDING', name:'Uterine Rupture', sub:'Severe pain · loss of fetal HR · VBAC/trauma'},
   {id:'hellp', cat:'HYPERTENSIVE / PREECLAMPSIA', name:'HELLP Syndrome', sub:'Hemolysis + ↑LFTs + ↓Plt · severe pre-e variant'},
   {id:'preg_pe', cat:'CRITICAL CARE', name:'PE in Pregnancy', sub:'Leading cause of maternal mortality · L lateral'},
-  {id:'newborn', cat:'NEONATAL', name:'Newborn Resuscitation', sub:'Post-delivery'}
+  {id:'newborn', cat:'NEONATAL', name:'Newborn Resuscitation', sub:'Post-delivery'},
+  {id:'pain_mgmt', cat:'PAIN / ANALGESIA', name:'Pain Management — Non-Labor (Trauma Star OB)', sub:'Trauma/fracture/soft-tissue pain · Fentanyl → Hydromorphone (NO ketamine)'},
+  {id:'labor_pain', cat:'PAIN / ANALGESIA', name:'Labor Pain Management', sub:'Neuraxial first-line · systemic opioids if unavailable · NO ketamine'}
 ];
 
 function renderDxGrid(){
-  var CAT_ORDER = ['LABOR','POSTPARTUM','HYPERTENSIVE / PREECLAMPSIA','OB BLEEDING','OB MEDICAL','OB SUPPORT','NEURO','TRAUMA','VASCULAR','ENVIRONMENTAL','AIRWAY / INTUBATION','CRITICAL CARE','NEONATAL'];
+  var CAT_ORDER = ['LABOR','POSTPARTUM','HYPERTENSIVE / PREECLAMPSIA','OB BLEEDING','OB MEDICAL','OB SUPPORT','NEURO','TRAUMA','VASCULAR','ENVIRONMENTAL','AIRWAY / INTUBATION','CRITICAL CARE','NEONATAL','PAIN / ANALGESIA'];
   var groups = {};
   DIAGNOSES.forEach(function(dx){
     var cat = dx.cat || 'OTHER';
@@ -1893,6 +1895,21 @@ var DRUGS_MATERNAL = {
         {k:'Repeat', v:'q 1 hr PRN'}
       ],
       warn:'DO NOT give if delivery possible within 1 hour.'
+    });
+  },
+  hydromorphone: function(){
+    return rcCard({
+      name:'Hydromorphone (Dilaudid)', generic:'Stock 2 mg/mL or 4 mg/mL vial — longer-acting opioid',
+      cat:'PAIN', form:'vial', line:'Step 2 (non-labor) / alt (labor)',
+      indication:'Non-labor pain (Step 2 after fentanyl); supplemental labor analgesia if neuraxial unavailable',
+      color:'var(--amber)',
+      rows:[
+        {k:'Non-labor', v:'0.2 to 0.8 mg IV over 2-3 min'},
+        {k:'Repeat (non-labor)', v:'q30-60 min PRN'},
+        {k:'Labor', v:'0.5 to 1 mg IV over 2-3 min'},
+        {k:'Repeat (labor)', v:'q2-3 hr PRN'}
+      ],
+      warn:'⚠ NO KETAMINE in pregnancy for analgesia. Use lowest effective dose. Avoid near planned delivery (neonatal respiratory depression — be ready with neonatal naloxone 0.1 mg/kg).'
     });
   },
   acetaminophen: function(){
@@ -2354,6 +2371,8 @@ var DX_DRUG_MAP = {
   uterine_rupture:['fluidBolus','txa','fentanyl','epiPushMaternal','caCl','caGluc'],
   hellp:['magPreeclampsia','labetalol','hydralazine','nicardipine','caGluc','fluidBolus'],
   preg_pe:['fluidBolus','epiPushMaternal','fentanyl'],
+  pain_mgmt:['fentanyl','hydromorphone'],
+  labor_pain:['fentanyl','hydromorphone'],
   amputation: ['fentanyl','fluidBolus','txa'],
   impaled: ['fentanyl','fluidBolus','txa'],
   femur_fracture: ['fentanyl','fluidBolus','txa'],
@@ -2988,7 +3007,33 @@ var DX_PLAN = {
     ]
   },
   safer_checklist:{picture:'SAFER airway preparation checklist — Crew 1 (operator) + Crew 2 (assist) parallel workflow.', plan:['Tap each step to mark complete','See PHI SAFER chapter for full protocol detail']},
-  safer_diagram:{picture:'PHI SAFER Crew 1 + Crew 2 duties diagram. Tap below to view full-screen.', plan:['View the diagram for at-a-glance airway prep workflow','Use SAFER Airway Checklist for tap-to-complete walkthrough']}
+  safer_diagram:{picture:'PHI SAFER Crew 1 + Crew 2 duties diagram. Tap below to view full-screen.', plan:['View the diagram for at-a-glance airway prep workflow','Use SAFER Airway Checklist for tap-to-complete walkthrough']},
+  pain_mgmt:{nonPhi:true, nonPhiNote:'Trauma Star OB Non-Labor Pain Protocol — synthesized for pregnant patients with non-obstetric acute pain (fracture, soft tissue, trauma). KETAMINE IS CONTRAINDICATED for analgesia in pregnancy per protocol.',
+    picture:'<strong>Non-labor pain in the pregnant patient</strong> (broken bone, trauma, soft-tissue injury). Preferred opioids: fentanyl and hydromorphone. <strong>NO ketamine.</strong> NSAIDs: avoid from week 20 onward (fetal renal / ductus). Use lowest effective dose for shortest duration. For labor pain — use the Labor Pain protocol.',
+    plan:[
+      'STEP 1 — Fentanyl 0.5-1 mcg/kg IV. Repeat q5-10 min PRN. MAX cumulative 200 mcg.',
+      'STEP 2 — Hydromorphone (Dilaudid) 0.2-0.8 mg IV over 2-3 min. Repeat q30-60 min PRN, titrated to effect.',
+      'GESTATIONAL AGE GUIDANCE — NSAIDs (ibuprofen / ketorolac): AVOID after 20 weeks; strictly avoid after 28 weeks (risk of premature ductus arteriosus closure and fetal renal dysfunction).',
+      'KETAMINE — CONTRAINDICATED for analgesia in pregnancy (per protocol). Use fentanyl + hydromorphone only.',
+      'Use lowest effective dose for shortest duration. Monitor fetal heart rate where feasible.',
+      'Monitor maternal respiratory status; opioids near delivery → neonatal respiratory depression and risk of NAS with prolonged exposure.',
+      'For LABOR pain (regular contractions, cervical change) → switch to Labor Pain protocol (neuraxial first-line).',
+      'Left-lateral tilt >20 weeks for any pain crisis or hemodynamic instability.'
+    ]},
+  labor_pain:{nonPhi:true, nonPhiNote:'Trauma Star Labor Pain Management — synthesized. Neuraxial (epidural/spinal) is first-line when available. Systemic opioids when neuraxial is unavailable or contraindicated. KETAMINE CONTRAINDICATED for labor analgesia.',
+    picture:'<strong>Labor pain</strong> — distinguish from broken-bone / non-labor pain (use Non-Labor Pain protocol for those). <strong>Neuraxial anesthesia (epidural / spinal) is first-line</strong> when available — collaborate with anesthesia/OB. Systemic opioids only as alternative or supplement. <strong>NO ketamine for labor analgesia.</strong>',
+    plan:[
+      'FIRST-LINE — Neuraxial anesthesia (epidural or spinal). Collaborate with receiving anesthesia/OB on arrival.',
+      'SYSTEMIC (if neuraxial unavailable / not desired / contraindicated):',
+      '  • Fentanyl 50-100 mcg IV. Repeat q30-60 min PRN. Monitor maternal RR, FHR, sedation.',
+      '  • Hydromorphone (Dilaudid) 0.5-1 mg IV over 2-3 min. Repeat q2-3 hr PRN. Use lowest effective dose; avoid near planned delivery if possible.',
+      'AVOID KETAMINE for labor analgesia.',
+      'AVOID NSAIDs after 20 weeks gestation.',
+      'Monitor maternal respiratory status AND fetal heart rate throughout.',
+      'Opioids near delivery → neonatal respiratory depression at birth — be ready to give NEONATAL NALOXONE 0.1 mg/kg if needed.',
+      'Left-lateral tilt during transport (relieves aortocaval compression after 20 weeks).',
+      'Document exact dose, time, route, and most recent FHR before each opioid administration.'
+    ]}
 };
 
 /* SAFER Airway Checklist — PHI 2.2.3 (page 2-6) */

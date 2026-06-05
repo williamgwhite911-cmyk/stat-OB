@@ -1,5 +1,34 @@
 # StatFlight Changes
 
+## Trauma Star Pain Protocol (Adult / Peds / OB)
+
+New diagnosis card under a new "PAIN / ANALGESIA" category in all three apps.
+
+**Adult & Peds — stepwise:**
+- Step 1 — Fentanyl
+- Step 2 — Ketamine (analgesic / sub-dissociative dose)
+- Step 3 — Hydromorphone (Dilaudid)
+
+Both new drug cards added: `ketamineAnalgesic` (weight-based, with low and high dose tiers) and `hydromorphone`. Peds variant includes weight-based calc and an IN ketamine route.
+
+**OB — split into two distinct protocols (with broken-bone vs labor differentiation built into the picture text):**
+
+`pain_mgmt` (Non-Labor):
+- Step 1 — Fentanyl
+- Step 2 — Hydromorphone
+- **KETAMINE CONTRAINDICATED** for analgesia in pregnancy
+- NSAIDs avoid after 20 wks; strictly avoid after 28 wks
+- Use lowest effective dose
+
+`labor_pain`:
+- First-line: Neuraxial (epidural / spinal) with anesthesia/OB
+- Systemic fallback: Fentanyl 50-100 mcg IV q30-60 min, Hydromorphone 0.5-1 mg IV q2-3 hr
+- NO ketamine
+- Avoid near planned delivery (neonatal respiratory depression — be ready w/ neonatal naloxone 0.1 mg/kg)
+- Left-lateral tilt >20 wks
+
+SW cache bumped v49 → v50.
+
 ## Rocuronium dose change (Adult / OB / Peds / Ketamine chart)
 
 PHI IV RSI dose updated from 1.5 mg/kg IBW (Adult / OB) and 1.2 mg/kg IV (Peds)

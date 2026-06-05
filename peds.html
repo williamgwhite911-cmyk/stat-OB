@@ -1414,11 +1414,12 @@ var DIAGNOSES = [
   {id:'hypothermia', cat:'ENVIRONMENTAL', name:'Hypothermia',            sub:'Active rewarming · gentle handling'},
   {id:'frostbite',  cat:'ENVIRONMENTAL', name:'Frostbite',               sub:'No partial thaw · loose dressing'},
   {id:'heat_illness', cat:'ENVIRONMENTAL', name:'Heat Illness / Heat Stroke', sub:'Cool aggressively'},
-  {id:'drowning', cat:'ENVIRONMENTAL', name:'Drowning / Submersion (Peds)', sub:'Hypoxia first · 5 rescue breaths before CPR'}
+  {id:'drowning', cat:'ENVIRONMENTAL', name:'Drowning / Submersion (Peds)', sub:'Hypoxia first · 5 rescue breaths before CPR'},
+  {id:'pain_mgmt', cat:'PAIN / ANALGESIA', name:'Pain Management — Trauma Star (Peds)', sub:'Fentanyl → Ketamine → Hydromorphone · weight-based'}
 ];
 
 function renderDxGrid(){
-  var CAT_ORDER = ['CARDIAC','RESPIRATORY','AIRWAY / INTUBATION','NEURO','METABOLIC','ALLERGIC / SHOCK','TOXICOLOGY','TRAUMA','ENVIRONMENTAL','SEDATION / BEHAVIORAL'];
+  var CAT_ORDER = ['CARDIAC','RESPIRATORY','AIRWAY / INTUBATION','NEURO','METABOLIC','ALLERGIC / SHOCK','TOXICOLOGY','TRAUMA','ENVIRONMENTAL','SEDATION / BEHAVIORAL','PAIN / ANALGESIA'];
   var groups = {};
   DIAGNOSES.forEach(function(dx){
     var cat = dx.cat || 'OTHER';
@@ -2086,7 +2087,18 @@ var DX_PLAN = {
     ]
   },
   safer_checklist:{picture:'SAFER airway preparation checklist — Crew 1 (operator) + Crew 2 (assist) parallel workflow.', plan:['Tap each step to mark complete','See PHI SAFER chapter for full protocol detail']},
-  safer_diagram:{picture:'PHI SAFER Crew 1 + Crew 2 duties diagram. Tap below to view full-screen.', plan:['View the diagram for at-a-glance airway prep workflow','Use SAFER Airway Checklist for tap-to-complete walkthrough']}
+  safer_diagram:{picture:'PHI SAFER Crew 1 + Crew 2 duties diagram. Tap below to view full-screen.', plan:['View the diagram for at-a-glance airway prep workflow','Use SAFER Airway Checklist for tap-to-complete walkthrough']},
+  pain_mgmt:{nonPhi:true, nonPhiNote:'Trauma Star Pediatric Pain Protocol — synthesized clinical pathway. All doses weight-based; verify with medical control.',
+    picture:'Pediatric acute pain (broken bone / soft tissue). Stepwise: fentanyl → ketamine analgesic dose → hydromorphone. Lower starting doses in infants and fragile patients.',
+    plan:[
+      'STEP 1 — Fentanyl 1-2 mcg/kg IV/IN. Repeat q5-10 min PRN. MAX single dose 100 mcg.',
+      'STEP 2 — Ketamine (analgesic dose, opioid-sparing): young / fragile → 0.1-0.3 mg/kg IV over 1-2 min. Stable moderate-severe pain → 0.3-0.5 mg/kg IV over 1-2 min. IN route 1-1.5 mg/kg (max 1 mL per nostril). Reassess at 5 min.',
+      'STEP 3 — Hydromorphone (Dilaudid): 0.01-0.02 mg/kg IV over 2-3 min. Typical range 0.05-0.2 mg per dose. Repeat q30-60 min PRN, titrated to effect.',
+      'Lower starting doses in infants and medically fragile patients.',
+      'Monitor for respiratory depression and sedation with opioids.',
+      'Ketamine can partially dissociate at higher doses — reassure patient and family.',
+      'For pediatric patient with broken bone, soft-tissue injury, or burn — use this protocol. For obstetric/teen-pregnant patients → switch to OB app.'
+    ]}
 };
 
 // ════════════════════════════════════════════════════════════════
@@ -3190,6 +3202,42 @@ var DRUGS = {
       ]
     });
   },
+  ketamineAnalgesic: function(){
+    var w = dosingWt();
+    var loMin = w ? round(0.1*w, 1) : null, loMax = w ? round(0.3*w, 1) : null;
+    var hiMin = w ? round(0.3*w, 1) : null, hiMax = w ? round(0.5*w, 1) : null;
+    var inMin = w ? round(1*w, 1) : null,   inMax = w ? round(1.5*w, 1) : null;
+    return rcCard({
+      name:'Ketamine — Analgesic Dose', generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — sub-dissociative for pain', cat:'PAIN',
+      form:'vial', line:'opioid-sparing (Step 2)',
+      indication:'Acute peds pain — sub-dissociative ketamine. Pair with fentanyl as Step 2 of Trauma Star Pediatric Pain Protocol.', color:'var(--orange)',
+      rows:[
+        {k:'Young / fragile IV', v:'0.1 to 0.3 mg/kg IV over 1-2 min'},
+        {k:'Calc (low)', v:loMin != null ? loMin + ' to ' + loMax + ' mg ('+round(loMin/50,2)+' to '+round(loMax/50,2)+' mL)' : '--', cls:'calc'},
+        {k:'Stable mod-severe IV', v:'0.3 to 0.5 mg/kg IV over 1-2 min'},
+        {k:'Calc (high)', v:hiMin != null ? hiMin + ' to ' + hiMax + ' mg ('+round(hiMin/50,2)+' to '+round(hiMax/50,2)+' mL)' : '--', cls:'calc'},
+        {k:'IN route', v:'1 to 1.5 mg/kg IN (max 1 mL per nostril)'},
+        {k:'Calc IN', v:inMin != null ? inMin + ' to ' + inMax + ' mg' : '--', cls:'calc'},
+        {k:'Reassess', v:'5 min — repeat only if needed'}
+      ],
+      warn:'⚠ AVOID in pregnant adolescents (use OB protocol). Partial dissociation possible at higher doses.'});
+  },
+  hydromorphone: function(){
+    var w = dosingWt();
+    var lo = w ? round(0.01*w, 3) : null;
+    var hi = w ? round(0.02*w, 3) : null;
+    return rcCard({
+      name:'Hydromorphone (Dilaudid)', generic:'Stock 2 mg/mL or 4 mg/mL vial — longer-acting opioid', cat:'PAIN',
+      form:'vial', line:'Step 3',
+      indication:'Pain Step 3 — longer-acting opioid after fentanyl ± ketamine', color:'var(--amber)',
+      rows:[
+        {k:'Dose', v:'0.01 to 0.02 mg/kg IV over 2-3 min'},
+        {k:'Calc', v:lo != null ? lo + ' to ' + hi + ' mg' : '--', cls:'calc'},
+        {k:'Typical range', v:'0.05 to 0.2 mg per dose'},
+        {k:'Repeat', v:'q30-60 min PRN, titrated to effect'}
+      ],
+      warn:'Lower starting dose in infants and medically fragile. Monitor respiratory rate and SpO2 closely.'});
+  },
   nicardipine: function(){
     var w = dosingWt();
     return rcCard({
@@ -3535,6 +3583,7 @@ var DX_DRUGS = {
   safer_checklist:['ketamineInduction','rocPeds','succPeds','fentanylBolus'],
   safer_diagram:[],
   anxiolysis: ['midazolamSeizure','lorazepamSeizure','fentanylBolus'],
+  pain_mgmt: ['fentanylBolus','ketamineAnalgesic','hydromorphone'],
   amputation: ['fentanylBolus','txa','fluidBolus','cefazolin','clindamycin'],
   impaled:    ['fentanylBolus','fluidBolus','txa'],
   femur_fracture: ['fentanylBolus','fluidBolus','txa'],
