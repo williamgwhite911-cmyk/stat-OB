@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pain Protocol">
+<meta name="theme-color" content="#030710">
+<title>Trauma Star Pain Protocol — Adult · OB · Peds</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#030710;--bg1:#070e1e;--bg2:#0b1428;
+  --s0:#0f1d34;--s1:#142340;--s2:#192c4e;
+  --bd0:#1a2d48;--bd1:#223858;--bd2:#2c4870;
+  --tx0:#dce9fc;--tx1:#8aafd6;--tx2:#4d6e96;
+  --cyan:#00d4f5;--teal:#00e8b0;--rose:#fb7185;--pink:#f472b6;--purple:#b57bff;
+  --amber:#fbbf24;--orange:#fb923c;--red:#ef4444;--green:#22c55e;
+  --mono:"IBM Plex Mono",monospace;--body:"Outfit",sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--body);background:var(--bg0);color:var(--tx0);min-height:100vh;line-height:1.45;overflow-x:hidden}
+
+.topbar{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--bd0);background:var(--bg1);position:sticky;top:0;z-index:10}
+.topbar a.back{color:var(--cyan);text-decoration:none;font-family:var(--mono);font-size:.7rem;font-weight:700;letter-spacing:.1em;padding:6px 10px;border:1px solid var(--bd1);border-radius:8px}
+.topbar a.back:hover{background:var(--s0);border-color:var(--cyan)}
+.topbar h1{font-size:1.05rem;font-weight:800;flex:1;letter-spacing:-.01em}
+.topbar .pbtn{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-family:var(--mono);font-size:.7rem;font-weight:700;letter-spacing:.08em;cursor:pointer}
+.topbar .pbtn:hover{filter:brightness(1.15)}
+
+.wrap{max-width:980px;margin:0 auto;padding:18px 16px 32px}
+
+.title{text-align:center;margin-bottom:14px}
+.title h2{font-size:1.35rem;font-weight:900;letter-spacing:-.015em}
+.title .sub{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--tx2);margin-top:4px}
+
+.diff{background:var(--s0);border:1px solid var(--bd1);border-left:4px solid var(--amber);border-radius:10px;padding:11px 14px;margin-bottom:14px;font-size:.83rem;line-height:1.55}
+.diff b{color:var(--amber)}
+
+.cols{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:1000px){.cols{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.cols{grid-template-columns:1fr}}
+
+.col{background:var(--s0);border:1px solid var(--bd1);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.col-hdr{padding:10px 12px;color:#fff;font-weight:800;font-size:.85rem;letter-spacing:.02em}
+.col-hdr .who{font-family:var(--mono);font-size:.6rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;display:block;opacity:.85;margin-top:2px}
+.col-adult .col-hdr{background:linear-gradient(135deg,#15803d,#22c55e)}
+.col-ob .col-hdr{background:linear-gradient(135deg,#be185d,#f472b6)}
+.col-ob-labor .col-hdr{background:linear-gradient(135deg,#9d174d,#ec4899)}
+.col-peds .col-hdr{background:linear-gradient(135deg,#0e7490,#22d3ee)}
+
+.col-body{padding:10px 11px;flex:1;display:flex;flex-direction:column;gap:9px}
+
+.step{border:1px solid var(--bd1);background:var(--bg1);border-radius:9px;padding:9px 10px}
+.step-no{display:inline-block;font-family:var(--mono);font-size:.6rem;font-weight:800;letter-spacing:.1em;padding:1px 6px;border-radius:4px;background:var(--bd1);color:var(--tx0);margin-right:5px}
+.step h4{display:inline;font-size:.83rem;font-weight:800;color:var(--tx0)}
+.med-line{font-size:.62rem;font-family:var(--mono);color:var(--tx2);letter-spacing:.06em;text-transform:uppercase;margin-top:1px}
+.rows{margin-top:7px;display:flex;flex-direction:column;gap:4px}
+.row{display:grid;grid-template-columns:54px 1fr;gap:6px;align-items:start}
+.row .k{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);padding-top:1px;font-weight:700}
+.row .v{font-size:.78rem;color:var(--tx0);line-height:1.4}
+.row .v b{color:var(--cyan)}
+.row.warn .v{color:var(--amber)}
+.row.contra .v{color:var(--rose);font-weight:700}
+
+.step.fentanyl{border-left:3px solid var(--amber)}
+.step.ketamine{border-left:3px solid var(--orange)}
+.step.hydromorphone{border-left:3px solid #c4b5fd}
+.step.neuraxial{border-left:3px solid var(--cyan)}
+.step.contra{border-left:3px solid var(--rose);background:rgba(251,113,133,.06)}
+
+.bottom{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:620px){.bottom{grid-template-columns:1fr}}
+.tile{background:var(--s0);border:1px solid var(--bd1);border-radius:10px;padding:11px 13px}
+.tile h3{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);margin-bottom:7px;font-weight:800}
+.tile.warn{border-left:4px solid var(--amber)}
+.tile.warn h3{color:var(--amber)}
+.tile ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px}
+.tile li{font-size:.78rem;line-height:1.45;padding-left:13px;position:relative}
+.tile li::before{content:"▸";position:absolute;left:0;color:var(--tx2);font-size:.7rem;top:1px}
+
+.footer{margin-top:14px;padding:11px 14px;font-size:.66rem;font-family:var(--mono);letter-spacing:.05em;color:var(--tx2);text-align:center;border-top:1px solid var(--bd0)}
+
+@media print{
+  body{background:#fff;color:#000}
+  .topbar{display:none}
+  .wrap{max-width:none;padding:8px}
+  .title{margin-bottom:8px}
+  .title h2{font-size:14pt;color:#000}
+  .title .sub{color:#444}
+  .diff{background:#fff8e0;border-color:#666;color:#000;font-size:9pt;padding:6px 10px;margin-bottom:8px}
+  .diff b{color:#000}
+  .cols{grid-template-columns:repeat(4,1fr);gap:6px}
+  .col{background:#fff;border:1px solid #000;border-radius:6px;page-break-inside:avoid}
+  .col-hdr{background:#000 !important;color:#fff;padding:5px 7px;font-size:8.5pt}
+  .col-hdr .who{font-size:6.5pt}
+  .col-body{padding:5px 6px;gap:5px}
+  .step{background:#fff;border:1px solid #555;border-left:3px solid #555;padding:4px 6px;border-radius:4px}
+  .step h4{font-size:8.5pt;color:#000}
+  .step-no{background:#000;color:#fff;font-size:6pt}
+  .med-line{color:#444;font-size:6pt}
+  .rows{margin-top:4px;gap:2px}
+  .row{grid-template-columns:42px 1fr;gap:4px}
+  .row .k{color:#444;font-size:5.8pt}
+  .row .v{color:#000;font-size:7.5pt;line-height:1.25}
+  .row .v b{color:#000;text-decoration:underline}
+  .row.warn .v{color:#7a4a00;font-weight:700}
+  .row.contra .v{color:#a50000}
+  .bottom{margin-top:8px;gap:6px}
+  .tile{background:#fff;border:1px solid #000;padding:5px 8px;border-radius:4px;page-break-inside:avoid}
+  .tile h3{color:#000;font-size:7.5pt;margin-bottom:3px}
+  .tile.warn{border-left:3px solid #000}
+  .tile li{font-size:7.5pt;line-height:1.3;padding-left:10px}
+  .tile li::before{color:#000}
+  .footer{margin-top:8px;color:#444;font-size:6.5pt;border-top:1px solid #999}
+  @page{size:letter landscape;margin:0.3in}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back" href="index.html">‹ HOME</a>
+  <h1>Trauma Star Pain Protocol</h1>
+  <button class="pbtn" onclick="window.print()">🖨 PRINT</button>
+</div>
+
+<div class="wrap">
+
+  <div class="title">
+    <h2>One-Page Pain Protocol</h2>
+    <div class="sub">Adult · OB Non-Labor · OB Labor · Peds — Fentanyl → Ketamine → Hydromorphone</div>
+  </div>
+
+  <div class="diff">
+    <b>DIFFERENTIATE FIRST.</b> Broken-bone / fracture / soft-tissue / non-obstetric pain → use Adult, Peds, or OB Non-Labor column. Labor pain (contractions + cervical change) → OB Labor column (neuraxial first). <b>Pregnant patient at any GA: ketamine is contraindicated for analgesia.</b> NSAIDs: avoid &gt; 20 wk, strictly avoid &gt; 28 wk.
+  </div>
+
+  <div class="cols">
+
+    <!-- ADULT -->
+    <div class="col col-adult">
+      <div class="col-hdr">Adult <span class="who">non-pregnant · acute pain</span></div>
+      <div class="col-body">
+
+        <div class="step fentanyl">
+          <span class="step-no">1</span><h4>Fentanyl</h4>
+          <div class="med-line">50 mcg/mL vial · 1st-line opioid</div>
+          <div class="rows">
+            <div class="row"><div class="k">When</div><div class="v">Moderate-severe acute pain</div></div>
+            <div class="row"><div class="k">Dose</div><div class="v"><b>0.5 – 1 mcg/kg IV</b> · repeat q 5-10 min PRN · MAX cumulative <b>200 mcg</b></div></div>
+            <div class="row"><div class="k">Reassess</div><div class="v">5 min — pain score, RR, SpO2, BP, sedation</div></div>
+            <div class="row"><div class="k">Document</div><div class="v">Dose · time · route · pre & post pain score · RR · SpO2</div></div>
+          </div>
+        </div>
+
+        <div class="step ketamine">
+          <span class="step-no">2</span><h4>Ketamine — Analgesic</h4>
+          <div class="med-line">500 mg / 10 mL (50 mg/mL) · sub-dissociative · opioid-sparing</div>
+          <div class="rows">
+            <div class="row"><div class="k">When</div><div class="v">Pain refractory to fentanyl OR opioid-sparing desired (poly-trauma, opioid-tolerant)</div></div>
+            <div class="row"><div class="k">Dose</div><div class="v">Mild / elderly &gt;75 / fragile: <b>0.1 – 0.3 mg/kg IV</b> over 1-2 min<br>Mod-severe stable: <b>0.3 – 0.5 mg/kg IV</b> over 1-2 min</div></div>
+            <div class="row"><div class="k">Reassess</div><div class="v">5 min — repeat only if needed; watch for partial dissociation</div></div>
+            <div class="row"><div class="k">Document</div><div class="v">Dose · time · pre & post pain · any dissociative effects · BP · HR</div></div>
+          </div>
+        </div>
+
+        <div class="step hydromorphone">
+          <span class="step-no">3</span><h4>Hydromorphone (Dilaudid)</h4>
+          <div class="med-line">2 mg/mL or 4 mg/mL vial · longer-acting opioid</div>
+          <div class="rows">
+            <div class="row"><div class="k">When</div><div class="v">Persistent pain after Steps 1+2 OR long transport requiring durable analgesia</div></div>
+            <div class="row"><div class="k">Dose</div><div class="v">Most adults: <b>0.2 – 0.8 mg IV</b> over 2-3 min<br>Opioid-tolerant: <b>0.5 – 1.5 mg IV</b><br>Repeat q 30-60 min PRN, titrated</div></div>
+            <div class="row"><div class="k">Reassess</div><div class="v">15-30 min — sedation, RR, pain score</div></div>
+            <div class="row"><div class="k">Document</div><div class="v">Dose · time · sedation score · RR · SpO2 · response</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- OB NON-LABOR -->
+    <div class="col col-ob">
+      <div class="col-hdr">OB Non-Labor <span class="who">pregnant · trauma / fracture / non-obstetric</span></div>
+      <div class="col-body">
+
+        <div class="step fentanyl">
+          <span class="step-no">1</span><h4>Fentanyl</h4>
+          <div class="med-line">50 mcg/mL vial · 1st-line opioid in pregnancy</div>
+          <div class="rows">
+            <div class="row"><div class="k">When</div><div class="v">Acute pain (fracture, soft-tissue, non-labor)</div></div>
+            <div class="row"><div class="k">Dose</div><div class="v"><b>0.5 – 1 mcg/kg IV</b> · repeat q 5-10 min PRN · MAX cumulative <b>200 mcg</b></div></div>
+            <div class="row"><div class="k">Reassess</div><div class="v">5 min — maternal RR/SpO2/BP, FHR if monitored</div></div>
+            <div class="row"><div class="k">Document</div><div class="v">Dose · time · GA (weeks) · pre & post pain · FHR · L-lateral tilt &gt;20 wk</div></div>
+          </div>
+        </div>
+
+        <div class="step contra">
+          <span class="step-no">2</span><h4>Ketamine — CONTRAINDICATED</h4>
+          <div class="med-line">do not use for analgesia in pregnancy</div>
+          <div class="rows">
+            <div class="row contra"><div class="k">Why</div><div class="v">Catecholamine surge → ↑ uterine tone, ↓ uteroplacental perfusion. Skip directly to Step 3.</div></div>
+          </div>
+        </div>
+
+        <div class="step hydromorphone">
+          <span class="step-no">3</span><h4>Hydromorphone (Dilaudid)</h4>
+          <div class="med-line">2 mg/mL or 4 mg/mL vial · longer-acting opioid</div>
+          <div class="rows">
+            <div class="row"><div class="k">When</div><div class="v">Persistent pain after fentanyl OR long transport</div></div>
+            <div class="row"><div class="k">Dose</div><div class="v"><b>0.2 – 0.8 mg IV</b> over 2-3 min · repeat q 30-60 min PRN, titrated. Lowest effective dose.</div></div>
+            <div class="row"><div class="k">Reassess</div><div class="v">15-30 min — maternal sedation/RR, FHR</div></div>
+            <div class="row"><div class="k">Document</div><div class="v">Dose · time · GA · FHR before & after · neonatal-naloxone availability if near delivery</div></div>
+            <div class="row warn"><div class="k">⚠</div><div class="v">NSAIDs: avoid &gt; 20 wk; strictly avoid &gt; 28 wk. L-lateral tilt &gt; 20 wk.</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- OB LABOR -->
+    <div class="col col-ob-labor">
+      <div class="col-hdr">OB Labor <span class="who">active labor · contractions + cervical change</span></div>
+      <div class="col-body">
+
+        <div class="step neuraxial">
+          <span class="step-no">1st</span><h4>Neuraxial (preferred)</h4>
+          <div class="med-line">epidural / spinal · anesthesia + OB</div>
+          <div class="rows">
+            <div class="row"><div class="k">When</div><div class="v">Available at receiving facility — coordinate during transport</div></div>
+            <div class="row"><div class="k">Action</div><div class="v">Pre-notify; ensure IV access, baseline VS + FHR; L-lateral tilt &gt; 20 wk</div></div>
+            <div class="row"><div class="k">Document</div><div class="v">Pre-notification time · maternal VS · FHR baseline</div></div>
+          </div>
+        </div>
+
+        <div class="step fentanyl">
+          <span class="step-no">alt</span><h4>Fentanyl</h4>
+          <div class="med-line">if neuraxial unavailable / not desired</div>
+          <div class="rows">
+            <div class="row"><div class="k">Dose</div><div class="v"><b>50 – 100 mcg IV</b> · repeat q 30-60 min PRN</div></div>
+            <div class="row"><div class="k">Reassess</div><div class="v">Maternal RR & sedation; <b>FHR before and after every dose</b></div></div>
+            <div class="row"><div class="k">Document</div><div class="v">Dose · time · FHR pre/post · cervical exam if known · stage of labor</div></div>
+          </div>
+        </div>
+
+        <div class="step hydromorphone">
+          <span class="step-no">alt</span><h4>Hydromorphone</h4>
+          <div class="med-line">adjunct / alternative opioid for labor</div>
+          <div class="rows">
+            <div class="row"><div class="k">Dose</div><div class="v"><b>0.5 – 1 mg IV</b> over 2-3 min · repeat q 2-3 hr PRN</div></div>
+            <div class="row"><div class="k">Reassess</div><div class="v">Maternal RR/sedation; FHR; signs of imminent delivery</div></div>
+            <div class="row"><div class="k">Document</div><div class="v">Dose · time · FHR pre/post · est time to delivery</div></div>
+            <div class="row warn"><div class="k">⚠</div><div class="v">Avoid near planned delivery — neonatal respiratory depression. <b>Neonatal naloxone 0.1 mg/kg</b> at hand.</div></div>
+          </div>
+        </div>
+
+        <div class="step contra">
+          <span class="step-no">✗</span><h4>NO ketamine for labor</h4>
+          <div class="rows">
+            <div class="row contra"><div class="k">Why</div><div class="v">Uterine hypertonus + altered maternal mentation contraindicated in labor.</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PEDS -->
+    <div class="col col-peds">
+      <div class="col-hdr">Peds <span class="who">weight-based · max single per step</span></div>
+      <div class="col-body">
+
+        <div class="step fentanyl">
+          <span class="step-no">1</span><h4>Fentanyl</h4>
+          <div class="med-line">50 mcg/mL vial · 1st-line opioid (IV/IN)</div>
+          <div class="rows">
+            <div class="row"><div class="k">When</div><div class="v">Acute pain, peds &gt; neonatal</div></div>
+            <div class="row"><div class="k">Dose</div><div class="v"><b>1 – 2 mcg/kg IV/IN</b> · repeat q 5-10 min PRN · MAX single dose <b>100 mcg</b></div></div>
+            <div class="row"><div class="k">Reassess</div><div class="v">5 min — RR, SpO2, behavioral pain scale</div></div>
+            <div class="row"><div class="k">Document</div><div class="v">Wt (kg) · dose · time · route · pre & post pain · RR · SpO2</div></div>
+          </div>
+        </div>
+
+        <div class="step ketamine">
+          <span class="step-no">2</span><h4>Ketamine — Analgesic</h4>
+          <div class="med-line">500 mg / 10 mL · sub-dissociative · IV or IN</div>
+          <div class="rows">
+            <div class="row"><div class="k">When</div><div class="v">Refractory to fentanyl OR opioid-sparing desired</div></div>
+            <div class="row"><div class="k">Dose</div><div class="v">Young / fragile: <b>0.1 – 0.3 mg/kg IV</b> over 1-2 min<br>Mod-severe stable: <b>0.3 – 0.5 mg/kg IV</b> over 1-2 min<br>IN route: <b>1 – 1.5 mg/kg IN</b> (max 1 mL per nostril)</div></div>
+            <div class="row"><div class="k">Reassess</div><div class="v">5 min — pain, dissociation, HR/BP</div></div>
+            <div class="row"><div class="k">Document</div><div class="v">Wt · dose · route · time · pre & post pain · dissociative effects</div></div>
+          </div>
+        </div>
+
+        <div class="step hydromorphone">
+          <span class="step-no">3</span><h4>Hydromorphone (Dilaudid)</h4>
+          <div class="med-line">2 mg/mL or 4 mg/mL vial · longer-acting</div>
+          <div class="rows">
+            <div class="row"><div class="k">When</div><div class="v">Persistent pain after Steps 1+2 OR long transport</div></div>
+            <div class="row"><div class="k">Dose</div><div class="v"><b>0.01 – 0.02 mg/kg IV</b> over 2-3 min · typical <b>0.05 – 0.2 mg</b> per dose · repeat q 30-60 min PRN</div></div>
+            <div class="row"><div class="k">Reassess</div><div class="v">15-30 min — sedation, RR, pain</div></div>
+            <div class="row"><div class="k">Document</div><div class="v">Wt · dose · time · sedation score · RR · SpO2 · response</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /.cols -->
+
+  <div class="bottom">
+
+    <div class="tile warn">
+      <h3>Reassess every dose</h3>
+      <ul>
+        <li>Pain score (NRS 0-10 adult; FLACC / Wong-Baker peds; verbal in labor)</li>
+        <li>Respiratory rate &amp; SpO2 — adult &lt; 10 / peds age-specific = hold next dose, consider naloxone</li>
+        <li>Sedation level (RASS or Pasero scale)</li>
+        <li>BP &amp; HR — opioid hypotension in volume-depleted / hemorrhagic patient</li>
+        <li>OB only: FHR before AND after each opioid dose; signs of imminent delivery</li>
+      </ul>
+    </div>
+
+    <div class="tile">
+      <h3>Document at every administration</h3>
+      <ul>
+        <li>Medication, dose (with units), route, time</li>
+        <li>Patient weight (kg) used for the calculation</li>
+        <li>Pre- and post- pain score with timestamp</li>
+        <li>RR, SpO2, BP, sedation level pre &amp; post</li>
+        <li>OB: gestational age, FHR pre/post, L-lateral tilt &gt; 20 wk</li>
+        <li>Adverse effects (n/v, pruritus, dissociation, hypotension)</li>
+        <li>Naloxone availability at bedside (esp. peds &amp; OB near delivery)</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    Trauma Star Pain Protocol · v1.0 · synthesized clinical pathway — verify with medical control · prints landscape letter
+  </div>
+
+</div>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(err){
+      console.warn('[SW] register failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
