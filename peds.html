@@ -2089,17 +2089,18 @@ var DX_PLAN = {
   },
   safer_checklist:{picture:'SAFER airway preparation checklist — Crew 1 (operator) + Crew 2 (assist) parallel workflow.', plan:['Tap each step to mark complete','See PHI SAFER chapter for full protocol detail']},
   safer_diagram:{picture:'PHI SAFER Crew 1 + Crew 2 duties diagram. Tap below to view full-screen.', plan:['View the diagram for at-a-glance airway prep workflow','Use SAFER Airway Checklist for tap-to-complete walkthrough']},
-  pain_mgmt:{picture:'PHI 5.1.2 Analgesia (Rev 23, 23 Jan 2025) — pediatric. PHI states peds "refer to adult dosing" for fentanyl and ketamine; morphine, hydromorphone, and ketorolac have explicit peds doses. Lower starting doses in infants and fragile patients.',
+  pain_mgmt:{nonPhi:true, nonPhiNote:'Trauma Star Pediatric Analgesia Protocol — synthesized clinical pathway. All doses weight-based. Morphine NOT carried by program.',
+    picture:'Pediatric acute pain (broken bone / soft tissue). Fentanyl → Hydromorphone, with adjunctive Ketamine for refractory or opioid-sparing scenarios. Lower starting doses in infants and fragile patients.',
     plan:[
-      'FENTANYL — 0.5-2 mcg/kg IBW IV over 1 min, IM, NAS. Repeat q 10 min PRN. (PHI: peds = adult dose by weight.)',
-      'MORPHINE — 0.05-0.2 mg/kg IV over 1-2 min, IM. MAX single dose 10 mg. Repeat q 10 min PRN. Titrate to pain goal.',
-      'HYDROMORPHONE (Dilaudid) — 0.01-0.02 mg/kg IV over 2 min, IM. Repeat q 15 min PRN. MAX single 1 mg. MAX total 4 mg.',
-      'ADJUNCTIVE — Ketamine sub-dissociative 0.1-0.3 mg/kg IBW IV over 1-2 min, IM, NAS. Repeat q 10-20 min PRN. MAX single 30 mg. Push SLOWLY — fast push causes partial dissociation → agitation/delirium.',
-      'ADJUNCTIVE — Ketorolac 0.5 mg/kg IV over 30-60 seconds. MAX dose 15 mg.',
-      'KETAMINE INDICATIONS: pain refractory to opioids, OR patient on Naltrexone / Buprenorphine.',
-      'KETAMINE CAUTIONS: not advised in active psychosis; partial dissociation if pushed too fast.',
+      'FENTANYL (1st-line opioid) — 1-2 mcg/kg IV/IN. Repeat q 5-10 min PRN. MAX single dose 100 mcg.',
+      'HYDROMORPHONE (Dilaudid, longer-acting) — 0.01-0.02 mg/kg IV over 2-3 min. Typical 0.05-0.2 mg per dose. Repeat q 30-60 min PRN, titrated.',
+      'ADJUNCTIVE — Ketamine sub-dissociative: young / fragile → 0.1-0.3 mg/kg IV over 1-2 min. Stable mod-severe → 0.3-0.5 mg/kg IV over 1-2 min. IN route 1-1.5 mg/kg (max 1 mL per nostril). Reassess at 5 min.',
+      'KETAMINE INDICATIONS: refractory to opioids, opioid-sparing desired, or patient on Naltrexone / Buprenorphine.',
+      'KETAMINE CAUTIONS: not advised in active psychosis; push SLOWLY over 1-2 min — fast push causes partial dissociation → agitation/delirium.',
+      'Lower starting doses in infants and medically fragile patients.',
       'Reassess every dose: pain (FLACC/Wong-Baker), RR, SpO2, sedation, BP/HR.',
       'Document weight, dose, route, time, pre/post pain, RR/SpO2, naloxone availability.',
+      'For obstetric/teen-pregnant patients → switch to OB app.',
       'See one-page reference: pain-protocol.html'
     ]}
 };
@@ -3207,49 +3208,39 @@ var DRUGS = {
   },
   ketamineAnalgesic: function(){
     var w = dosingWt();
-    var loMg = w ? round(0.1*w, 1) : null, hiMg = w ? Math.min(round(0.3*w, 1), 30) : null;
+    var loMin = w ? round(0.1*w, 1) : null, loMax = w ? round(0.3*w, 1) : null;
+    var hiMin = w ? round(0.3*w, 1) : null, hiMax = w ? round(0.5*w, 1) : null;
+    var inMin = w ? round(1*w, 1) : null,   inMax = w ? round(1.5*w, 1) : null;
     return rcCard({
-      name:'Ketamine — Sub-dissociative', generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — PHI 5.1.2 Adjunctive', cat:'PAIN',
-      form:'vial', line:'adjunctive',
-      indication:'PHI 5.1.2 (peds = adult dosing): pain refractory to opioids, or patient on Naltrexone / Buprenorphine.', color:'var(--orange)',
+      name:'Ketamine — Analgesic Dose', generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — sub-dissociative for pain', cat:'PAIN',
+      form:'vial', line:'adjunctive (opioid-sparing)',
+      indication:'Acute peds pain — sub-dissociative ketamine. Adjunctive: refractory to opioids, opioid-sparing desired, or patient on Naltrexone / Buprenorphine.', color:'var(--orange)',
       rows:[
-        {k:'PHI dose', v:'0.1 to 0.3 mg/kg IBW IV over 1-2 min, IM, NAS'},
-        {k:'Calc', v:loMg != null ? loMg + ' to ' + mx(hiMg + ' mg') + ' ('+round(loMg/50,2)+' to '+round(hiMg/50,2)+' mL)' : '--', cls:'calc'},
-        {k:'Repeat', v:'q 10-20 min PRN'},
-        {k:'MAX single', v:mx('30 mg'), cls:'warn'}
+        {k:'Young / fragile IV', v:'0.1 to 0.3 mg/kg IV over 1-2 min'},
+        {k:'Calc (low)', v:loMin != null ? loMin + ' to ' + loMax + ' mg ('+round(loMin/50,2)+' to '+round(loMax/50,2)+' mL)' : '--', cls:'calc'},
+        {k:'Stable mod-severe IV', v:'0.3 to 0.5 mg/kg IV over 1-2 min'},
+        {k:'Calc (high)', v:hiMin != null ? hiMin + ' to ' + hiMax + ' mg ('+round(hiMin/50,2)+' to '+round(hiMax/50,2)+' mL)' : '--', cls:'calc'},
+        {k:'IN route', v:'1 to 1.5 mg/kg IN (max 1 mL per nostril)'},
+        {k:'Calc IN', v:inMin != null ? inMin + ' to ' + inMax + ' mg' : '--', cls:'calc'},
+        {k:'Reassess', v:'5 min — repeat only if needed'}
       ],
-      warn:'⚠ Push SLOWLY over 1-2 min — fast push causes partial dissociation → agitation/delirium. Not advised in active psychosis.'});
+      warn:'⚠ Push SLOWLY over 1-2 min — fast push causes partial dissociation → agitation/delirium. AVOID in pregnant adolescents (use OB app). Not advised in active psychosis.'});
   },
   hydromorphone: function(){
     var w = dosingWt();
     var lo = w ? round(0.01*w, 3) : null;
-    var hi = w ? Math.min(round(0.02*w, 3), 1) : null;
+    var hi = w ? round(0.02*w, 3) : null;
     return rcCard({
-      name:'Hydromorphone (Dilaudid)', generic:'Stock 2 mg/mL or 4 mg/mL vial — PHI 5.1.2', cat:'PAIN',
-      form:'vial', line:'PHI standing order',
-      indication:'PHI 5.1.2 Analgesia — peds longer-acting opioid', color:'var(--amber)',
+      name:'Hydromorphone (Dilaudid)', generic:'Stock 2 mg/mL or 4 mg/mL vial — longer-acting opioid', cat:'PAIN',
+      form:'vial', line:'longer-acting',
+      indication:'Pain — longer-acting opioid after / instead of fentanyl', color:'var(--amber)',
       rows:[
-        {k:'PHI dose', v:'0.01 to 0.02 mg/kg IV over 2 min, IM'},
-        {k:'Calc', v:lo != null ? lo + ' to ' + mx(hi + ' mg') : '--', cls:'calc'},
-        {k:'Repeat', v:'q 15 min PRN'},
-        {k:'MAX single', v:mx('1 mg'), cls:'warn'},
-        {k:'MAX total', v:mx('4 mg'), cls:'warn'}
+        {k:'Dose', v:'0.01 to 0.02 mg/kg IV over 2-3 min'},
+        {k:'Calc', v:lo != null ? lo + ' to ' + hi + ' mg' : '--', cls:'calc'},
+        {k:'Typical range', v:'0.05 to 0.2 mg per dose'},
+        {k:'Repeat', v:'q 30-60 min PRN, titrated to effect'}
       ],
-      warn:'Lower starting dose in infants and medically fragile. Monitor RR and SpO2 closely. Have naloxone available.'});
-  },
-  ketorolac: function(){
-    var w = dosingWt();
-    var mg = w ? Math.min(round(0.5*w, 1), 15) : null;
-    return rcCard({
-      name:'Ketorolac', generic:'NSAID — PHI 5.1.2 Adjunctive', cat:'PAIN',
-      form:'vial', line:'adjunctive',
-      indication:'PHI 5.1.2 Adjunctive analgesia — non-opioid', color:'var(--amber)',
-      rows:[
-        {k:'PHI dose', v:'0.5 mg/kg IV over 30-60 seconds'},
-        {k:'Calc', v:mg != null ? mg + ' mg' : '--', cls:'calc'},
-        {k:'MAX', v:mx('15 mg'), cls:'warn'}
-      ],
-      warn:'AVOID in renal impairment, GI bleed / ulcer, coagulopathy, severe asthma.'});
+      warn:'Lower starting dose in infants and medically fragile. Monitor respiratory rate and SpO2 closely. Have naloxone available.'});
   },
   nicardipine: function(){
     var w = dosingWt();
@@ -3596,7 +3587,7 @@ var DX_DRUGS = {
   safer_checklist:['ketamineInduction','rocPeds','succPeds','fentanylBolus'],
   safer_diagram:[],
   anxiolysis: ['midazolamSeizure','lorazepamSeizure','fentanylBolus'],
-  pain_mgmt: ['fentanylBolus','morphine','hydromorphone','ketamineAnalgesic','ketorolac'],
+  pain_mgmt: ['fentanylBolus','hydromorphone','ketamineAnalgesic'],
   amputation: ['fentanylBolus','txa','fluidBolus','cefazolin','clindamycin'],
   impaled:    ['fentanylBolus','fluidBolus','txa'],
   femur_fracture: ['fentanylBolus','fluidBolus','txa'],
