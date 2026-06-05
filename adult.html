@@ -1449,18 +1449,20 @@ var DX_PLAN = {
     plan:['Evaluate for unrecognized: tension PTX, pericardial effusion (tamponade), ongoing occult blood loss, mechanical complications','Stress dose steroids if adrenal crisis suspected (CONSULT MEDICAL CONTROL): Hydrocortisone 100 mg IV (adult). PEDS: NO standing orders — physician order required.','Ill infant with refractory shock → suspect ductal-dependent congenital heart defect: CONSULT MD for Alprostadil 0.02-0.05 mcg/kg/min','Pediatric persistent shock + suspected hypocalcemia (ionized Ca < 1.1 mmol/L / 4.8 mg/dL): CONSULT MD for Calcium Gluconate','Continue volume + pressor support per Non-Hemorrhagic Shock guideline','Notify receiving + medical control early in any catecholamine-resistant shock']},
   post_intubation:{nonPhi:true, nonPhiNote:'PHI Analgesia Ch 5 referenced. Plan elements include synthesized practice points; verify drug-specific dosing with medical control.', picture:'Post-RSI/intubation analgesia and sedation. ALWAYS treat pain first. Paralytic outlasts induction agent — patient is paralyzed but AWARE without sedation. Stratify: assessable vs paralyzed (RASS not valid) vs hemodynamically unstable.',
     plan:['ANALGESIA FIRST: fentanyl 0.5-2 mcg/kg IV q10 min PRN, then 1-2 mcg/kg/hr infusion','Then sedation: ketamine 1-2 mg/kg IV bolus → 1-4 mg/kg/hr infusion (preferred if unstable)','If paralyzed and non-assessable: ketamine monotherapy OR fentanyl + sedative DUAL agent','NEVER use RASS/CPOT/BPS on paralyzed patients — they cannot exhibit measurable behavior','If using ketamine infusion, ALWAYS bolus first to avoid dysphoria/under-sedation','Reassess every 10-15 min: HR, BP, pupils, lacrimation, ventilator synchrony','Goal: RASS -2 to 0 if assessable; deeper if paralyzed']},
-  pain_mgmt:{nonPhi:true, nonPhiNote:'Trauma Star Analgesia Protocol — synthesized clinical pathway. Fentanyl is first-line opioid; hydromorphone is longer-acting; ketamine is adjunctive (opioid-sparing or opioid-refractory). Morphine NOT carried by program.',
-    picture:'Acute pain (broken bone / soft tissue / non-labor). Fentanyl → Hydromorphone, with adjunctive Ketamine for refractory or opioid-sparing scenarios. <strong>Pregnant patient → use OB app (ketamine contraindicated in pregnancy).</strong>',
+  pain_mgmt:{nonPhi:true, nonPhiNote:'Trauma Star Analgesia Protocol — synthesized clinical pathway. Fentanyl + Hydromorphone (opioids); Ketamine (adjunctive); Ketorolac + Acetaminophen IV (non-narcotic adjuncts for opioid-sparing). Morphine NOT carried by program.',
+    picture:'Acute pain (broken bone / soft tissue / non-labor). Fentanyl → Hydromorphone, with adjunctive Ketamine, Ketorolac, or IV Acetaminophen for refractory or opioid-sparing scenarios. <strong>Pregnant patient → use OB app (ketamine contraindicated, ketorolac restricted by GA).</strong>',
     plan:[
       'FENTANYL (1st-line opioid) — 0.5-1 mcg/kg IV. Repeat q 5-10 min PRN. MAX cumulative 200 mcg.',
-      'HYDROMORPHONE (Dilaudid, longer-acting) — Most adults 0.2-0.8 mg IV over 2-3 min. Opioid-tolerant 0.5-1.5 mg IV. Repeat q 30-60 min PRN, titrated to effect.',
-      'ADJUNCTIVE — Ketamine sub-dissociative: mild / elderly >75 / fragile → 0.1-0.3 mg/kg IV over 1-2 min. Moderate-severe stable → 0.3-0.5 mg/kg IV over 1-2 min. Reassess at 5 min.',
-      'KETAMINE INDICATIONS: refractory to opioids, opioid-sparing desired, or patient on Naltrexone / Buprenorphine.',
-      'KETAMINE CAUTIONS: not advised in active psychosis; push SLOWLY over 1-2 min — fast push causes partial dissociation → agitation/delirium.',
-      'BROKEN BONE vs LABOR PAIN: this protocol is for fracture / soft tissue / non-obstetric pain. Labor → OB app (neuraxial first-line, NO ketamine).',
-      'Lower starting doses in elderly, frail, or renal / hepatic impairment.',
-      'Reassess pain frequently. Monitor RR, SpO2, BP, sedation level (RASS / Pasero) at every dose.',
-      'Document weight, pre/post pain score, RR/SpO2/BP, adverse effects, naloxone availability.',
+      'HYDROMORPHONE (Dilaudid, longer-acting) — Most adults 0.2-0.8 mg IV over 2-3 min. Opioid-tolerant 0.5-1.5 mg IV. Repeat q 30-60 min PRN, titrated.',
+      'ADJUNCTIVE NON-NARCOTIC — Ketorolac 15 mg IV over 30-60 sec (musculoskeletal, renal colic, headache, poly-trauma). Single dose for transport.',
+      'ADJUNCTIVE NON-NARCOTIC — Acetaminophen IV (Ofirmev) 1000 mg over 15 min q 6 hr (≥50 kg) or 15 mg/kg over 15 min (<50 kg). MAX 4 g/24 hr from ALL sources.',
+      'ADJUNCTIVE — Ketamine sub-dissociative: mild / elderly >75 / fragile → 0.1-0.3 mg/kg IV over 1-2 min. Mod-severe stable → 0.3-0.5 mg/kg IV. Reassess at 5 min.',
+      'KETOROLAC AVOID: renal impairment (Cr >1.5/AKI), GI bleed/ulcer, coagulopathy, severe asthma, hypovolemia/hemorrhagic shock, pregnancy >20 wk.',
+      'KETAMINE INDICATIONS: refractory to opioids, opioid-sparing desired, or patient on Naltrexone / Buprenorphine. Push SLOWLY over 1-2 min — fast push → dissociation/delirium.',
+      'BROKEN BONE vs LABOR PAIN: this protocol is for fracture / soft tissue / non-obstetric pain. Labor → OB app (neuraxial first).',
+      'Lower starting doses in elderly, frail, renal/hepatic impairment.',
+      'Reassess pain at every dose. Monitor RR, SpO2, BP, sedation level. Have naloxone available.',
+      'Document weight, pre/post pain, RR/SpO2/BP, adverse effects.',
       'See one-page reference: pain-protocol.html'
     ]},
   anxiolysis:{nonPhi:true, nonPhiNote:'PHI Analgesia Ch 5 referenced. Plan elements include synthesized practice points; verify with medical control.', picture:'Anxious patient pre-loading or in-flight. Untreated anxiety can escalate to dangerous agitation. Treat anxiety AFTER pain control (treat pain with opioid first).',
@@ -2056,6 +2058,29 @@ var DRUGS = {
       ],
       warn:'Lower starting dose in elderly / frail / renal / hepatic impairment. Monitor for respiratory depression and sedation.'});
   },
+  ketorolac: function(){
+    return rcCard({name:'Ketorolac (Toradol)',generic:'NSAID — non-narcotic adjunct (opioid-sparing)',cat:'PAIN',form:'vial',line:'adjunctive non-opioid',
+      indication:'Mild-moderate pain (musculoskeletal, renal colic, headache); opioid-sparing in poly-trauma',color:'var(--amber)',
+      rows:[
+        {k:'Dose',v:'15 mg IV over 30-60 seconds'},
+        {k:'Repeat',v:'Single dose for transport (no >5 days total therapy)'}
+      ],
+      warn:'⚠ AVOID: renal impairment (Cr >1.5 / AKI), GI bleed / ulcer, coagulopathy, severe asthma, hypovolemia / hemorrhagic shock, pregnancy >20 wk (strict >28 wk).'});
+  },
+  acetaminophenIV: function(){
+    var w = dosingWt();
+    var under50 = w && w < 50;
+    var dose = under50 ? round(15*w, 0) : 1000;
+    return rcCard({name:'Acetaminophen IV (Ofirmev)',generic:'10 mg/mL premix — non-narcotic, non-NSAID',cat:'PAIN',form:'premix',line:'adjunctive non-opioid',
+      indication:'Mild-moderate pain, fever, opioid-sparing adjunct. SAFE in pregnancy at all gestational ages.',color:'var(--teal)',
+      rows:[
+        {k:'≥ 50 kg',v:'1000 mg IV over 15 min q 6 hr'},
+        {k:'< 50 kg',v:'15 mg/kg IV over 15 min q 6 hr'},
+        {k:'Patient calc',v:w ? dose+' mg ('+round(dose/10,0)+' mL) over 15 min' : 'Enter weight',cls:'calc'},
+        {k:'MAX',v:mx('4 g per 24 hr (ALL sources)'),cls:'warn'}
+      ],
+      warn:'Hepatic impairment / chronic alcohol use / malnutrition: reduce or avoid. Account for ALL acetaminophen (PO, IV, combos) toward 24-hr max. Infuse over 15 min — do not bolus push.'});
+  },
   // RSI
   ketamineInd: function(){
     var w=dosingWt(); var lo=round(1.5*w,0); var hi=round(2*w,0);
@@ -2278,7 +2303,7 @@ var DX_DRUGS = {
   agitation:['ketamineAgit','succRSI','ketamineDrip'],
   pe:['fluidBolus','norepi'],
   open_fracture:['cefazolin','clindamycin','fentanylBolus','fluidBolus','txa'],
-  pain_mgmt:['fentanylBolus','hydromorphone','ketamineAnalgesic'],
+  pain_mgmt:['fentanylBolus','hydromorphone','ketamineAnalgesic','ketorolac','acetaminophenIV'],
   aaa:['nicardipine','fluidBolus','fentanylBolus','txa'],
   dissection:['nicardipine','esmolol','labetalol','clevidipine','fentanylBolus'],
   hemshock:['txa','fluidBolus','cacl','cagluc','norepi'],

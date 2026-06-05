@@ -1913,6 +1913,24 @@ var DRUGS_MATERNAL = {
       warn:'⚠ NO KETAMINE in pregnancy for analgesia. Lowest effective dose. Avoid near planned delivery (neonatal respiratory depression — have neonatal naloxone 0.1 mg/kg ready).'
     });
   },
+  acetaminophenIV: function(){
+    var w = state.m.weightKg;
+    var adultDose = !w || w >= 50;
+    var mg = w && !adultDose ? round(15*w, 0) : 1000;
+    return rcCard({
+      name:'Acetaminophen IV (Ofirmev)', generic:'10 mg/mL premix — non-narcotic · SAFE in pregnancy',
+      cat:'PAIN', form:'premix', line:'adjunctive non-opioid',
+      indication:'Mild-moderate pain, fever, opioid-sparing adjunct. SAFE at all gestational ages — preferred non-opioid in pregnancy.',
+      color:'var(--teal)',
+      rows:[
+        {k:'≥ 50 kg', v:'1000 mg IV over 15 min q 6 hr'},
+        {k:'< 50 kg', v:'15 mg/kg IV over 15 min q 6 hr'},
+        {k:'Patient calc', v:w ? mg+' mg ('+round(mg/10,0)+' mL) over 15 min' : 'Enter weight', cls:'calc'},
+        {k:'MAX', v:mx('4 g per 24 hr (ALL sources)'), cls:'warn'}
+      ],
+      warn:'Hepatic impairment / chronic alcohol / malnutrition: reduce or avoid. Account for ALL acetaminophen sources toward 24-hr max. Infuse over 15 min — do not bolus.'
+    });
+  },
   acetaminophen: function(){
     return rcCard({
       name:'Acetaminophen', generic:'APAP (325 mg or 500 mg tabs)', cat:'PAIN',
@@ -2372,8 +2390,8 @@ var DX_DRUG_MAP = {
   uterine_rupture:['fluidBolus','txa','fentanyl','epiPushMaternal','caCl','caGluc'],
   hellp:['magPreeclampsia','labetalol','hydralazine','nicardipine','caGluc','fluidBolus'],
   preg_pe:['fluidBolus','epiPushMaternal','fentanyl'],
-  pain_mgmt:['fentanyl','hydromorphone'],
-  labor_pain:['fentanyl','hydromorphone'],
+  pain_mgmt:['fentanyl','hydromorphone','acetaminophenIV'],
+  labor_pain:['fentanyl','hydromorphone','acetaminophenIV'],
   amputation: ['fentanyl','fluidBolus','txa'],
   impaled: ['fentanyl','fluidBolus','txa'],
   femur_fracture: ['fentanyl','fluidBolus','txa'],
@@ -3009,26 +3027,28 @@ var DX_PLAN = {
   },
   safer_checklist:{picture:'SAFER airway preparation checklist — Crew 1 (operator) + Crew 2 (assist) parallel workflow.', plan:['Tap each step to mark complete','See PHI SAFER chapter for full protocol detail']},
   safer_diagram:{picture:'PHI SAFER Crew 1 + Crew 2 duties diagram. Tap below to view full-screen.', plan:['View the diagram for at-a-glance airway prep workflow','Use SAFER Airway Checklist for tap-to-complete walkthrough']},
-  pain_mgmt:{nonPhi:true, nonPhiNote:'Trauma Star OB Non-Labor Pain Protocol — for pregnant patients with non-obstetric acute pain (fracture, soft tissue, trauma). KETAMINE CONTRAINDICATED for analgesia in pregnancy. Morphine NOT carried by program.',
-    picture:'<strong>Non-labor pain in the pregnant patient</strong> (broken bone, trauma, soft-tissue). Fentanyl + Hydromorphone only. <strong>NO ketamine.</strong> NSAIDs: avoid &gt; 20 wk, strict &gt; 28 wk. For LABOR pain → use Labor Pain protocol.',
+  pain_mgmt:{nonPhi:true, nonPhiNote:'Trauma Star OB Non-Labor Pain Protocol — for pregnant patients with non-obstetric acute pain. Fentanyl + Hydromorphone (opioids), Acetaminophen IV (non-narcotic, safe in pregnancy). KETAMINE and KETOROLAC restricted in pregnancy. Morphine NOT carried.',
+    picture:'<strong>Non-labor pain in the pregnant patient</strong> (broken bone, trauma, soft-tissue). Fentanyl + Hydromorphone + IV Acetaminophen. <strong>NO ketamine.</strong> Ketorolac: avoid &gt; 20 wk, strict &gt; 28 wk. For LABOR pain → use Labor Pain protocol.',
     plan:[
       'FENTANYL (1st-line opioid) — 0.5-1 mcg/kg IV. Repeat q 5-10 min PRN. MAX cumulative 200 mcg.',
       'HYDROMORPHONE (Dilaudid) — 0.2-0.8 mg IV over 2-3 min. Repeat q 30-60 min PRN, titrated to effect.',
-      'KETAMINE — CONTRAINDICATED for analgesia in pregnancy. Use opioids only.',
-      'NSAIDs (ibuprofen / ketorolac) — AVOID > 20 wk; STRICTLY AVOID > 28 wk (fetal renal, premature ductus closure).',
+      'ACETAMINOPHEN IV (Ofirmev) — 1000 mg over 15 min q 6 hr (≥50 kg) or 15 mg/kg (<50 kg). SAFE in pregnancy at all GA — preferred non-opioid. MAX 4 g/24 hr (all sources).',
+      'KETAMINE — CONTRAINDICATED for analgesia in pregnancy. Use opioids + acetaminophen instead.',
+      'KETOROLAC / other NSAIDs — AVOID > 20 wk; STRICTLY AVOID > 28 wk (fetal renal, premature ductus closure). Acetaminophen IV is the OB-preferred non-opioid.',
       'Use lowest effective opioid dose for shortest duration. Monitor maternal RR/SpO2 and FHR where feasible.',
       'Opioids near delivery → neonatal respiratory depression — have NEONATAL NALOXONE 0.1 mg/kg available.',
       'Left-lateral tilt > 20 wk for any pain crisis or hemodynamic instability.',
       'For LABOR pain → switch to Labor Pain protocol (neuraxial first-line).',
       'See one-page reference: pain-protocol.html'
     ]},
-  labor_pain:{nonPhi:true, nonPhiNote:'Trauma Star Labor Pain Management. Neuraxial first-line. Systemic opioids only as alternative. KETAMINE CONTRAINDICATED. Morphine NOT carried.',
+  labor_pain:{nonPhi:true, nonPhiNote:'Trauma Star Labor Pain Management. Neuraxial first-line. Systemic opioids only as alternative. Acetaminophen IV is safe and opioid-sparing. KETAMINE and KETOROLAC CONTRAINDICATED. Morphine NOT carried.',
     picture:'<strong>Labor pain</strong> — distinguish from broken-bone / non-labor pain (use Non-Labor Pain protocol for those). <strong>Neuraxial anesthesia (epidural / spinal) is first-line</strong> when available — collaborate with anesthesia/OB. Systemic opioids only as alternative or supplement. <strong>NO ketamine for labor analgesia.</strong>',
     plan:[
       'FIRST-LINE — Neuraxial anesthesia (epidural or spinal). Collaborate with receiving anesthesia/OB on arrival.',
       'SYSTEMIC if neuraxial unavailable / not desired:',
       '  • Fentanyl 50-100 mcg IV. Repeat q 30-60 min PRN. Monitor maternal RR + FHR before and after each dose.',
       '  • Hydromorphone (Dilaudid) 0.5-1 mg IV over 2-3 min. Repeat q 2-3 hr PRN. Avoid near planned delivery if possible.',
+      '  • Acetaminophen IV (Ofirmev) 1000 mg over 15 min q 6 hr — opioid-sparing, safe in labor and near delivery.',
       'NO KETAMINE for labor analgesia.',
       'NO NSAIDs (ketorolac, ibuprofen) after 20 weeks gestation.',
       'Monitor maternal respiratory status AND fetal heart rate throughout.',

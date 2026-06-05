@@ -2090,16 +2090,18 @@ var DX_PLAN = {
   safer_checklist:{picture:'SAFER airway preparation checklist — Crew 1 (operator) + Crew 2 (assist) parallel workflow.', plan:['Tap each step to mark complete','See PHI SAFER chapter for full protocol detail']},
   safer_diagram:{picture:'PHI SAFER Crew 1 + Crew 2 duties diagram. Tap below to view full-screen.', plan:['View the diagram for at-a-glance airway prep workflow','Use SAFER Airway Checklist for tap-to-complete walkthrough']},
   pain_mgmt:{nonPhi:true, nonPhiNote:'Trauma Star Pediatric Analgesia Protocol — synthesized clinical pathway. All doses weight-based. Morphine NOT carried by program.',
-    picture:'Pediatric acute pain (broken bone / soft tissue). Fentanyl → Hydromorphone, with adjunctive Ketamine for refractory or opioid-sparing scenarios. Lower starting doses in infants and fragile patients.',
+    picture:'Pediatric acute pain (broken bone / soft tissue). Fentanyl → Hydromorphone, with adjunctive Ketamine, Ketorolac, or IV Acetaminophen. Lower starting doses in infants and fragile patients.',
     plan:[
       'FENTANYL (1st-line opioid) — 1-2 mcg/kg IV/IN. Repeat q 5-10 min PRN. MAX single dose 100 mcg.',
       'HYDROMORPHONE (Dilaudid, longer-acting) — 0.01-0.02 mg/kg IV over 2-3 min. Typical 0.05-0.2 mg per dose. Repeat q 30-60 min PRN, titrated.',
-      'ADJUNCTIVE — Ketamine sub-dissociative: young / fragile → 0.1-0.3 mg/kg IV over 1-2 min. Stable mod-severe → 0.3-0.5 mg/kg IV over 1-2 min. IN route 1-1.5 mg/kg (max 1 mL per nostril). Reassess at 5 min.',
-      'KETAMINE INDICATIONS: refractory to opioids, opioid-sparing desired, or patient on Naltrexone / Buprenorphine.',
-      'KETAMINE CAUTIONS: not advised in active psychosis; push SLOWLY over 1-2 min — fast push causes partial dissociation → agitation/delirium.',
+      'ADJUNCTIVE NON-NARCOTIC — Ketorolac (age ≥2 yr) 0.5 mg/kg IV over 30-60 sec. MAX single 15 mg. Single dose for transport.',
+      'ADJUNCTIVE NON-NARCOTIC — Acetaminophen IV (Ofirmev): ≥13 yr or ≥50 kg → 1000 mg over 15 min q 6 hr. 2-12 yr or <50 kg → 15 mg/kg over 15 min q 6 hr. MAX 75 mg/kg/24 hr.',
+      'ADJUNCTIVE — Ketamine sub-dissociative: young / fragile → 0.1-0.3 mg/kg IV over 1-2 min. Stable mod-severe → 0.3-0.5 mg/kg IV. IN route 1-1.5 mg/kg (max 1 mL per nostril). Reassess at 5 min.',
+      'KETOROLAC AVOID: age <2 yr, renal impairment/AKI, GI bleed/ulcer, coagulopathy, severe asthma, hypovolemia.',
+      'KETAMINE INDICATIONS: refractory to opioids, opioid-sparing desired, or patient on Naltrexone / Buprenorphine. Push SLOWLY over 1-2 min.',
       'Lower starting doses in infants and medically fragile patients.',
       'Reassess every dose: pain (FLACC/Wong-Baker), RR, SpO2, sedation, BP/HR.',
-      'Document weight, dose, route, time, pre/post pain, RR/SpO2, naloxone availability.',
+      'Document weight, dose, route, time, pre/post pain, RR/SpO2.',
       'For obstetric/teen-pregnant patients → switch to OB app.',
       'See one-page reference: pain-protocol.html'
     ]}
@@ -3242,6 +3244,38 @@ var DRUGS = {
       ],
       warn:'Lower starting dose in infants and medically fragile. Monitor respiratory rate and SpO2 closely. Have naloxone available.'});
   },
+  ketorolac: function(){
+    var w = dosingWt();
+    var mg = w ? Math.min(round(0.5*w, 1), 15) : null;
+    return rcCard({
+      name:'Ketorolac (Toradol)', generic:'NSAID — non-narcotic adjunct (opioid-sparing)', cat:'PAIN',
+      form:'vial', line:'adjunctive non-opioid',
+      indication:'Age ≥ 2 yr · mild-moderate pain (musculoskeletal, headache); opioid-sparing in poly-trauma', color:'var(--amber)',
+      rows:[
+        {k:'Dose', v:'0.5 mg/kg IV over 30-60 seconds'},
+        {k:'Calc', v:mg != null ? mg + ' mg' : '--', cls:'calc'},
+        {k:'MAX single', v:mx('15 mg'), cls:'warn'}
+      ],
+      warn:'⚠ AVOID: age <2 yr, renal impairment / AKI, GI bleed / ulcer, coagulopathy, severe asthma, hypovolemia / hemorrhagic shock, pregnant adolescents >20 wk.'});
+  },
+  acetaminophenIV: function(){
+    var w = dosingWt(), age = (typeof ageYears !== 'undefined') ? ageYears : null;
+    var adultDose = w && w >= 50;
+    var mg = w ? (adultDose ? 1000 : Math.min(round(15*w, 0), 750)) : null;
+    var mlGiven = mg ? round(mg/10, 0) : null;
+    return rcCard({
+      name:'Acetaminophen IV (Ofirmev)', generic:'10 mg/mL premix — non-narcotic, non-NSAID', cat:'PAIN',
+      form:'premix', line:'adjunctive non-opioid',
+      indication:'Mild-moderate pain, fever, opioid-sparing adjunct. Safe across all peds ages (per package insert ≥2 yr; neonatal dosing by MD direction).', color:'var(--teal)',
+      rows:[
+        {k:'≥ 13 yr / ≥ 50 kg', v:'1000 mg IV over 15 min q 6 hr'},
+        {k:'2-12 yr / < 50 kg', v:'15 mg/kg IV over 15 min q 6 hr'},
+        {k:'Patient calc', v:mg != null ? mg + ' mg (' + mlGiven + ' mL) over 15 min' : 'Enter weight', cls:'calc'},
+        {k:'MAX single', v:mx('15 mg/kg or 750 mg, whichever less'), cls:'warn'},
+        {k:'MAX daily', v:mx('75 mg/kg / 24 hr (max 3.75 g)'), cls:'warn'}
+      ],
+      warn:'Hepatic impairment / malnutrition: reduce or avoid. Account for ALL acetaminophen sources (PO, IV, combos) toward daily max. Infuse over 15 min — do not bolus.'});
+  },
   nicardipine: function(){
     var w = dosingWt();
     return rcCard({
@@ -3587,7 +3621,7 @@ var DX_DRUGS = {
   safer_checklist:['ketamineInduction','rocPeds','succPeds','fentanylBolus'],
   safer_diagram:[],
   anxiolysis: ['midazolamSeizure','lorazepamSeizure','fentanylBolus'],
-  pain_mgmt: ['fentanylBolus','hydromorphone','ketamineAnalgesic'],
+  pain_mgmt: ['fentanylBolus','hydromorphone','ketamineAnalgesic','ketorolac','acetaminophenIV'],
   amputation: ['fentanylBolus','txa','fluidBolus','cefazolin','clindamycin'],
   impaled:    ['fentanylBolus','fluidBolus','txa'],
   femur_fracture: ['fentanylBolus','fluidBolus','txa'],

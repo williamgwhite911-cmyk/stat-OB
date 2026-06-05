@@ -1,5 +1,49 @@
 # StatFlight Changes
 
+## Add Ketorolac + IV Acetaminophen (Tylenol) to pain protocol
+
+Two non-narcotic adjuncts added across pain-protocol.html and the in-app
+pain_mgmt entries:
+
+### Ketorolac (Toradol) — NSAID
+- Adult: 15 mg IV over 30-60 sec
+- Peds (≥ 2 yr): 0.5 mg/kg IV over 30-60 sec, max 15 mg
+- Indications: mild-moderate pain (musculoskeletal, renal colic, headache);
+  opioid-sparing in poly-trauma
+- AVOID: renal impairment / AKI, GI bleed / ulcer, coagulopathy, severe
+  asthma, hypovolemia / hemorrhagic shock, pregnancy > 20 wk
+  (strict > 28 wk), peds < 2 yr
+
+### Acetaminophen IV (Ofirmev) — NEW non-narcotic, non-NSAID
+- Adult (≥ 50 kg): 1000 mg IV over 15 min q 6 hr
+- Adult / peds (< 50 kg, ≥ 2 yr): 15 mg/kg IV over 15 min q 6 hr
+- Peds (2-12 yr): 15 mg/kg q 6 hr, max 75 mg/kg / 24 hr (max 3.75 g)
+- MAX adult: 4 g per 24 hr from ALL acetaminophen sources combined
+- SAFE in pregnancy at all gestational ages — preferred non-opioid in OB
+- AVOID / reduce: hepatic impairment, chronic alcohol use, malnutrition
+- Infuse over 15 min — do not bolus push
+
+Drug cards added/restored:
+- adult.ketorolac (restored)
+- adult.acetaminophenIV (new)
+- peds.ketorolac (restored, with age ≥2 yr requirement)
+- peds.acetaminophenIV (new, with age-based dosing)
+- ob.acetaminophenIV (new, called out as safe in pregnancy)
+
+Drug map updates:
+- adult.pain_mgmt: + ketorolac + acetaminophenIV
+- peds.pain_mgmt: + ketorolac + acetaminophenIV
+- ob.pain_mgmt: + acetaminophenIV
+- ob.labor_pain: + acetaminophenIV (opioid-sparing for labor)
+
+pain-protocol.html — two new med blocks under Adjunctive Analgesia
+(Ketorolac and Acetaminophen IV) with INDICATION / CONTRA / NOTE tags.
+OB addendum updated: both non-labor and labor sub-blocks now include
+Acetaminophen IV as the OB-preferred non-opioid; ketorolac/NSAID
+restriction by GA preserved.
+
+SW cache bumped v54 → v55.
+
 ## Pain protocol: PHI document FORMAT, Trauma Star content (no morphine, no ketorolac)
 
 Per user clarification — keep the PHI document visual format (banner,
