@@ -1883,7 +1883,7 @@ var DRUGS_MATERNAL = {
     var ibwLabel = round(ibw,1) + ' kg IBW' + (dfltIbw ? ' (PHI 50 kg fallback)' : ' (from height)');
     var actualLine = (actual ? round(actual,1) + ' kg ABW / ' : '') + ibwLabel;
     return rcCard({
-      name:'Fentanyl', generic:'Opioid analgesic (Stock 50 mcg/mL)', cat:'PAIN',
+      name:'Fentanyl', generic:'Opioid analgesic (Stock 250 mcg / 5 mL = 50 mcg/mL)', cat:'PAIN',
       form:'vial',
       line:'1st line',
       indication:'Labor pain unrelieved by tocolysis; headache; non-labor pain', color:'var(--amber)',
@@ -1900,7 +1900,7 @@ var DRUGS_MATERNAL = {
   },
   hydromorphone: function(){
     return rcCard({
-      name:'Hydromorphone (Dilaudid)', generic:'Stock 2 mg/mL or 4 mg/mL vial — longer-acting opioid',
+      name:'Hydromorphone (Dilaudid)', generic:'Stock 2 mg/mL vial — longer-acting opioid',
       cat:'PAIN', form:'vial', line:'Step 2 (non-labor) / alt (labor)',
       indication:'Non-labor pain after fentanyl; supplemental labor analgesia if neuraxial unavailable',
       color:'var(--amber)',
@@ -2076,10 +2076,10 @@ var DRUGS_MATERNAL = {
     // PHI Chapter 2/6: RSI 1.5-2 mg/kg IV. Max RSI dose 2 mg/kg.
     var loMg = round(1.5*w, 0);
     var hiMg = round(2*w, 0);
-    var loML = round(loMg/50, 2);
-    var hiML = round(hiMg/50, 2);
+    var loML = round(loMg/100, 2);
+    var hiML = round(hiMg/100, 2);
     return rcCard({
-      name:'Ketamine — Induction', generic:'Stock 500 mg / 10 mL vial (50 mg/mL) — PHI preferred RSI agent', cat:'INDUCTION',
+      name:'Ketamine — Induction', generic:'Stock 500 mg / 5 mL vial (100 mg/mL) — PHI preferred RSI agent', cat:'INDUCTION',
       form:'vial',
       line:'1st line',
       indication:'RSI induction in pregnancy — preferred for hemodynamic instability, hemorrhage, or asthma', color:'var(--orange)',
@@ -2087,7 +2087,7 @@ var DRUGS_MATERNAL = {
         {k:'PHI dose (RSI)', v:'1.5 to ' + mx('2') + ' mg/kg IV push over 30 sec'},
         {k:'Patient wt', v:round(w,1) + ' kg ' + src, cls:'calc'},
         {k:'Calc dose', v:loMg + ' to ' + mx(hiMg + ' mg'), cls:'calc'},
-        {k:'Calc volume', v:loML + ' to ' + mx(hiML + ' mL') + ' of 50 mg/mL', cls:'calc'},
+        {k:'Calc volume', v:loML + ' to ' + mx(hiML + ' mL') + ' of 100 mg/mL', cls:'calc'},
         {k:'Max RSI dose', v:mx('2 mg/kg = ' + hiMg + ' mg (' + hiML + ' mL)'), cls:'warn'},
         {k:'Onset', v:'30-60 sec'},
         {k:'Duration', v:'10 to ' + mx('20') + ' min (single dose)'}
@@ -2189,7 +2189,7 @@ var DRUGS_MATERNAL = {
       line:'1st line',
       indication:'Post-intubation sedation — esp. when hemodynamically tenuous', color:'var(--orange)',
       rows:[
-        {k:'Mix prep', v:'500 mg (1 vial / 10 mL) into 100 mL NS bag = 5 mg/mL', cls:'calc'},
+        {k:'Mix prep', v:'500 mg (1 vial / 5 mL) into 100 mL NS bag = 5 mg/mL', cls:'calc'},
         {k:'PHI typical', v:'1 to ' + mx('3') + ' mg/kg/hr (max 4 mg/kg/hr)'},
         {k:'Patient wt', v:round(w,1) + ' kg ' + src, cls:'calc'},
         {k:'Typical dose', v:loMgHr + ' to ' + midMgHr + ' mg/hr', cls:'calc'},
@@ -3277,7 +3277,7 @@ function renderRsiMaxDose(){
 
   // Ketamine induction MAX = 2 mg/kg ABW
   var ketMaxMg = round(2*abw, 0);
-  var ketMaxML = round(ketMaxMg/50, 2);
+  var ketMaxML = round(ketMaxMg/100, 2);
   // Roc MAX = 1 mg/kg IBW (PHI)
   var rocMaxMg = round(1*ibw, 0);
   var rocMaxML = round(rocMaxMg/10, 2);
@@ -3296,7 +3296,7 @@ function renderRsiMaxDose(){
       '<thead><tr style="background:rgba(255,95,109,.08)">' +
         '<th style="color:var(--red)">Drug</th><th>PHI Max Dose</th><th>Patient Calc</th><th>Volume</th>' +
       '</tr></thead><tbody>' +
-      '<tr><td><strong style="color:var(--orange)">Ketamine — Induction</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">500 mg / 10 mL</div></td>' +
+      '<tr><td><strong style="color:var(--orange)">Ketamine — Induction</strong><div style="font-size:.65rem;color:var(--tx2);font-family:var(--mono)">500 mg / 5 mL</div></td>' +
         '<td>2 mg/kg ABW IV push</td>' +
         '<td class="ibw-c">' + round(abw,1) + ' kg ' + abwSrc + '<br><strong>' + ketMaxMg + ' mg</strong></td>' +
         '<td class="tv-c">' + ketMaxML + ' mL</td></tr>' +
