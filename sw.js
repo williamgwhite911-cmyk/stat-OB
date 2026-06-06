@@ -1,5 +1,5 @@
 // Trauma Star Service Worker — offline cache
-const CACHE_NAME = 'traumastar-v60';
+const CACHE_NAME = 'traumastar-v61';
 const ASSETS = [
   './',
   './index.html',
