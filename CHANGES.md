@@ -1,4 +1,4 @@
-# StatFlight Changes
+# Trauma Star Changes
 
 ## Default drug concentrations updated
 
@@ -238,7 +238,7 @@ IM dose unchanged (2 mg/kg IBW IM, onset ~5 min). OB rebolus unchanged (0.15–0
 
 SW cache bumped v48 → v49 so installed PWAs pick up the new dose.
 
-# StatFlight v1.1 — Changes
+# Trauma Star v1.1 — Changes
 
 ## New Protocols (synced across Adult / Peds / OB)
 
@@ -277,7 +277,7 @@ Cache version bumped: `statflight-v12` → `statflight-v13`. Existing installs w
 If your repo is already cloned locally:
 
 ```bash
-# from your StatFlight repo root
+# from your Trauma Star repo root
 cp /path/to/these/outputs/{adult.html,peds.html,ob.html,index.html,sw.js} .
 git add adult.html peds.html ob.html index.html sw.js
 git commit -m "v1.1 — add open fracture, laceration (peds), aortic/herniation/shock/sedation protocols + in-app PDF back button"
