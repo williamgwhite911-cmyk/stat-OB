@@ -1,6 +1,6 @@
 {
-  "name": "StatFlight Critical Care",
-  "short_name": "StatFlight",
+  "name": "Trauma Star Critical Care",
+  "short_name": "Trauma Star",
   "description": "Maternal and pediatric critical care transport reference for PHI Health flight teams",
   "start_url": "./index.html",
   "scope": "./",

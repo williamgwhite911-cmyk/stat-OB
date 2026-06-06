@@ -1,5 +1,5 @@
-// StatFlight Service Worker — offline cache
-const CACHE_NAME = 'statflight-v58';
+// Trauma Star Service Worker — offline cache
+const CACHE_NAME = 'traumastar-v59';
 const ASSETS = [
   './',
   './index.html',

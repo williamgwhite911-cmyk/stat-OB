@@ -1,4 +1,4 @@
-# StatFlight — PHI Critical Care Transport PWA
+# Trauma Star — PHI Critical Care Transport PWA
 
 Two single-file pediatric and obstetric critical-care reference apps wrapped as an installable Progressive Web App. Works offline once installed on iPhone or Android.
 
@@ -7,8 +7,8 @@ Two single-file pediatric and obstetric critical-care reference apps wrapped as 
 | File | Purpose |
 |------|---------|
 | `index.html` | Launcher — picks OB or Peds |
-| `ob.html`    | StatFlight OB — maternal & neonatal |
-| `peds.html`  | StatFlight Peds — pediatric critical care |
+| `ob.html`    | Trauma Star OB — maternal & neonatal |
+| `peds.html`  | Trauma Star Peds — pediatric critical care |
 | `manifest.json` | PWA manifest (app name, icons, start URL) |
 | `sw.js`      | Service worker — offline cache |
 | `icon.svg` / `icon-180.png` / `icon-192.png` / `icon-512.png` | App icons |
@@ -20,7 +20,7 @@ Two single-file pediatric and obstetric critical-care reference apps wrapped as 
 Open `index.html` in any modern browser. To test the service worker / install behavior, you need a local HTTP server (browsers won't register a service worker from `file://`):
 
 ```bash
-cd statflight
+cd trauma-star
 python3 -m http.server 8000
 # then open http://localhost:8000 in Chrome
 ```
@@ -34,16 +34,16 @@ This is the fastest way to get it on your phone.
 ### 1. Initialize git locally
 
 ```bash
-cd /path/to/statflight
+cd /path/to/trauma-star
 git init
 git add .
-git commit -m "Initial commit — StatFlight PWA"
+git commit -m "Initial commit — Trauma Star PWA"
 git branch -M main
 ```
 
 ### 2. Create a new GitHub repository
 
-Go to https://github.com/new and create a repo (public or private). Name it something like `statflight`. **Do not** add a README or .gitignore on the GitHub side — your local repo already has them.
+Go to https://github.com/new and create a repo (public or private). Name it something like `trauma-star`. **Do not** add a README or .gitignore on the GitHub side — your local repo already has them.
 
 ### 3. Push your code
 
@@ -71,14 +71,14 @@ That URL is your live app.
 1. Open the URL in **Safari** (must be Safari, not Chrome, for install)
 2. Tap the Share button
 3. Tap **Add to Home Screen**
-4. Confirm. The StatFlight icon will appear on your home screen as a regular app
+4. Confirm. The Trauma Star icon will appear on your home screen as a regular app
 5. Launch from the home screen — runs full-screen, works offline
 
 ### 6. Install on Android
 
 1. Open the URL in **Chrome**
 2. Chrome will show an "Install app" banner, OR tap the ⋮ menu → **Install app**
-3. The StatFlight icon will appear in your app drawer
+3. The Trauma Star icon will appear in your app drawer
 
 ---
 
@@ -94,7 +94,7 @@ git push
 
 GitHub Pages re-deploys automatically. The service worker on each device will pick up the new version on next launch (may need to close and reopen the app once to refresh the cache).
 
-To force a cache rebuild after updates, bump the `CACHE_NAME` constant in `sw.js` (e.g. `'statflight-v2'`).
+To force a cache rebuild after updates, bump the `CACHE_NAME` constant in `sw.js` (e.g. `'trauma-star-v2'`).
 
 ---
 

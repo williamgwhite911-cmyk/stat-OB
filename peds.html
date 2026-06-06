@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#030710">
-<meta name="apple-mobile-web-app-title" content="StatFlight Peds">
-<title>StatFlight Peds — Pediatric Critical Care Transport</title>
+<meta name="apple-mobile-web-app-title" content="Trauma Star Peds">
+<title>Trauma Star Peds — Pediatric Critical Care Transport</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -365,7 +365,7 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
   <div class="tb-left">
     <div class="tb-icon">PED</div>
     <div class="tb-info">
-      <div class="tb-title">StatFlight Peds</div>
+      <div class="tb-title">Trauma Star Peds</div>
       <div class="tb-sub">PHI Pediatric &middot; Critical Care Transport</div>
     </div>
   </div>
@@ -1288,14 +1288,14 @@ function recompute(){
 // are woven into each chapter alongside adult content.
 //
 // Drop each chapter PDF into the protocols/ folder using these names:
-//   statflight/protocols/PHI_Medical.pdf       (Ch 6)
-//   statflight/protocols/PHI_Cardiac.pdf       (cardiac arrest, brady, SVT, VT)
-//   statflight/protocols/PHI_Trauma.pdf        (trauma, burn, TBI)
-//   statflight/protocols/PHI_Respiratory.pdf   (if separate from Medical)
-//   statflight/protocols/PHI_Airway.pdf        (Ch 2 — SAFER / RSI)
-//   statflight/protocols/PHI_OB.pdf            (OB / neonatal / preterm)
-//   statflight/protocols/PHI_Neuro.pdf         (seizure / TBI if separate)
-//   statflight/protocols/PHI_Toxicology.pdf    (if separate from Medical)
+//   trauma-star/protocols/PHI_Medical.pdf       (Ch 6)
+//   trauma-star/protocols/PHI_Cardiac.pdf       (cardiac arrest, brady, SVT, VT)
+//   trauma-star/protocols/PHI_Trauma.pdf        (trauma, burn, TBI)
+//   trauma-star/protocols/PHI_Respiratory.pdf   (if separate from Medical)
+//   trauma-star/protocols/PHI_Airway.pdf        (Ch 2 — SAFER / RSI)
+//   trauma-star/protocols/PHI_OB.pdf            (OB / neonatal / preterm)
+//   trauma-star/protocols/PHI_Neuro.pdf         (seizure / TBI if separate)
+//   trauma-star/protocols/PHI_Toxicology.pdf    (if separate from Medical)
 //
 // Missing files don't break anything — the button just shows a
 // "not installed" message until you drop the PDF in.
@@ -4179,7 +4179,7 @@ function safeRun(name, fn){
     b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#7f1d1d;color:#fff;padding:14px 16px;font-family:monospace;font-size:.78rem;white-space:pre-wrap;border-bottom:3px solid #f87171;max-height:50vh;overflow:auto';
     b.textContent = '⚠ App failed at: ' + name + '\n\n' + (e.message || e) + '\n\n' + (e.stack || '');
     document.body.insertBefore(b, document.body.firstChild);
-    if(window.console) console.error('[StatFlight Peds]', name, e);
+    if(window.console) console.error('[Trauma Star Peds]', name, e);
   }
 }
 // Only register SW when served from a real deployment (file://, GitHub Pages, etc.)
