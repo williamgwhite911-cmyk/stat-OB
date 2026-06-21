@@ -1035,6 +1035,24 @@ function sendToFlightBuilder(){
   window.location.href = '/flight-hp-builder/?from=adult';
 }
 
+// Reverse handoff: the Flight Builder can open this calculator pre-filled (key "ts_handoff").
+// Fully guarded so it can never interfere with normal use of the calculator.
+function readReverseHandoff(){
+  try {
+    var raw = localStorage.getItem('ts_handoff');
+    if (!raw) return;
+    localStorage.removeItem('ts_handoff');
+    var h = JSON.parse(raw);
+    if (!h || !h.ts || (Date.now() - h.ts) > 30 * 60 * 1000) return;
+    if (h.sex && typeof setSex === 'function') setSex(h.sex === 'F' ? 'F' : 'M');
+    if (h.weightKg != null) { var wu = document.getElementById('pWeightUnit'); if (wu) wu.value = 'kg'; var w = document.getElementById('pWeight'); if (w) w.value = h.weightKg; }
+    if (h.heightCm != null) { var hu = document.getElementById('pHeightUnit'); if (hu) hu.value = 'cm'; var hh = document.getElementById('pHeight'); if (hh) hh.value = Math.round(h.heightCm); }
+    if (h.ageYr != null) { var a = document.getElementById('pAge'); if (a) a.value = h.ageYr; }
+    if (typeof recompute === 'function') recompute();
+  } catch (e) { /* never break the calculator */ }
+}
+window.addEventListener('DOMContentLoaded', function(){ setTimeout(readReverseHandoff, 0); });
+
 // Helper for max-highlight in dose ranges
 function mx(v){ return '<span class="mx">' + v + '</span>'; }
 

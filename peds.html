@@ -427,6 +427,9 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
     <div class="chip c-pink"><div class="cl">i-gel</div><div class="cv" id="cIgel">--</div><div class="cs">By weight</div></div>
     <div class="chip c-teal"><div class="cl">NG / OG</div><div class="cv" id="cNGOG">--</div><div class="cs">By age</div></div>
   </div>
+
+  <button onclick="sendToFlightBuilder()" style="width:100%;margin-top:14px;padding:13px;border:none;border-radius:12px;background:#0c4a6e;color:#fff;font-weight:700;font-size:.95rem;cursor:pointer">➡️ Send patient to Flight Crew H&amp;P Builder</button>
+  <div class="sec-help" style="margin-top:6px">Transfers age, weight, and diagnosis into the flight chart. Data stays on this device (same browser).</div>
 </div>
 
 </div>
@@ -1145,6 +1148,21 @@ var state = {
 
 // dosing weight precedence: ABW → tier wt
 function dosingWt(){ return state.weightKg || state.tierWt || null; }
+
+// Hand the patient off to the Flight Crew H&P Builder (same origin -> shared localStorage).
+function sendToFlightBuilder(){
+  var dxSel = document.getElementById('dxSelect');
+  var dxText = (dxSel && dxSel.selectedIndex >= 0) ? dxSel.options[dxSel.selectedIndex].text : '';
+  if (/^\s*—/.test(dxText)) dxText = '';
+  var ageY = (typeof ageInYr === 'function') ? ageInYr() : state.ageYr;
+  var payload = {
+    source: 'stat-OB-peds', ts: Date.now(),
+    age: ageY, weightKg: state.weightKg,
+    dx: dxText, dxId: state.dx, dosingWeight: dosingWt()
+  };
+  try { localStorage.setItem('hp_handoff', JSON.stringify(payload)); } catch (e) {}
+  window.location.href = '/flight-hp-builder/?from=peds';
+}
 // age in years (decimal)
 function ageInYr(){
   if(!isFinite(state.ageVal)) return null;
