@@ -450,6 +450,9 @@ select:focus,input[type=number]:focus,input[type=text]:focus{outline:none;border
     <div class="chip c-pink"><div class="cl">i-gel</div><div class="cv" id="cIgel">--</div><div class="cs">By weight</div></div>
     <div class="chip c-teal"><div class="cl">NG / OG</div><div class="cv" id="cNGOG">--</div><div class="cs">Adult</div></div>
   </div>
+
+  <button onclick="sendToFlightBuilder()" style="width:100%;margin-top:14px;padding:13px;border:none;border-radius:12px;background:#0c4a6e;color:#fff;font-weight:700;font-size:.95rem;cursor:pointer">➡️ Send patient to Flight Crew H&amp;P Builder</button>
+  <div class="sec-help" style="margin-top:6px">Transfers age, sex, weight, height, HR, SBP, diagnosis, and IBW / tidal-volume into the flight chart. Data stays on this device (same browser).</div>
 </div>
 </div>
 </div>
@@ -1011,6 +1014,26 @@ var state = {
 function dosingWt(){ return state.weightKg || state.ibwFromHeight || STD_ADULT_WT; }
 function dosingIbw(){ return state.ibwFromHeight || STD_ADULT_IBW; }
 function isPhiFallback(){ return !state.weightKg && !state.heightCm; }
+
+// Hand the patient off to the Flight Crew H&P Builder (same origin -> shared localStorage,
+// so no PHI is placed in the URL/history). The Flight Builder reads "hp_handoff" on load.
+function sendToFlightBuilder(){
+  var dxSel = document.getElementById('dxSelect');
+  var dxText = (dxSel && dxSel.selectedIndex >= 0) ? dxSel.options[dxSel.selectedIndex].text : '';
+  if (/^\s*—/.test(dxText)) dxText = '';   // ignore the placeholder option
+  var ibw = state.ibwFromHeight;
+  var payload = {
+    source: 'stat-OB-adult', ts: Date.now(),
+    age: state.ageYr, sex: state.sex,
+    weightKg: state.weightKg, heightCm: state.heightCm,
+    hr: state.hr, sbp: state.sbp,
+    dx: dxText, dxId: state.dx,
+    ibw: ibw, dosingWeight: dosingWt(), shockIndex: state.shockIndex
+  };
+  if (ibw) payload.tidalVolume = Math.round(6 * ibw) + '–' + Math.round(8 * ibw) + ' mL (6–8 mL/kg IBW)';
+  try { localStorage.setItem('hp_handoff', JSON.stringify(payload)); } catch (e) {}
+  window.location.href = '/flight-hp-builder/?from=adult';
+}
 
 // Helper for max-highlight in dose ranges
 function mx(v){ return '<span class="mx">' + v + '</span>'; }
